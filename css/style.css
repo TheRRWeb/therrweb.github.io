@@ -89,7 +89,7 @@ i {
   display: block;
   padding: 13px 16px;
   text-decoration: none;
-  font-size: 17px;
+  font-size: 32px;
   color: black;
 }
 
@@ -106,13 +106,13 @@ i {
 
 a.homeimg {
   padding: 5px;
-  height: 55px;
+  height: 60px;
   float: left;
 }
 
 .homeimg img {
-  height: 50px;
-  width: 50px;
+  height: 55px;
+  width: 55px;
 }
 
 .footop-col {
