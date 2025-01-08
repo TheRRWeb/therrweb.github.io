@@ -28,6 +28,7 @@ h2 {
 body {
   margin: 0;
   background-color: white;
+  padding-top: 60px;
 }
 
 body a {
@@ -77,6 +78,10 @@ i {
   overflow: hidden;
   background-color: #eeeeee;
   border-bottom: 1px solid black;
+  position: fixed; 
+  top: 0; 
+  width: 100%; 
+  z-index: 1000;
 }
   
 .navbar a {
@@ -216,7 +221,12 @@ footer a:hover {
 /*Phone Styling*/
 @media screen and (max-width: 600px) {
 /*Header Styling*/
-
+  .navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+  }
   .navbar a:not(:first-child) {
     display: none;
   }
@@ -235,7 +245,9 @@ footer a:hover {
   }
 
   .navbar.responsive {
-    position: relative;
+    position: fixed; 
+    top: 0;
+    width: 100%;
   }
   .navbar.responsive .icon {
     position: absolute;
