@@ -118,13 +118,13 @@ a.homeimg {
 .footop-col {
   flex-basis: 12%;
   text-align: center;
-  min-width: 235px;
+  min-width: 255px;
   float: left;
   height: 75px;
 }
 
 .footop-col img {
-  width: 200px;
+  width: 245px;
 }
 
 .foocoltxt {
