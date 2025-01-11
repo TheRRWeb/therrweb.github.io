@@ -22,11 +22,7 @@ body, html {
   padding: 10px;
   background-color: white;
 }
-
-.about {
-  margin: 10px;
-}
-
+/*
 .portfolio {
   display: inline-block;
 }
@@ -36,7 +32,7 @@ body, html {
   border: 5px solid black;
 }
 
-/*Tablet Styling*/
+Tablet Styling
 @media screen and (max-width: 800px) {
   .portfolio {
     display: inline-block;
@@ -48,7 +44,7 @@ body, html {
   }
 }
 
-/*Phone Styling*/
+Phone Styling
 @media screen and (max-width: 600px) {
   .portfolio {
     display: inline-block;
@@ -59,3 +55,4 @@ body, html {
     border: 3px solid black;
   }
 }
+*/
