@@ -18,4 +18,18 @@ function openFullscreen(url) {
 }
 
 function closeFullscreen() {
-  var container = document.get
+  var container = document.getElementById('fullscreenContainer');
+  container.style.display = 'none';
+  document.getElementById('fullscreenIframe').src = ""; // Clear iframe source
+
+  // Exit Full-Screen Mode
+  if (document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if (document.mozCancelFullScreen) { // Firefox
+    document.mozCancelFullScreen();
+  } else if (document.webkitExitFullscreen) { // Chrome, Safari, Opera
+    document.webkitExitFullscreen();
+  } else if (document.msExitFullscreen) { // IE/Edge
+    document.msExitFullscreen();
+  }
+}
