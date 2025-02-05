@@ -26,7 +26,15 @@
     </header>
     <h1>Games</h1>
     <hr>
-    
+    <div class="gallery">
+    <img src="youtube-thumbnail.jpg" onclick="openFullscreen('https://www.youtube.com/embed/dQw4w9WgXcQ')" class="game-thumbnail">
+    <img src="google-maps.jpg" onclick="openFullscreen('https://maps.google.com/maps?q=London&output=embed')" class="game-thumbnail">
+  </div>
+
+  <!-- Full-Screen Container -->
+  <div id="fullscreenContainer">
+    <iframe id="fullscreenIframe" allowfullscreen></iframe>
+  </div>
     <footer>
       <div class="container">
         <div class="row">
