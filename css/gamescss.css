@@ -40,3 +40,18 @@ body {
   height: 100%;
   border: none;
 }
+
+#closeButton {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  background: red;
+  color: white;
+  border: none;
+  font-size: 20px;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 5px;  /* Change this for corner rounding */
+  width: 50px;  /* Change this for button width */
+  height: 50px; /* Change this for button height */
+}
