@@ -8,6 +8,8 @@ body {
   display: flex;
   justify-content: center;
   gap: 20px;
+  flex-wrap: wrap;  /* 🔥 This makes images move to the next line when needed */
+  max-width: 90%;
 }
 
 .game-thumbnail {
