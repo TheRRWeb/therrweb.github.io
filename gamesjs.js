@@ -1,4 +1,14 @@
 function openFullscreen(url) {
+  // Save the game URL to localStorage
+  let playedGames = JSON.parse(localStorage.getItem('playedGames')) || [];
+
+  // Check if the game has already been added to the list
+  if (!playedGames.includes(url)) {
+    playedGames.push(url);
+    localStorage.setItem('playedGames', JSON.stringify(playedGames));
+  }
+
+  // Call your original openFullscreen function to open the game in fullscreen
   var container = document.getElementById('fullscreenContainer');
   var iframe = document.getElementById('fullscreenIframe');
 
