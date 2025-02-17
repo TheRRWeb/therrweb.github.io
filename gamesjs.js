@@ -4,24 +4,24 @@
 const auth = getAuth();
 const db = getFirestore();
 
-// Wait for the authentication state to be initialized
-onAuthStateChanged(auth, (user) => {
-  if (user) {
+// Sign in anonymously
+signInAnonymously(auth)
+  .then(() => {
     console.log("User signed in anonymously");
-  } else {
-    console.log("No user signed in");
-  }
-});
+  })
+  .catch((error) => {
+    console.error("Error signing in anonymously: ", error);
+    showToast("Error signing in anonymously: " + error.message); // Show error toast
+  });
 
 // Function to save progress (fullscreen state)
 async function saveProgress(gameProgress) {
   try {
-    // Check if the user is authenticated
-    if (!auth.currentUser) {
-      throw new Error("User not signed in. Please try again later.");
-    }
+    const userId = auth.currentUser?.uid; // Get the current user's UID
 
-    const userId = auth.currentUser.uid; // Get the current user's UID
+    if (!userId) {
+      throw new Error("User not signed in.");
+    }
 
     // Reference to the user's document in Firestore
     const userRef = doc(db, "users", userId);
@@ -71,7 +71,7 @@ async function openFullscreen(url) {
 async function closeFullscreen() {
   try {
     const container = document.getElementById('fullscreenContainer');
-    container.style.display = 'none'; // Hide the fullscreen container
+    container.style.display = 'none';  // Hide the fullscreen container
     document.getElementById('fullscreenIframe').src = ""; // Clear iframe source
 
     // Exit Full-Screen Mode
@@ -93,52 +93,23 @@ async function closeFullscreen() {
   }
 }
 
-// Function to show toast notifications
+// Toast notification function for error handling
 function showToast(message) {
-  // Create toast container if it doesn't exist
-  let toastContainer = document.getElementById("toastContainer");
-  if (!toastContainer) {
-    toastContainer = document.createElement("div");
-    toastContainer.id = "toastContainer";
-    document.body.appendChild(toastContainer);
-  }
+  const toast = document.createElement('div');
+  toast.textContent = message;
+  toast.style.position = 'fixed';
+  toast.style.bottom = '20px';
+  toast.style.right = '20px';
+  toast.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+  toast.style.color = '#fff';
+  toast.style.padding = '10px 20px';
+  toast.style.borderRadius = '5px';
+  toast.style.fontSize = '14px';
+  toast.style.zIndex = 1000;
 
-  // Create toast message
-  const toastMessage = document.createElement("div");
-  toastMessage.className = "toastMessage";
-  toastMessage.textContent = message;
+  document.body.appendChild(toast);
 
-  // Add toast to container and show
-  toastContainer.appendChild(toastMessage);
-
-  // Set a timeout to remove the toast after 3 seconds
   setTimeout(() => {
-    toastMessage.remove();
-  }, 3000);
+    toast.remove();
+  }, 3000);  // Remove after 3 seconds
 }
-
-// Styles for the toast (added dynamically)
-const style = document.createElement('style');
-style.innerHTML = `
-  #toastContainer {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 9999;
-  }
-  .toastMessage {
-    background-color: #f44336;
-    color: white;
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 5px;
-    font-size: 14px;
-    opacity: 0.9;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    transition: opacity 0.5s ease;
-  }
-  .toastMessage.hide {
-    opacity: 0;
-  }
-`;
-document.head.appendChild(style);
