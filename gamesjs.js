@@ -107,14 +107,14 @@ function showToast(message) {
   const toastMessage = document.createElement("div");
   toastMessage.className = "toastMessage";
   toastMessage.textContent = message;
-  
+
   // Add toast to container and show
   toastContainer.appendChild(toastMessage);
-  
-  // Set a timeout to remove the toast after 5 seconds
+
+  // Set a timeout to remove the toast after 3 seconds
   setTimeout(() => {
     toastMessage.remove();
-  }, 5000);
+  }, 3000);
 }
 
 // Styles for the toast (added dynamically)
@@ -129,10 +129,10 @@ style.innerHTML = `
   .toastMessage {
     background-color: #f44336;
     color: white;
-    padding: 16px;
+    padding: 10px;
     margin-bottom: 10px;
     border-radius: 5px;
-    font-size: 16px;
+    font-size: 14px;
     opacity: 0.9;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     transition: opacity 0.5s ease;
