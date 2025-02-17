@@ -4,15 +4,27 @@ const db = getFirestore();
 // Sign in anonymously
 signInAnonymously(auth)
   .then(() => {
-    console.log("User signed in anonymously");
+    const userId = auth.currentUser.uid;
+
+    // Show alert with the UID
+    alert("Welcome! User UID: " + userId);
+
+    // Display the UID in the footer
+    const footerUIDElement = document.getElementById('userUID');
+    footerUIDElement.innerText = "User UID: " + userId;
+
+    // Display a toast message for successful login
+    showToast("User logged in successfully!", "success");
   })
   .catch((error) => {
     console.error("Error signing in anonymously: ", error);
+    showToast("Error signing in: " + error.message, "error");  // Show error in toast
   });
 
 // Function to save progress (fullscreen state)
 function saveProgress(gameProgress) {
   const userId = auth.currentUser ? auth.currentUser.uid : null; // Get the current user's UID
+
   if (!userId) {
     showToast("User not authenticated", "error");
     return;
