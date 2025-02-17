@@ -1,29 +1,21 @@
+// Initialize Firebase services
 const auth = getAuth();
 const db = getFirestore();
 
 // Sign in anonymously
 signInAnonymously(auth)
   .then(() => {
-    const userId = auth.currentUser.uid; // Get the current user's UID
     console.log("User signed in anonymously");
-
-    // Show alert with the user UID
-    alert("Welcome. User UID: " + userId);
-
-    // Show UID in footer
-    const footerUIDElement = document.getElementById('userUID');
-    footerUIDElement.innerText = "User UID: " + userId;
   })
   .catch((error) => {
     console.error("Error signing in anonymously: ", error);
-    showToast("Error signing in: " + error.message, "error");
   });
 
-// Function to save progress (fullscreen state)
+// Function to save progress (fullscreen state and game URL) to Firestore
 function saveProgress(gameProgress) {
   const userId = auth.currentUser ? auth.currentUser.uid : null; // Get the current user's UID
   if (!userId) {
-    showToast("User not authenticated", "error");
+    console.error("User not authenticated");
     return;
   }
 
@@ -35,12 +27,42 @@ function saveProgress(gameProgress) {
     progress: gameProgress
   })
   .then(() => {
-    showToast("Game progress saved successfully!", "success"); // Success message
+    console.log("Game progress saved successfully!");
   })
   .catch((error) => {
     console.error("Error saving progress: ", error);
-    showToast("Error saving progress: " + error.message, "error"); // Error message
   });
+}
+
+// Function to load progress (fullscreen state and game URL) from Firestore
+function loadProgress() {
+  const userId = auth.currentUser ? auth.currentUser.uid : null; // Get the current user's UID
+  if (!userId) {
+    console.error("User not authenticated");
+    return;
+  }
+
+  // Reference to the user's document in Firestore
+  const userRef = doc(db, "users", userId);
+
+  // Load the game progress
+  getDoc(userRef)
+    .then((docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        const progress = data.progress;
+
+        // Check if fullscreen was previously enabled and load that state
+        if (progress && progress.fullscreen) {
+          openFullscreen(progress.gameUrl);
+        }
+      } else {
+        console.log("No progress data found");
+      }
+    })
+    .catch((error) => {
+      console.error("Error loading progress: ", error);
+    });
 }
 
 // Function to open the game in fullscreen mode
@@ -62,7 +84,7 @@ function openFullscreen(url) {
     container.msRequestFullscreen();
   }
 
-  // Save fullscreen state to Firestore
+  // Save fullscreen state and game URL to Firestore
   saveProgress({ fullscreen: true, gameUrl: url });
 }
 
@@ -87,19 +109,7 @@ function closeFullscreen() {
   saveProgress({ fullscreen: false });
 }
 
-// Function to show a toast message (success or error)
-function showToast(message, type) {
-  const toast = document.createElement("div");
-  toast.classList.add("toast", type);
-  toast.innerText = message;
-
-  document.body.appendChild(toast);
-
-  setTimeout(() => {
-    toast.style.opacity = "0";
-  }, 3000);
-
-  setTimeout(() => {
-    document.body.removeChild(toast);
-  }, 3500);
+// Load progress when the page is loaded (check if the game was previously played)
+window.onload = function () {
+  loadProgress();  // Load saved progress from Firestore
 }
