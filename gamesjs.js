@@ -1,115 +1,89 @@
-// Initialize Firebase services
-const auth = getAuth();
-const db = getFirestore();
-
-// Sign in anonymously
-signInAnonymously(auth)
-  .then(() => {
-    console.log("User signed in anonymously");
-  })
-  .catch((error) => {
-    console.error("Error signing in anonymously: ", error);
-  });
-
-// Function to save progress (fullscreen state and game URL) to Firestore
-function saveProgress(gameProgress) {
-  const userId = auth.currentUser ? auth.currentUser.uid : null; // Get the current user's UID
-  if (!userId) {
-    console.error("User not authenticated");
-    return;
-  }
-
-  // Reference to the user's document in Firestore
-  const userRef = doc(db, "users", userId);
-
-  // Save the game progress (fullscreen state)
-  setDoc(userRef, {
-    progress: gameProgress
-  })
-  .then(() => {
-    console.log("Game progress saved successfully!");
-  })
-  .catch((error) => {
-    console.error("Error saving progress: ", error);
-  });
+// Function to check if localStorage is available
+function isLocalStorageAvailable() {
+    try {
+        localStorage.setItem("test", "test");
+        localStorage.removeItem("test");
+        return true;
+    } catch (e) {
+        return false;
+    }
 }
 
-// Function to load progress (fullscreen state and game URL) from Firestore
-function loadProgress() {
-  const userId = auth.currentUser ? auth.currentUser.uid : null; // Get the current user's UID
-  if (!userId) {
-    console.error("User not authenticated");
-    return;
-  }
+// Check if cookies are allowed
+function checkCookiesPermission() {
+    if (!isLocalStorageAvailable()) {
+        let userChoice = localStorage.getItem("cookiesAccepted");
 
-  // Reference to the user's document in Firestore
-  const userRef = doc(db, "users", userId);
-
-  // Load the game progress
-  getDoc(userRef)
-    .then((docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        const progress = data.progress;
-
-        // Check if fullscreen was previously enabled and load that state
-        if (progress && progress.fullscreen) {
-          openFullscreen(progress.gameUrl);
+        if (userChoice === null) {
+            let confirmCookies = confirm("This site uses cookies to save your game progress. Enable cookies?");
+            if (confirmCookies) {
+                localStorage.setItem("cookiesAccepted", "true");
+                if (!isLocalStorageAvailable()) {
+                    alert("It looks like your browser is still blocking cookies. Please enable them in your browser settings for progress to be saved.");
+                }
+            } else {
+                localStorage.setItem("cookiesAccepted", "false");
+            }
         }
-      } else {
-        console.log("No progress data found");
-      }
-    })
-    .catch((error) => {
-      console.error("Error loading progress: ", error);
-    });
+    }
 }
 
-// Function to open the game in fullscreen mode
+// Run check on page load
+checkCookiesPermission();
+
+// Function to save game progress
+function saveProgress(gameUrl) {
+    if (!isLocalStorageAvailable()) {
+        console.warn("Local storage is disabled. Progress will not be saved.");
+        return;
+    }
+
+    localStorage.setItem("lastPlayedGame", gameUrl);
+}
+
+// Function to load last played game
+function loadLastPlayedGame() {
+    if (!isLocalStorageAvailable()) {
+        return null;
+    }
+
+    return localStorage.getItem("lastPlayedGame");
+}
+
+// Function to open game in fullscreen
 function openFullscreen(url) {
-  var container = document.getElementById('fullscreenContainer');
-  var iframe = document.getElementById('fullscreenIframe');
+    var container = document.getElementById('fullscreenContainer');
+    var iframe = document.getElementById('fullscreenIframe');
 
-  iframe.src = url;
-  container.style.display = 'flex';  // Show the fullscreen container
+    iframe.src = url;
+    container.style.display = 'flex';
 
-  // Request Full-Screen Mode
-  if (container.requestFullscreen) {
-    container.requestFullscreen();
-  } else if (container.mozRequestFullScreen) { // Firefox
-    container.mozRequestFullScreen();
-  } else if (container.webkitRequestFullscreen) { // Chrome, Safari, Opera
-    container.webkitRequestFullscreen();
-  } else if (container.msRequestFullscreen) { // IE/Edge
-    container.msRequestFullscreen();
-  }
+    if (container.requestFullscreen) {
+        container.requestFullscreen();
+    } else if (container.mozRequestFullScreen) {
+        container.mozRequestFullScreen();
+    } else if (container.webkitRequestFullscreen) {
+        container.webkitRequestFullscreen();
+    } else if (container.msRequestFullscreen) {
+        container.msRequestFullscreen();
+    }
 
-  // Save fullscreen state and game URL to Firestore
-  saveProgress({ fullscreen: true, gameUrl: url });
+    saveProgress(url);
 }
 
-// Function to close the fullscreen mode
+// Function to close fullscreen
 function closeFullscreen() {
-  var container = document.getElementById('fullscreenContainer');
-  container.style.display = 'none';  // Hide the fullscreen container
-  document.getElementById('fullscreenIframe').src = ""; // Clear iframe source
+    var container = document.getElementById('fullscreenContainer');
+    container.style.display = 'none';
+    document.getElementById('fullscreenIframe').src = "";
 
-  // Exit Full-Screen Mode
-  if (document.exitFullscreen) {
-    document.exitFullscreen();
-  } else if (document.mozCancelFullScreen) { // Firefox
-    document.mozCancelFullScreen();
-  } else if (document.webkitExitFullscreen) { // Chrome, Safari, Opera
-    document.webkitExitFullscreen();
-  } else if (document.msExitFullscreen) { // IE/Edge
-    document.msExitFullscreen();
-  }
-
-  // Save fullscreen state to Firestore (indicating that fullscreen was exited)
-  saveProgress({ fullscreen: false });
-}
-
-// Load progress when the page is loaded (check if the game was previously played)
-window.onload = function () {
-  loadProgress();  // Load saved progress from Firestore
+    if (document.exitFullscreen) {
+        document.exitFullscreen();
+    } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+    } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+    } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+    }
 }
