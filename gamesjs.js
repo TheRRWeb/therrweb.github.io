@@ -1,33 +1,41 @@
 const auth = getAuth();
 const db = getFirestore();
 
+// Sign in anonymously
+signInAnonymously(auth)
+  .then(() => {
+    console.log("User signed in anonymously");
+  })
+  .catch((error) => {
+    console.error("Error signing in anonymously: ", error);
+  });
+
 // Function to save progress (fullscreen state)
 function saveProgress(gameProgress) {
-  if (auth.currentUser) {
-    const userId = auth.currentUser.uid; // Get the current user's UID
-
-    // Reference to the user's document in Firestore
-    const userRef = doc(db, "users", userId);
-
-    // Save the game progress (fullscreen state)
-    setDoc(userRef, {
-      progress: gameProgress
-    })
-    .then(() => {
-      console.log("Game progress saved successfully!");
-    })
-    .catch((error) => {
-      console.error("Error saving progress: ", error);
-      showToast("Error saving progress");
-    });
-  } else {
-    console.log("User is not signed in");
+  const userId = auth.currentUser ? auth.currentUser.uid : null; // Get the current user's UID
+  if (!userId) {
+    showToast("User not authenticated", "error");
+    return;
   }
+
+  // Reference to the user's document in Firestore
+  const userRef = doc(db, "users", userId);
+
+  // Save the game progress (fullscreen state)
+  setDoc(userRef, {
+    progress: gameProgress
+  })
+  .then(() => {
+    showToast("Game progress saved successfully!", "success"); // Success message
+  })
+  .catch((error) => {
+    console.error("Error saving progress: ", error);
+    showToast("Error saving progress: " + error.message, "error"); // Error message
+  });
 }
 
 // Function to open the game in fullscreen mode
 function openFullscreen(url) {
-  // Reference to the fullscreen container and iframe
   var container = document.getElementById('fullscreenContainer');
   var iframe = document.getElementById('fullscreenIframe');
 
@@ -45,7 +53,7 @@ function openFullscreen(url) {
     container.msRequestFullscreen();
   }
 
-  // Save fullscreen state to Firestore (after user is authenticated)
+  // Save fullscreen state to Firestore
   saveProgress({ fullscreen: true, gameUrl: url });
 }
 
@@ -70,46 +78,19 @@ function closeFullscreen() {
   saveProgress({ fullscreen: false });
 }
 
-// Wait for the auth state to be fully initialized before proceeding
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    console.log("User is signed in: ", user.uid);
-    // You can now call functions that depend on the authenticated user
-    // No need to add additional checks inside the fullscreen functions anymore
-  } else {
-    console.log("User is not signed in");
-  }
-});
+// Function to show a toast message (success or error)
+function showToast(message, type) {
+  const toast = document.createElement("div");
+  toast.classList.add("toast", type);
+  toast.innerText = message;
 
-// Show toast notification
-function showToast(message) {
-  // Create a new toast element
-  const toast = document.createElement('div');
-  toast.classList.add('toast');
-  toast.textContent = message;
-
-  // Append it to the body
   document.body.appendChild(toast);
 
-  // Remove the toast after 3 seconds
   setTimeout(() => {
-    toast.remove();
+    toast.style.opacity = "0";
   }, 3000);
-}
 
-// CSS styles for the toast (you can place it in the same JS)
-const style = document.createElement('style');
-style.innerHTML = `
-  .toast {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background-color: #333;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-size: 16px;
-    z-index: 1000;
-  }
-`;
-document.head.appendChild(style);
+  setTimeout(() => {
+    document.body.removeChild(toast);
+  }, 3500);
+}
