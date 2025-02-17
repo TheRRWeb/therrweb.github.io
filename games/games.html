@@ -153,5 +153,28 @@
       window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
     </script>
     <script defer src="/_vercel/speed-insights/script.js"></script>
+    <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyDnLY_bS5z2yG6kwfES597fUq_8n5rl5HU",
+    authDomain: "the-rr-web.firebaseapp.com",
+    projectId: "the-rr-web",
+    storageBucket: "the-rr-web.firebasestorage.app",
+    messagingSenderId: "164968568706",
+    appId: "1:164968568706:web:d3f886a3573fb426cd219b",
+    measurementId: "G-4EEZPCHMN6"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
   </body>
 </html>
