@@ -157,11 +157,10 @@
   // Import the functions you need from the SDKs you need
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+  import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js";
 
   // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
   const firebaseConfig = {
     apiKey: "AIzaSyDnLY_bS5z2yG6kwfES597fUq_8n5rl5HU",
     authDomain: "the-rr-web.firebaseapp.com",
@@ -175,6 +174,23 @@
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
+
+  // Initialize Firebase Authentication and Firestore
+  const auth = getAuth();
+  const db = getFirestore();
+
+  // Anonymous sign-in
+  signInAnonymously(auth)
+    .then(() => {
+      console.log("User signed in anonymously");
+      const user = auth.currentUser;
+      console.log("User ID:", user.uid);
+      
+      // Now you can use user.uid to store data related to this user
+    })
+    .catch((error) => {
+      console.error("Error signing in anonymously:", error);
+    });
 </script>
   </body>
 </html>
