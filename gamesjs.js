@@ -43,3 +43,6 @@ function closeFullscreen() {
     document.msExitFullscreen();
   }
 }
+
+localStorage.setItem('test', 'Hello, World!');
+alert(localStorage.getItem('test'));
