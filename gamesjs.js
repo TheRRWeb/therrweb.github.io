@@ -1,115 +1,110 @@
-// Firebase authentication and Firestore initialization (done in HTML)
-// Assuming you have imported Firebase SDK already in the HTML
-
 const auth = getAuth();
 const db = getFirestore();
 
-// Sign in anonymously
-signInAnonymously(auth)
-  .then(() => {
-    console.log("User signed in anonymously");
-  })
-  .catch((error) => {
-    console.error("Error signing in anonymously: ", error);
-    showToast("Error signing in anonymously: " + error.message); // Show error toast
-  });
+// Wait for the auth state to be fully initialized before proceeding
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    console.log("User is signed in: ", user.uid);
+    // Now we know the user is signed in, we can call the function to save progress
+    const userId = user.uid;
 
-// Function to save progress (fullscreen state)
-async function saveProgress(gameProgress) {
-  try {
-    const userId = auth.currentUser?.uid; // Get the current user's UID
+    // Function to save progress (fullscreen state)
+    function saveProgress(gameProgress) {
+      // Reference to the user's document in Firestore
+      const userRef = doc(db, "users", userId);
 
-    if (!userId) {
-      throw new Error("User not signed in.");
+      // Save the game progress (fullscreen state)
+      setDoc(userRef, {
+        progress: gameProgress
+      })
+      .then(() => {
+        console.log("Game progress saved successfully!");
+      })
+      .catch((error) => {
+        console.error("Error saving progress: ", error);
+        showToast("Error saving progress");
+      });
     }
 
-    // Reference to the user's document in Firestore
-    const userRef = doc(db, "users", userId);
+    // Function to open the game in fullscreen mode
+    function openFullscreen(url) {
+      // Reference to the fullscreen container and iframe
+      var container = document.getElementById('fullscreenContainer');
+      var iframe = document.getElementById('fullscreenIframe');
 
-    // Save the game progress (fullscreen state)
-    await setDoc(userRef, {
-      progress: gameProgress
-    }, { merge: true });
+      iframe.src = url;
+      container.style.display = 'flex';  // Show the fullscreen container
 
-    console.log("Game progress saved successfully!");
-  } catch (error) {
-    console.error("Error saving progress: ", error);
-    showToast("Error saving progress: " + error.message); // Show error toast
-  }
-}
+      // Request Full-Screen Mode
+      if (container.requestFullscreen) {
+        container.requestFullscreen();
+      } else if (container.mozRequestFullScreen) { // Firefox
+        container.mozRequestFullScreen();
+      } else if (container.webkitRequestFullscreen) { // Chrome, Safari, Opera
+        container.webkitRequestFullscreen();
+      } else if (container.msRequestFullscreen) { // IE/Edge
+        container.msRequestFullscreen();
+      }
 
-// Function to open the game in fullscreen mode
-async function openFullscreen(url) {
-  try {
-    // Reference to the fullscreen container and iframe
-    const container = document.getElementById('fullscreenContainer');
-    const iframe = document.getElementById('fullscreenIframe');
-
-    iframe.src = url;
-    container.style.display = 'flex';  // Show the fullscreen container
-
-    // Request Full-Screen Mode
-    if (container.requestFullscreen) {
-      container.requestFullscreen();
-    } else if (container.mozRequestFullScreen) { // Firefox
-      container.mozRequestFullScreen();
-    } else if (container.webkitRequestFullscreen) { // Chrome, Safari, Opera
-      container.webkitRequestFullscreen();
-    } else if (container.msRequestFullscreen) { // IE/Edge
-      container.msRequestFullscreen();
+      // Save fullscreen state to Firestore
+      saveProgress({ fullscreen: true, gameUrl: url });
     }
 
-    // Save fullscreen state to Firestore
-    await saveProgress({ fullscreen: true, gameUrl: url });
-  } catch (error) {
-    console.error("Error opening fullscreen: ", error);
-    showToast("Error opening fullscreen: " + error.message); // Show error toast
-  }
-}
+    // Function to close the fullscreen mode
+    function closeFullscreen() {
+      var container = document.getElementById('fullscreenContainer');
+      container.style.display = 'none';  // Hide the fullscreen container
+      document.getElementById('fullscreenIframe').src = ""; // Clear iframe source
 
-// Function to close the fullscreen mode
-async function closeFullscreen() {
-  try {
-    const container = document.getElementById('fullscreenContainer');
-    container.style.display = 'none';  // Hide the fullscreen container
-    document.getElementById('fullscreenIframe').src = ""; // Clear iframe source
+      // Exit Full-Screen Mode
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.mozCancelFullScreen) { // Firefox
+        document.mozCancelFullScreen();
+      } else if (document.webkitExitFullscreen) { // Chrome, Safari, Opera
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) { // IE/Edge
+        document.msExitFullscreen();
+      }
 
-    // Exit Full-Screen Mode
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    } else if (document.mozCancelFullScreen) { // Firefox
-      document.mozCancelFullScreen();
-    } else if (document.webkitExitFullscreen) { // Chrome, Safari, Opera
-      document.webkitExitFullscreen();
-    } else if (document.msExitFullscreen) { // IE/Edge
-      document.msExitFullscreen();
+      // Save fullscreen state to Firestore (indicating that fullscreen was exited)
+      saveProgress({ fullscreen: false });
     }
-
-    // Save fullscreen state to Firestore (indicating that fullscreen was exited)
-    await saveProgress({ fullscreen: false });
-  } catch (error) {
-    console.error("Error closing fullscreen: ", error);
-    showToast("Error closing fullscreen: " + error.message); // Show error toast
+  } else {
+    // If the user is not authenticated, display an error or prompt to sign in
+    console.log("User is not signed in");
   }
-}
+});
 
-// Toast notification function for error handling
+// Show toast notification
 function showToast(message) {
+  // Create a new toast element
   const toast = document.createElement('div');
+  toast.classList.add('toast');
   toast.textContent = message;
-  toast.style.position = 'fixed';
-  toast.style.bottom = '20px';
-  toast.style.right = '20px';
-  toast.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-  toast.style.color = '#fff';
-  toast.style.padding = '10px 20px';
-  toast.style.borderRadius = '5px';
-  toast.style.fontSize = '14px';
-  toast.style.zIndex = 1000;
 
+  // Append it to the body
   document.body.appendChild(toast);
 
+  // Remove the toast after 3 seconds
   setTimeout(() => {
     toast.remove();
-  }, 3000);  // Remove after 3 seconds
+  }, 3000);
 }
+
+// CSS styles for the toast (you can place it in the same JS)
+const style = document.createElement('style');
+style.innerHTML = `
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #333;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    z-index: 1000;
+  }
+`;
+document.head.appendChild(style);
