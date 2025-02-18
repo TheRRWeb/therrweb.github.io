@@ -1,89 +1,45 @@
-// Function to check if localStorage is available
-function isLocalStorageAvailable() {
-  try {
-    // Try to use localStorage and set a test item
-    localStorage.setItem("test", "test");
-    localStorage.removeItem("test");
-    return true;
-  } catch (e) {
-    return false; // Return false if an error occurs (indicating cookies/localStorage is blocked)
-  }
-}
-
-// Check if cookies are enabled
-function checkCookies() {
-  if (isLocalStorageAvailable()) {
-    // If cookies are enabled, save the preference and load the game progress
-    localStorage.setItem("cookiesEnabled", "yes");
-  } else {
-    // Show an alert if cookies are disabled, ask the user to enable them
-    alert("It looks like your browser is blocking cookies or localStorage. Please enable them for progress to be saved.");
-  }
-}
-
-// Show the cookie prompt on page load if not yet set
-window.onload = function() {
-  const cookiesEnabled = localStorage.getItem("cookiesEnabled");
-  
-  if (!cookiesEnabled) {
-    const userResponse = confirm("This website uses cookies to save your game progress. Do you allow cookies?");
-    if (userResponse) {
-      checkCookies();
-    } else {
-      // Inform the user that cookies are needed
-      alert("Without cookies, progress will not be saved.");
-    }
-  }
-};
-
-// Now add the code to handle game progress saving, fullscreen state, etc., just like before
-function saveProgress(gameProgress) {
-  if (localStorage.getItem("cookiesEnabled") === "yes") {
-    // Save the game progress
-    const gameData = JSON.stringify(gameProgress);
-    localStorage.setItem("gameProgress", gameData);
-  } else {
-    console.log("Cookies not enabled. Progress will not be saved.");
-  }
-}
-
-// Example function to open fullscreen and save progress
 function openFullscreen(url) {
-  const container = document.getElementById('fullscreenContainer');
-  const iframe = document.getElementById('fullscreenIframe');
-  
+  // Save the game URL to localStorage
+  let playedGames = JSON.parse(localStorage.getItem('playedGames')) || [];
+
+  // Check if the game has already been added to the list
+  if (!playedGames.includes(url)) {
+    playedGames.push(url);
+    localStorage.setItem('playedGames', JSON.stringify(playedGames));
+  }
+
+  // Call your original openFullscreen function to open the game in fullscreen
+  var container = document.getElementById('fullscreenContainer');
+  var iframe = document.getElementById('fullscreenIframe');
+
   iframe.src = url;
-  container.style.display = 'flex'; // Show the fullscreen container
-  
+  container.style.display = 'flex';
+
+  // Request Full-Screen Mode
   if (container.requestFullscreen) {
     container.requestFullscreen();
-  } else if (container.mozRequestFullScreen) {
+  } else if (container.mozRequestFullScreen) { // Firefox
     container.mozRequestFullScreen();
-  } else if (container.webkitRequestFullscreen) {
+  } else if (container.webkitRequestFullscreen) { // Chrome, Safari, Opera
     container.webkitRequestFullscreen();
-  } else if (container.msRequestFullscreen) {
+  } else if (container.msRequestFullscreen) { // IE/Edge
     container.msRequestFullscreen();
   }
-  
-  // Save progress when the game is opened
-  saveProgress({ fullscreen: true, gameUrl: url });
 }
 
 function closeFullscreen() {
-  const container = document.getElementById('fullscreenContainer');
-  container.style.display = 'none'; // Hide the fullscreen container
+  var container = document.getElementById('fullscreenContainer');
+  container.style.display = 'none';
   document.getElementById('fullscreenIframe').src = ""; // Clear iframe source
-  
+
+  // Exit Full-Screen Mode
   if (document.exitFullscreen) {
     document.exitFullscreen();
-  } else if (document.mozCancelFullScreen) {
+  } else if (document.mozCancelFullScreen) { // Firefox
     document.mozCancelFullScreen();
-  } else if (document.webkitExitFullscreen) {
+  } else if (document.webkitExitFullscreen) { // Chrome, Safari, Opera
     document.webkitExitFullscreen();
-  } else if (document.msExitFullscreen) {
+  } else if (document.msExitFullscreen) { // IE/Edge
     document.msExitFullscreen();
   }
-  
-  // Save progress when fullscreen is closed
-  saveProgress({ fullscreen: false });
 }
