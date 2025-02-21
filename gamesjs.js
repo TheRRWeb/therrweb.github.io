@@ -1,89 +1,42 @@
-// Function to check if localStorage is available
-function isLocalStorageAvailable() {
-  try {
-    // Try to use localStorage and set a test item
-    localStorage.setItem("test", "test");
-    localStorage.removeItem("test");
-    return true;
-  } catch (e) {
-    return false; // Return false if an error occurs (indicating cookies/localStorage is blocked)
+// Function to open the game in fullscreen or the desired format
+function openFullscreen(gameUrl) {
+  // Check if the gameUrl is valid
+  if (gameUrl) {
+    // Open the game URL in a new tab or in an iframe, based on how your site is structured
+    window.open(gameUrl, '_blank');
   }
 }
 
-// Check if cookies are enabled
-function checkCookies() {
-  if (isLocalStorageAvailable()) {
-    // If cookies are enabled, save the preference and load the game progress
-    localStorage.setItem("cookiesEnabled", "yes");
-  } else {
-    // Show an alert if cookies are disabled, ask the user to enable them
-    alert("It looks like your browser is blocking cookies or localStorage. Please enable them for progress to be saved.");
+// Function to save the game progress when clicked
+function saveGameProgress(gameUrl) {
+  // Save the game URL to localStorage to track the last played game
+  localStorage.setItem('lastPlayedGame', gameUrl);
+}
+
+// Function to load the saved game progress
+function loadGameProgress() {
+  // Retrieve the saved game URL from localStorage
+  const lastPlayedGame = localStorage.getItem('lastPlayedGame');
+  if (lastPlayedGame) {
+    console.log('Last played game:', lastPlayedGame);
+    // Here you could optionally show the saved game URL, but we won't open it automatically
+    // You can also use this to show any information about the last played game
   }
 }
 
-// Show the cookie prompt on page load if not yet set
-window.onload = function() {
-  const cookiesEnabled = localStorage.getItem("cookiesEnabled");
-  
-  if (!cookiesEnabled) {
-    const userResponse = confirm("This website uses cookies to save your game progress. Do you allow cookies?");
-    if (userResponse) {
-      checkCookies();
-    } else {
-      // Inform the user that cookies are needed
-      alert("Without cookies, progress will not be saved.");
-    }
-  }
-};
+// Add event listeners for game clicks, assuming you have game thumbnails or buttons
+const gameElements = document.querySelectorAll('.game-thumbnail'); // Change this selector to match your HTML structure
 
-// Now add the code to handle game progress saving, fullscreen state, etc., just like before
-function saveProgress(gameProgress) {
-  if (localStorage.getItem("cookiesEnabled") === "yes") {
-    // Save the game progress
-    const gameData = JSON.stringify(gameProgress);
-    localStorage.setItem("gameProgress", gameData);
-  } else {
-    console.log("Cookies not enabled. Progress will not be saved.");
-  }
-}
+gameElements.forEach(gameElement => {
+  // Assuming the 'game-thumbnail' element has an 'onclick' attribute with the game URL
+  const gameUrl = gameElement.getAttribute('onclick').match(/'([^']+)'/)[1]; // Extract the URL from the onclick attribute
 
-// Example function to open fullscreen and save progress
-function openFullscreen(url) {
-  const container = document.getElementById('fullscreenContainer');
-  const iframe = document.getElementById('fullscreenIframe');
-  
-  iframe.src = url;
-  container.style.display = 'flex'; // Show the fullscreen container
-  
-  if (container.requestFullscreen) {
-    container.requestFullscreen();
-  } else if (container.mozRequestFullScreen) {
-    container.mozRequestFullScreen();
-  } else if (container.webkitRequestFullscreen) {
-    container.webkitRequestFullscreen();
-  } else if (container.msRequestFullscreen) {
-    container.msRequestFullscreen();
-  }
-  
-  // Save progress when the game is opened
-  saveProgress({ fullscreen: true, gameUrl: url });
-}
+  // When a user clicks on a game, save the progress and open the game
+  gameElement.addEventListener('click', () => {
+    saveGameProgress(gameUrl);  // Save the game progress
+    openFullscreen(gameUrl);    // Open the game in fullscreen or the desired method
+  });
+});
 
-function closeFullscreen() {
-  const container = document.getElementById('fullscreenContainer');
-  container.style.display = 'none'; // Hide the fullscreen container
-  document.getElementById('fullscreenIframe').src = ""; // Clear iframe source
-  
-  if (document.exitFullscreen) {
-    document.exitFullscreen();
-  } else if (document.mozCancelFullScreen) {
-    document.mozCancelFullScreen();
-  } else if (document.webkitExitFullscreen) {
-    document.webkitExitFullscreen();
-  } else if (document.msExitFullscreen) {
-    document.msExitFullscreen();
-  }
-  
-  // Save progress when fullscreen is closed
-  saveProgress({ fullscreen: false });
-}
+// Initialize by loading the last played game (this won't auto-open it)
+loadGameProgress();
