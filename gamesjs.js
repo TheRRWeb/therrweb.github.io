@@ -1,9 +1,9 @@
-// Function to open the game in fullscreen or the desired format
+// Function to open the game in fullscreen
 function openFullscreen(gameUrl) {
   // Check if the gameUrl is valid
   if (gameUrl) {
-    // Open the game URL in a new tab or in an iframe, based on how your site is structured
-    window.open(gameUrl, '_blank');
+    // Open the game URL in the same tab (replaces the current page)
+    window.location.href = gameUrl;
   }
 }
 
