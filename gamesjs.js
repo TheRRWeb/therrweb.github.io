@@ -1,68 +1,67 @@
-// Function to open the game in fullscreen
-function openFullscreen(gameUrl) {
-  // Create an iframe to load the game in fullscreen
-  const iframe = document.createElement('iframe');
-  iframe.src = gameUrl;
-  iframe.style.position = 'fixed';
-  iframe.style.top = '0';
-  iframe.style.left = '0';
-  iframe.style.width = '100vw';
-  iframe.style.height = '100vh';
-  iframe.style.border = 'none';
-  iframe.style.zIndex = '9999';
-  iframe.style.backgroundColor = 'white';  // Optional: Add a background color
+// Function to open the game in fullscreen or the desired format
+function openFullscreen(url) {
+  var container = document.getElementById('fullscreenContainer');
+  var iframe = document.getElementById('fullscreenIframe');
 
-  // Append the iframe to the body
-  document.body.appendChild(iframe);
-
-  // Optionally, add a close button to remove the iframe
-  const closeButton = document.createElement('button');
-  closeButton.innerText = 'Close Game';
-  closeButton.style.position = 'absolute';
-  closeButton.style.top = '10px';
-  closeButton.style.right = '10px';
-  closeButton.style.zIndex = '10000';
-  closeButton.style.padding = '10px 20px';
-  closeButton.style.fontSize = '16px';
-
-  closeButton.onclick = () => {
-    iframe.remove();  // Remove the iframe
-    closeButton.remove();  // Remove the close button
-  };
-
-  document.body.appendChild(closeButton);
-}
-
-// Function to save the game progress when clicked
-function saveGameProgress(gameUrl) {
   // Save the game URL to localStorage to track the last played game
-  localStorage.setItem('lastPlayedGame', gameUrl);
-}
+  let playedGames = JSON.parse(localStorage.getItem('playedGames')) || [];
 
-// Function to load the saved game progress
-function loadGameProgress() {
-  // Retrieve the saved game URL from localStorage
-  const lastPlayedGame = localStorage.getItem('lastPlayedGame');
-  if (lastPlayedGame) {
-    console.log('Last played game:', lastPlayedGame);
-    // Here you could optionally show the saved game URL, but we won't open it automatically
-    // You can also use this to show any information about the last played game
+  // Check if the game has already been added to the list
+  if (!playedGames.includes(url)) {
+    playedGames.push(url);
+    localStorage.setItem('playedGames', JSON.stringify(playedGames));
+  }
+
+  // Set the game URL in the iframe and display the fullscreen container
+  iframe.src = url;
+  container.style.display = 'flex';
+
+  // Request Full-Screen Mode
+  if (container.requestFullscreen) {
+    container.requestFullscreen();
+  } else if (container.mozRequestFullScreen) { // Firefox
+    container.mozRequestFullScreen();
+  } else if (container.webkitRequestFullscreen) { // Chrome, Safari, Opera
+    container.webkitRequestFullscreen();
+  } else if (container.msRequestFullscreen) { // IE/Edge
+    container.msRequestFullscreen();
   }
 }
 
-// Add event listeners for game clicks, assuming you have game thumbnails or buttons
-const gameElements = document.querySelectorAll('.game-thumbnail'); // Change this selector to match your HTML structure
+// Function to close the fullscreen and stop the game
+function closeFullscreen() {
+  var container = document.getElementById('fullscreenContainer');
+  container.style.display = 'none';
+  document.getElementById('fullscreenIframe').src = ""; // Clear iframe source
 
-gameElements.forEach(gameElement => {
-  // Assuming the 'game-thumbnail' element has an 'onclick' attribute with the game URL
-  const gameUrl = gameElement.getAttribute('onclick').match(/'([^']+)'/)[1]; // Extract the URL from the onclick attribute
+  // Exit Full-Screen Mode
+  if (document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if (document.mozCancelFullScreen) { // Firefox
+    document.mozCancelFullScreen();
+  } else if (document.webkitExitFullscreen) { // Chrome, Safari, Opera
+    document.webkitExitFullscreen();
+  } else if (document.msExitFullscreen) { // IE/Edge
+    document.msExitFullscreen();
+  }
 
-  // When a user clicks on a game, save the progress and open the game
-  gameElement.addEventListener('click', () => {
-    saveGameProgress(gameUrl);  // Save the game progress
-    openFullscreen(gameUrl);    // Open the game in fullscreen within the same domain
-  });
-});
+  // Save the game URL to localStorage when the game is closed
+  let playedGames = JSON.parse(localStorage.getItem('playedGames')) || [];
+  // You can save more specific game progress here if needed
+  localStorage.setItem('playedGames', JSON.stringify(playedGames));
+}
 
-// Initialize by loading the last played game (this won't auto-open it)
+// Function to load the saved game progress when the page loads
+function loadGameProgress() {
+  // Retrieve the saved games from localStorage
+  const playedGames = JSON.parse(localStorage.getItem('playedGames')) || [];
+  
+  if (playedGames.length > 0) {
+    console.log('Last played games:', playedGames);
+    // Optionally show the last played games or let users continue from there
+    // You can modify this based on how you want to display the data
+  }
+}
+
+// Call loadGameProgress when the page loads to show previous progress (if needed)
 loadGameProgress();
