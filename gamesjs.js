@@ -1,10 +1,36 @@
 // Function to open the game in fullscreen
 function openFullscreen(gameUrl) {
-  // Check if the gameUrl is valid
-  if (gameUrl) {
-    // Open the game URL in the same tab (replaces the current page)
-    window.location.href = gameUrl;
-  }
+  // Create an iframe to load the game in fullscreen
+  const iframe = document.createElement('iframe');
+  iframe.src = gameUrl;
+  iframe.style.position = 'fixed';
+  iframe.style.top = '0';
+  iframe.style.left = '0';
+  iframe.style.width = '100vw';
+  iframe.style.height = '100vh';
+  iframe.style.border = 'none';
+  iframe.style.zIndex = '9999';
+  iframe.style.backgroundColor = 'white';  // Optional: Add a background color
+
+  // Append the iframe to the body
+  document.body.appendChild(iframe);
+
+  // Optionally, add a close button to remove the iframe
+  const closeButton = document.createElement('button');
+  closeButton.innerText = 'Close Game';
+  closeButton.style.position = 'absolute';
+  closeButton.style.top = '10px';
+  closeButton.style.right = '10px';
+  closeButton.style.zIndex = '10000';
+  closeButton.style.padding = '10px 20px';
+  closeButton.style.fontSize = '16px';
+
+  closeButton.onclick = () => {
+    iframe.remove();  // Remove the iframe
+    closeButton.remove();  // Remove the close button
+  };
+
+  document.body.appendChild(closeButton);
 }
 
 // Function to save the game progress when clicked
@@ -34,7 +60,7 @@ gameElements.forEach(gameElement => {
   // When a user clicks on a game, save the progress and open the game
   gameElement.addEventListener('click', () => {
     saveGameProgress(gameUrl);  // Save the game progress
-    openFullscreen(gameUrl);    // Open the game in fullscreen or the desired method
+    openFullscreen(gameUrl);    // Open the game in fullscreen within the same domain
   });
 });
 
