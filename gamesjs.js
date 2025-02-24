@@ -15,17 +15,6 @@ function openFullscreen(url) {
   // Set the game URL in the iframe and display the fullscreen container
   iframe.src = url;
   container.style.display = 'flex';
-
-  // Request Full-Screen Mode
-  if (container.requestFullscreen) {
-    container.requestFullscreen();
-  } else if (container.mozRequestFullScreen) { // Firefox
-    container.mozRequestFullScreen();
-  } else if (container.webkitRequestFullscreen) { // Chrome, Safari, Opera
-    container.webkitRequestFullscreen();
-  } else if (container.msRequestFullscreen) { // IE/Edge
-    container.msRequestFullscreen();
-  }
 }
 
 // Function to close the fullscreen and stop the game
@@ -33,17 +22,6 @@ function closeFullscreen() {
   var container = document.getElementById('fullscreenContainer');
   container.style.display = 'none';
   document.getElementById('fullscreenIframe').src = ""; // Clear iframe source
-
-  // Exit Full-Screen Mode
-  if (document.exitFullscreen) {
-    document.exitFullscreen();
-  } else if (document.mozCancelFullScreen) { // Firefox
-    document.mozCancelFullScreen();
-  } else if (document.webkitExitFullscreen) { // Chrome, Safari, Opera
-    document.webkitExitFullscreen();
-  } else if (document.msExitFullscreen) { // IE/Edge
-    document.msExitFullscreen();
-  }
 
   // Save the game URL to localStorage when the game is closed
   let playedGames = JSON.parse(localStorage.getItem('playedGames')) || [];
