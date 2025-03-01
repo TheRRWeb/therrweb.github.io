@@ -143,53 +143,6 @@
     <div id="fullscreenContainer">
       <button id="closeButton" onclick="closeFullscreen()">🎮</button>
       <iframe id="fullscreenIframe" allow="gamepad; autoplay; fullscreen; accelerometer; touch" allowfullscreen></iframe>
-      <div id="keyboardContainer">
-    <button id="toggleKeyboard" onclick="toggleKeyboard()">Hide Keyboard</button>
-    <div id="virtualKeyboard">
-        <div class="row">
-            <button onclick="sendKey('Escape')">Esc</button>
-            <button onclick="sendKey('Tab')">Tab</button>
-            <button onclick="sendKey('Shift')">Shift</button>
-            <button onclick="sendKey('Control')">Ctrl</button>
-            <button onclick="sendKey('Alt')">Alt</button>
-            <button onclick="sendKey('Enter')">Enter</button>
-            <button onclick="sendKey('Backspace')">⌫</button>
-        </div>
-        <div class="row">
-            <button onclick="sendKey('KeyW')">W</button>
-            <button onclick="sendKey('KeyA')">A</button>
-            <button onclick="sendKey('KeyS')">S</button>
-            <button onclick="sendKey('KeyD')">D</button>
-        </div>
-        <div class="row">
-            <button onclick="sendKey('ArrowUp')">▲</button>
-        </div>
-        <div class="row">
-            <button onclick="sendKey('ArrowLeft')">◀</button>
-            <button onclick="sendKey('ArrowDown')">▼</button>
-            <button onclick="sendKey('ArrowRight')">▶</button>
-        </div>
-        <div class="row">
-            <button onclick="sendKey('KeyZ')">Z</button>
-            <button onclick="sendKey('KeyX')">X</button>
-            <button onclick="sendKey('KeyC')">C</button>
-            <button onclick="sendKey('KeyV')">V</button>
-            <button onclick="sendKey('Space')">Space</button>
-        </div>
-        <div class="row">
-            <button onclick="sendKey('Digit1')">1</button>
-            <button onclick="sendKey('Digit2')">2</button>
-            <button onclick="sendKey('Digit3')">3</button>
-            <button onclick="sendKey('Digit4')">4</button>
-            <button onclick="sendKey('Digit5')">5</button>
-            <button onclick="sendKey('Digit6')">6</button>
-            <button onclick="sendKey('Digit7')">7</button>
-            <button onclick="sendKey('Digit8')">8</button>
-            <button onclick="sendKey('Digit9')">9</button>
-            <button onclick="sendKey('Digit0')">0</button>
-        </div>
-    </div>
-</div>
     </div>
     <footer>
       <div class="container">
@@ -216,7 +169,6 @@
     </footer>
     <script type="text/javascript" src="/script.js"></script>
     <script src="/gamesjs.js"></script>
-    <script src="/keyboard.js"></script>
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
     </script>
