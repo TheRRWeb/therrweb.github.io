@@ -14,3 +14,17 @@ function sendKey(key) {
     // Send event to the game inside the iframe
     iframe.contentWindow.dispatchEvent(keyEvent);
 }
+
+// Toggle keyboard visibility
+function toggleKeyboard() {
+    const keyboard = document.getElementById('virtualKeyboard');
+    const toggleButton = document.getElementById('toggleKeyboard');
+
+    if (keyboard.style.display === 'none') {
+        keyboard.style.display = 'flex';
+        toggleButton.textContent = 'Hide Keyboard';
+    } else {
+        keyboard.style.display = 'none';
+        toggleButton.textContent = 'Show Keyboard';
+    }
+}
