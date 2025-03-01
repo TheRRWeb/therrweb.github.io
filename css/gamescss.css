@@ -61,18 +61,35 @@ body {
   height: 50px; /* Change this for button height */
 }
 
-#virtualKeyboard {
-    position: fixed;
-    bottom: 5px;
+#keyboardContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: absolute;
+    bottom: 10px;
     left: 50%;
     transform: translateX(-50%);
+    z-index: 10;
+}
+
+#toggleKeyboard {
+    background: red;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    font-size: 14px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    cursor: pointer;
+}
+
+#virtualKeyboard {
     display: flex;
     flex-direction: column;
     gap: 5px;
     background: rgba(0, 0, 0, 0.8);
     padding: 8px;
     border-radius: 10px;
-    z-index: 9999; /* Ensures it's above other elements */
 }
 
 #virtualKeyboard .row {
