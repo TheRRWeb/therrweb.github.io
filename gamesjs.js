@@ -1,16 +1,21 @@
-let siteUrl = "therrweb.vercel.app"; // Change this only once
-
 function openFullscreen(gameUrl) {
-    let gameWindow = window.open(gameUrl, '_blank');
+    // Store the current URL so we can navigate back to the game gallery after
+    let currentUrl = window.location.href;
 
-    if (!gameWindow) {
-        alert("Please allow pop-ups for this site.");
-    } else {
-        gameWindow.focus();
-    }
+    // Open the new game page in the same window
+    window.location.href = gameUrl;
+
+    // After the page loads, request fullscreen mode
+    window.addEventListener('load', () => {
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen();
+        } else if (document.documentElement.mozRequestFullScreen) { // Firefox
+            document.documentElement.mozRequestFullScreen();
+        } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari, Opera
+            document.documentElement.webkitRequestFullscreen();
+        } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
+            document.documentElement.msRequestFullscreen();
+        }
+    });
 }
 
-// Handle Android back button (for better user experience)
-window.addEventListener('popstate', function () {
-    window.location.href = siteUrl;
-});
