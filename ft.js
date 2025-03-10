@@ -8,7 +8,7 @@ const quotes = [
         `"Roses are red, violets are blue, RR made this website, we made it for you" - Murdoch Mackenzie`,
         `"Alex likes planes and this website :p" - Alex Stankov`,
         `"Happiness starts with a smile and this website makes Ethan smile" - Ethan Welch`,
-        `"I am Asian" - HaninShen`,
+        `"I am Asian" - Hani Shen`,
         `"Im going to eat u" - Quijun Tang`,
         `"Nico likes to play bus driver simulator" - Aditya Joseph Philip`,
         `"Buy my baby oil and see diddy.com" - P-ranil Diddi`,
