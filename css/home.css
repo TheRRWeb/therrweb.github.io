@@ -23,21 +23,26 @@ body, html {
   background-color: white;
 }
 
-/* Add space above the quote box */
 #quote-display {
   margin-top: 20px;
   padding: 10px;
   font-size: 1.2rem;
   text-align: center;
-  transition: transform 0.5s ease, opacity 0.5s ease;
-  opacity: 0;
-  transform: translateY(20px);
+  animation: fadeUp 0.5s ease; /* Change from transition to animation */
+  opacity: 1; /* Set opacity to 1, no need for initial opacity 0 */
+  transform: translateY(0); /* No need for initial translateY(20px) */
 }
 
-/* Animation effect for quotes */
-#quote-display.fade-up {
-  opacity: 1;
-  transform: translateY(0);
+/* Keyframe animation for fade and slide */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Styling for all quotes list */
