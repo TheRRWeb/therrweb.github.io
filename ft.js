@@ -32,18 +32,15 @@ document.addEventListener("DOMContentLoaded", function() {
     const collapseButton = document.getElementById("collapse-button");
 
     function showNextQuote() {
-        quoteDisplay.classList.remove('show');
-        setTimeout(() => {
-            quoteDisplay.textContent = quotes[currentQuoteIndex];
-            quoteDisplay.classList.add('show');
-            currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
-        }, 100); // Delay for smoother transition
+        quoteDisplay.textContent = quotes[currentQuoteIndex];
+        currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
     }
 
-    let quoteInterval = setInterval(showNextQuote, 3000);
+    let quoteInterval = setInterval(showNextQuote, 3500); // Quote changes every 3.5 seconds
 
     function showAllQuotes() {
-        clearInterval(quoteInterval); // Stop cycling
+        clearInterval(quoteInterval); // Stop cycling quotes
+
         allQuotesDiv.innerHTML = quotes.map(q => `<p>${q}</p>`).join('');
         allQuotesDiv.classList.add("show");
         expandButton.style.display = "none";
@@ -52,13 +49,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function collapseQuotes() {
         allQuotesDiv.classList.remove("show");
+
         setTimeout(() => {
-            allQuotesDiv.innerHTML = '';
+            allQuotesDiv.innerHTML = ''; // Clear quotes after collapse
             collapseButton.style.display = "none";
             expandButton.style.display = "inline";
-            showNextQuote();
-            quoteInterval = setInterval(showNextQuote, 3000); // Restart cycling
-        }, 500); // Match the CSS transition duration
+            showNextQuote(); // Show the next quote in the cycle
+            quoteInterval = setInterval(showNextQuote, 3500); // Restart cycling quotes
+        }, 500); // Match the CSS transition duration (if any)
     }
 
     // Initial quote display
