@@ -23,17 +23,50 @@ body, html {
   background-color: white;
 }
 
-.quote-transition {
-    animation: slideUp 0.5s ease-out;
+/* Add space above the quote box */
+#quote-display {
+  margin-top: 20px;
+  padding: 10px;
+  font-size: 1.2rem;
+  text-align: center;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  opacity: 0;
+  transform: translateY(20px);
 }
 
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* Animation effect for quotes */
+#quote-display.fade-up {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Styling for all quotes list */
+#all-quotes {
+  display: none;
+  margin-top: 20px;
+  padding: 10px;
+}
+
+#all-quotes p {
+  margin: 5px 0;
+  text-align: center;
+  font-size: 1rem;
+}
+
+/* Button styling */
+button {
+  margin: 10px 5px;
+  padding: 8px 16px;
+  border: none;
+  background-color: #FFFFFF; /* Your theme blue */
+  color: #2a2a2a;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+/* Hide the collapse button initially */
+#collapse-button {
+  display: none;
 }
