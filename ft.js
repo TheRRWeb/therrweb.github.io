@@ -23,7 +23,8 @@ const quotes = [
     `"Helloooo im DIEING in history" - same as above`,
     `"I like year 5s" - Douglas Clow`,
     `"Better than Poki" - Dhruv Mondal`,
-    `"Bob and Dennis' favorite website" - Anya Kumar`
+    `"Bob and Dennis' favorite website" - Anya Kumar`,
+    `"Kick Paul Out!!!" - Spencer Samuel`
 ];
 
 let currentQuoteIndex = Math.floor(Math.random() * quotes.length); // Start at random index
