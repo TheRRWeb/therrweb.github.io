@@ -23,69 +23,17 @@ body, html {
   background-color: white;
 }
 
-.quote-box {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    min-height: 50px;
-    transform: translateY(20px);
-    opacity: 0;
-    transition: transform 0.5s ease, opacity 0.5s ease;
+.quote-transition {
+    animation: slideUp 0.5s ease-out;
 }
 
-.quote-box.show {
-    transform: translateY(0);
-    opacity: 1;
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
-
-.quote-list {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    margin-top: 10px;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.5s ease, opacity 0.5s ease;
-    opacity: 0;
-}
-
-.quote-list.show {
-    max-height: 1000px;
-    opacity: 1;
-}
-
-/*
-.portfolio {
-  display: inline-block;
-}
-.portfolio img{
-  max-height: 500px;
-  max-width: 500px;
-  border: 5px solid black;
-}
-
-Tablet Styling
-@media screen and (max-width: 800px) {
-  .portfolio {
-    display: inline-block;
-  }
-  .portfolio img{
-    max-height: 250px;
-    max-width: 250px;
-    border: 5px solid black;
-  }
-}
-
-Phone Styling
-@media screen and (max-width: 600px) {
-  .portfolio {
-    display: inline-block;
-  }
-  .portfolio img{
-    max-height: 125px;
-    max-width: 125px;
-    border: 3px solid black;
-  }
-}
-*/
