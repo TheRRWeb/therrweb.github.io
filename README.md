@@ -1,1 +1,6 @@
-if you press Alt+F4 a couple of times, it will make your computer work better ;P ^_^ :D
+# Troubleshoot Notepad
+
+**Alexx, pls dont edit this or the website may never fix**
+
+- Fix Polytrack `<iframe>` issue
+- Fix data saving
