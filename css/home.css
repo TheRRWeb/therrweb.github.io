@@ -22,6 +22,39 @@ body, html {
   padding: 10px;
   background-color: white;
 }
+
+.quote-box {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    min-height: 50px;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+.quote-box.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.quote-list {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-top: 10px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease, opacity 0.5s ease;
+    opacity: 0;
+}
+
+.quote-list.show {
+    max-height: 1000px;
+    opacity: 1;
+}
+
 /*
 .portfolio {
   display: inline-block;
