@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function() {
+ document.addEventListener("DOMContentLoaded", function() {
     const quotes = [
         `"Just have fun here and download my digital merch" - RR`,
         `"ALIBABAEXPRESS" - AH`,
@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function showNextQuote() {
         quoteDisplay.textContent = quotes[currentQuoteIndex];
-        currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
+        currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length; // Reset when it reaches the end
     }
 
     let quoteInterval = setInterval(showNextQuote, 3500); // Quote changes every 3.5 seconds
@@ -54,6 +54,7 @@ document.addEventListener("DOMContentLoaded", function() {
             allQuotesDiv.innerHTML = ''; // Clear quotes after collapse
             collapseButton.style.display = "none";
             expandButton.style.display = "inline";
+            currentQuoteIndex = 0; // Reset to start from the first quote
             showNextQuote(); // Show the next quote in the cycle
             quoteInterval = setInterval(showNextQuote, 3500); // Restart cycling quotes
         }, 500); // Match the CSS transition duration (if any)
