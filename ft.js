@@ -1,5 +1,4 @@
-document.addEventListener("DOMContentLoaded", function() {
-    const quotes = [
+const quotes = [
         `"Just have fun here and download my digital merch" - RR`,
         `"ALIBABAEXPRESS" - Ali Heiba`,
         `"In Africa, every day is 24 hrs" - Mike Cox`,
@@ -25,47 +24,46 @@ document.addEventListener("DOMContentLoaded", function() {
         `"I like year 5s" - Douglas Clow`,
         `"Better than Poki" - Dhruv Mondal`,
         `"Bob and Dennis' favorite website" - Anya Kumar`
-    ];
+  ];
 
-    let currentQuoteIndex = 0;
-    const quoteDisplay = document.getElementById("quote-display");
-    const allQuotesDiv = document.getElementById("all-quotes");
-    const expandButton = document.getElementById("expand-button");
-    const collapseButton = document.getElementById("collapse-button");
+  let currentQuoteIndex = 0;
+  const quoteDisplay = document.getElementById('quote-display');
+  const allQuotesDiv = document.getElementById('all-quotes');
+  const expandButton = document.getElementById('expand-button');
+  const collapseButton = document.getElementById('collapse-button');
 
-    function showNextQuote() {
-        quoteDisplay.textContent = quotes[currentQuoteIndex];
-        currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length; // Reset when it reaches the end
-    }
+  // Function to show quotes with animation
+  function showNextQuote() {
+    quoteDisplay.classList.remove('fade-up');
+    void quoteDisplay.offsetWidth; // Restart animation
+    quoteDisplay.innerText = quotes[currentQuoteIndex];
+    quoteDisplay.classList.add('fade-up');
+    currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
+  }
 
-    let quoteInterval = setInterval(showNextQuote, 3500); // Quote changes every 3.5 seconds
+  // Start the cycle when the page loads
+  document.addEventListener("DOMContentLoaded", () => {
+    showNextQuote(); // Show the first quote immediately
+    setInterval(showNextQuote, 3000); // Cycle every 3 seconds
+  });
 
-    function showAllQuotes() {
-        clearInterval(quoteInterval); // Stop cycling quotes
+  // Function to show all quotes
+  function showAllQuotes() {
+    allQuotesDiv.innerHTML = quotes.map(q => `<p>${q}</p>`).join('');
+    allQuotesDiv.style.display = 'block';
+    expandButton.style.display = 'none';
+    collapseButton.style.display = 'inline-block';
+    quoteDisplay.style.display = 'none';
+  }
 
-        allQuotesDiv.innerHTML = quotes.map(q => `<p>${q}</p>`).join('');
-        allQuotesDiv.classList.add("show");
-        expandButton.style.display = "none";
-        collapseButton.style.display = "inline";
-    }
+  // Function to collapse quotes back to cycle
+  function collapseQuotes() {
+    allQuotesDiv.style.display = 'none';
+    expandButton.style.display = 'inline-block';
+    collapseButton.style.display = 'none';
+    quoteDisplay.style.display = 'block';
+  }
 
-    function collapseQuotes() {
-        allQuotesDiv.classList.remove("show");
-
-        setTimeout(() => {
-            allQuotesDiv.innerHTML = ''; // Clear quotes after collapse
-            collapseButton.style.display = "none";
-            expandButton.style.display = "inline";
-            currentQuoteIndex = 0; // Reset to start from the first quote
-            showNextQuote(); // Show the next quote in the cycle
-            quoteInterval = setInterval(showNextQuote, 3500); // Restart cycling quotes
-        }, 500); // Match the CSS transition duration (if any)
-    }
-
-    // Initial quote display
-    showNextQuote();
-
-    // Attach functions to buttons
-    window.showAllQuotes = showAllQuotes;
-    window.collapseQuotes = collapseQuotes;
-});
+  // Attach the functions to the buttons
+  window.showAllQuotes = showAllQuotes;
+  window.collapseQuotes = collapseQuotes;
