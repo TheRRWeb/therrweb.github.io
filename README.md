@@ -8,3 +8,4 @@
 - Add Polytrack Tab
 - Find touch verson for keyboard games
 - Add new games
+- Add more friendly text
