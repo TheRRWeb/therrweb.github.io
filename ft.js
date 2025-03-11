@@ -1,12 +1,12 @@
 const quotes = [
     `"Just have fun here and download my digital merch" - RR`,
+    `"Alex likes planes, cats and this website ;P :D" - Alex Stankov`
     `"ALIBABAEXPRESS" - Ali Heiba`,
     `"In Africa, every day is 24 hrs" - Mike Cox`,
     `"Shut up, im not a frog" - Totallynotfrog`,
     `"RR is Benn's Cookie" - Benn Cern Tang`,
     `"I like cats" - Aritro Roy`,
     `"Roses are red, violets are blue, RR made this website, we made it for you" - Murdoch Mackenzie`,
-    `"Alex likes planes, cats and this website ;P :D" - Alex Stankov`,
     `"Happiness starts with a smile and this website makes Ethan smile" - Ethan Welch`,
     `"I am Asian" - Hani Shen`,
     `"Im going to eat u" - Quijun Tang`,
