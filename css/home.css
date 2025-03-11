@@ -22,37 +22,56 @@ body, html {
   padding: 10px;
   background-color: white;
 }
-/*
-.portfolio {
-  display: inline-block;
-}
-.portfolio img{
-  max-height: 500px;
-  max-width: 500px;
-  border: 5px solid black;
+
+#quote-display {
+  margin-top: 20px;
+  padding: 10px;
+  font-size: 1.2rem;
+  text-align: center;
+  animation: fadeUp 0.5s ease; /* Change from transition to animation */
+  opacity: 1; /* Set opacity to 1, no need for initial opacity 0 */
+  transform: translateY(0); /* No need for initial translateY(20px) */
 }
 
-Tablet Styling
-@media screen and (max-width: 800px) {
-  .portfolio {
-    display: inline-block;
+/* Keyframe animation for fade and slide */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  .portfolio img{
-    max-height: 250px;
-    max-width: 250px;
-    border: 5px solid black;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-Phone Styling
-@media screen and (max-width: 600px) {
-  .portfolio {
-    display: inline-block;
-  }
-  .portfolio img{
-    max-height: 125px;
-    max-width: 125px;
-    border: 3px solid black;
-  }
+/* Styling for all quotes list */
+#all-quotes {
+  display: none;
+  margin-top: 20px;
+  padding: 10px;
 }
-*/
+
+#all-quotes p {
+  margin: 5px 0;
+  text-align: center;
+  font-size: 1rem;
+}
+
+/* Button styling */
+button {
+  margin: 10px 5px;
+  padding: 8px 16px;
+  border: none;
+  background-color: #FFFFFF; /* Your theme blue */
+  color: #2a2a2a;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+/* Hide the collapse button initially */
+#collapse-button {
+  display: none;
+}
