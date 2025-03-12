@@ -2,7 +2,7 @@
 
 **Alexx, pls dont edit this or the website may never fix**
 
-- **Big Event Starting `17th March`**
+- **Big Event Starting `Friday 21st March`**
 - Fix Polytrack `<iframe>` issue
 - Fix data saving
 - Add The RRTimes
