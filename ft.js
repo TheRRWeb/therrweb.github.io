@@ -24,7 +24,9 @@ const quotes = [
     `"I like year 5s" - Douglas Clow`,
     `"Better than Poki" - Dhruv Mondal`,
     `"Bob and Dennis' favorite website" - Anya Kumar`,
-    `"Kick Paul Out!!!" - Spencer Samuel`
+    `"Kick Paul Out!!!" - Spencer Samuel`,
+    `"If you dont wear how did the floor taste boxers your not legit" - Ali Elnaggar`,
+    `"I am officially tired of school" - Magdalena Slavkova`
 ];
 
 let currentQuoteIndex = Math.floor(Math.random() * quotes.length); // Start at random index
