@@ -1,6 +1,6 @@
 const quotes = [
     `"Just have fun here and download my digital merch" - RR`,
-    `"If you have a problem, please contact customer support" --> Agastyn`,
+    `"If you have a problem, please contact customer support" -- Agastyn`,
     `"ALIBABAEXPRESS" - Ali Heiba`,
     `"In Africa, every day is 24 hrs" - Mike Cox`,
     `"Shut up, im not a frog" - Totallynotfrog`,
