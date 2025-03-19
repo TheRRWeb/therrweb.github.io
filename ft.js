@@ -4,6 +4,7 @@ const quotes = [
     `"In Africa, every day is 24 hrs" - Mike Cox`,
     `"Shut up, im not a frog" - Totallynotfrog`,
     `"RR is Benn's Cookie" - Benn Cern Tang`,
+    `"My mom died when we couldn't remember her blood type. As she died, she kept telling us to be positive but it's hard without her." - Ben Lee Tang`,
     `"I like cats" - Aritro Roy`,
     `"Roses are red, violets are blue, RR made this website, we made it for you" - Murdoch Mackenzie`,
     `"Alex likes planes, cats and this website ;P :D" - Alex Stankov`,
@@ -26,7 +27,13 @@ const quotes = [
     `"Bob and Dennis' favorite website" - Anya Kumar`,
     `"Kick Paul Out!!!" - Spencer Samuel`,
     `"If you dont wear how did the floor taste boxers your not legit" - Ali Elnaggar`,
-    `"I am officially tired of school" - Magdalena Slavkova`
+    `"I am officially tired of school" - Magdalena Slavkova`,
+    `"RR is the GOAT" - anonymous`,
+    `"Lil phoebeeeee" - Carl Deeb`,
+    `"tihe" - Xitong Zhang`,
+    `"Michaelsoft Binbows 95" - Agastyn Manivannan`,
+    `"My husband left a note on the fridge that said, This isn't working. I'm not sure what he's talking about. I opened the fridge door, and it's working fine" - RR Web Helper`,
+    `"I like stacking Tetris blocks & Tomb in masks" - RE`
 ];
 
 let currentQuoteIndex = Math.floor(Math.random() * quotes.length); // Start at random index
