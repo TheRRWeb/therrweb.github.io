@@ -8,5 +8,5 @@ function myFunction() {
 }
 
 function promptAddToHomeScreen() {
-  alert('Make it EASY to open the web by getting the app!\n\nTo add this app to your Home Screen:.\n1. Click on the share button.\n2. Select "Add to Home Screen."');
+  alert('Make it EASY to open The RR Web and still get updates automatically by getting the app!\n\nTo add this app to your Home Screen:.\n1. Click on the share button.\n2. Select "Add to Home Screen."');
 }
