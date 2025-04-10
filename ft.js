@@ -31,7 +31,8 @@ const quotes = [
     `"tihe" - Xitong Zhang`,
     `"Michaelsoft Binbows 95" - Agastyn Manivannan`,
     `"My husband left a note on the fridge that said, This isn't working. I'm not sure what he's talking about. I opened the fridge door, and it's working fine" - RR Web Helper`,
-    `"I like stacking Tetris blocks & Tomb in masks" - RE`
+    `"I like stacking Tetris blocks & Tomb in masks" - RE`,
+    `"Hatta Rules" - Aiden from TAC`
 ];
 
 let currentQuoteIndex = Math.floor(Math.random() * quotes.length); // Start at random index
