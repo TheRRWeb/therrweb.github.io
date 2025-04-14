@@ -13,15 +13,12 @@ const quotes = [
     `"Im going to eat u" - Quijun Tang`,
     `"Nico likes to play bus driver simulator" - Aditya Joseph Philip`,
     `"Buy my baby oil and see diddy.com" - P-ranil Diddi`,
-    `"Im going to touch the maker of this website" - Rian Collins`,
-    `"With great responsibility comes great power...im not responsible" - Jenson Cooper`,
+    `"With great power comes great responsibility...im not responsible" - Jenson Cooper`,
     `"If you dont wear next, ur not a jit" - Paul Jones`,
     `"The quotes above me are cringe" - Bzzzzz`,
     `"Roses are red violets are blue and this website is a cannon event for your life and tragedies too" - Finn Tarmar`,
     `"who ever is reading this plays games in class" - Ethan Lai`,
-    `"Why did Benn have to leave me" - idk the name pls resend the form to tell me`,
-    `"rr web free" - same as above`,
-    `"Helloooo im DIEING in history" - same as above`,
+    `"Why did Benn have to leave me" - Rayyan Asif`,
     `"I like year 5s" - Douglas Clow`,
     `"Better than Poki" - Dhruv Mondal`,
     `"Bob and Dennis' favorite website" - Anya Kumar`,
@@ -33,7 +30,8 @@ const quotes = [
     `"tihe" - Xitong Zhang`,
     `"Michaelsoft Binbows 95" - Agastyn Manivannan`,
     `"My husband left a note on the fridge that said, This isn't working. I'm not sure what he's talking about. I opened the fridge door, and it's working fine" - RR Web Helper`,
-    `"I like stacking Tetris blocks & Tomb in masks" - RE`
+    `"I like stacking Tetris blocks & Tomb in masks" - RE`,
+    `"Hatta Rules" - Aiden from TAC`
 ];
 
 let currentQuoteIndex = Math.floor(Math.random() * quotes.length); // Start at random index
