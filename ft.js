@@ -33,7 +33,10 @@ const quotes = [
     `"I like stacking Tetris blocks & Tomb in masks" - RE`,
     `"Hatta Rules" - Aiden from TAC`,
     `"I am the greatest - LeBron" - Enbo Zeus`,
-    `"King" - Izak - Michael Zinn`
+    `"King" - Izak - Michael Zinn`,
+    `"Reuben likes Amaya" - Rishi Bannerjee`,
+    `"Chicken Jockey" - Jack Black`,
+    `"It’s crazy how everyone in year 8 plays on this website now" - HD`
 ];
 
 let currentQuoteIndex = Math.floor(Math.random() * quotes.length); // Start at random index
