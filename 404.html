@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html lang="en-AE">
-  <head>
-    <title>The RR 404</title> <!--Title-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>The RR 404</title> <!--Title-->
     <link rel="stylesheet" type="text/css" href="/css/style.css">
     <link rel="stylesheet" type="text/css" href="/css/home.css"> <!--CSS Link-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!--Font Awesome-->
@@ -18,22 +19,72 @@
     <link rel="apple-touch-icon" href="/logos/RRlogo11.jpg">
     <link rel="apple-touch-startup-image" href="/logos/RRlogo12.png">
     <meta name="theme-color" content="#2a2a2a">
-  </head>
-  <body>
-    <h1>The RR 404</h1>
-    <hr>
-    <h2>Wrong page? That's a Skill Issue</h2>
-    <p>Just kidding, you went to the wrong page. Try <a href="/">going to the home page</a>.</p>
-    <script defer src="/ft.js"></script>
-    <script type="text/javascript" src="/script.js"></script>
-    <script defer src="https://cloud.umami.is/script.js" data-website-id="f493113c-eb84-4958-809a-c84a5c898bf5"></script>
-    <script>
-      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-    </script>
-    <script defer src="/_vercel/insights/script.js"></script>
-    <script>
-      window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
-    </script>
-    <script defer src="/_vercel/speed-insights/script.js"></script>
-  </body>
+  <style>
+    body {
+      margin: 0;
+      background-color: #000;
+      overflow: hidden;
+      color: white;
+    }
+    #container {
+      position: absolute;
+      width: 100px;
+      text-align: center;
+    }
+    #logo {
+      width: 100px;
+      height: 100px;
+      background: url('/logos/RRlogo12.png') no-repeat center/contain;
+    }
+    #text {
+      font-size: 14px;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <div id="logo"></div>
+    <div id="text">404 Page not found.</div>
+  </div>
+
+  <script>
+    const container = document.getElementById('container');
+    let posX = 100;
+    let posY = 100;
+    let velX = 2;
+    let velY = 2;
+    const width = 100;
+    const height = 120; // logo + text
+
+    function animate() {
+      const maxX = window.innerWidth - width;
+      const maxY = window.innerHeight - height;
+
+      posX += velX;
+      posY += velY;
+
+      if (posX <= 0 || posX >= maxX) {
+        velX *= -1;
+        changeColor();
+      }
+      if (posY <= 0 || posY >= maxY) {
+        velY *= -1;
+        changeColor();
+      }
+
+      container.style.left = posX + 'px';
+      container.style.top = posY + 'px';
+
+      requestAnimationFrame(animate);
+    }
+
+    function changeColor() {
+      const hue = Math.floor(Math.random() * 360);
+      container.style.filter = `hue-rotate(${hue}deg)`;
+    }
+
+    animate();
+  </script>
+</body>
 </html>
