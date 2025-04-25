@@ -1,3 +1,4 @@
+console.log("Gamebutton script loaded!");
 // Only run in subfolder index.html, not root
 if (window.location.pathname !== "/games/" && window.location.pathname.endsWith("index.html")) {
     // Step 1: Dynamically add your CSS file (if it's not already loaded)
@@ -21,3 +22,4 @@ if (window.location.pathname !== "/games/" && window.location.pathname.endsWith(
         window.location.href = "/games/index.html";
     };
 }
+console.log("Gamebutton script finished!");
