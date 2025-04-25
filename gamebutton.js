@@ -20,47 +20,4 @@ if (window.location.pathname !== "/games/" && window.location.pathname.endsWith(
     button.onclick = () => {
         window.location.href = "/games/index.html";
     };
-
-    // Step 4: Make the button draggable (mouse + touch)
-    let isDragging = false;
-    let offsetX, offsetY;
-
-    button.addEventListener("mousedown", (e) => {
-        isDragging = true;
-        offsetX = e.clientX - button.offsetLeft;
-        offsetY = e.clientY - button.offsetTop;
-        button.style.cursor = "grabbing";
-    });
-
-    document.addEventListener("mousemove", (e) => {
-        if (isDragging) {
-            button.style.left = (e.clientX - offsetX) + "px";
-            button.style.top = (e.clientY - offsetY) + "px";
-        }
-    });
-
-    document.addEventListener("mouseup", () => {
-        isDragging = false;
-        button.style.cursor = "pointer";
-    });
-
-    // Touch support
-    button.addEventListener("touchstart", (e) => {
-        isDragging = true;
-        const touch = e.touches[0];
-        offsetX = touch.clientX - button.offsetLeft;
-        offsetY = touch.clientY - button.offsetTop;
-    });
-
-    document.addEventListener("touchmove", (e) => {
-        if (isDragging) {
-            const touch = e.touches[0];
-            button.style.left = (touch.clientX - offsetX) + "px";
-            button.style.top = (touch.clientY - offsetY) + "px";
-        }
-    });
-
-    document.addEventListener("touchend", () => {
-        isDragging = false;
-    });
 }
