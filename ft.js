@@ -13,7 +13,7 @@ const quotes = [
     `"Nico likes to play bus driver simulator" - Aditya Joseph Philip`,
     `"Buy my baby oil and see diddy.com" - Pranil Diddi`,
     `"With great power comes great responsibility...im not responsible" - Jenson Cooper`,
-    `"The quotes above me are cringe" - Bzzzz`,
+    `"gurt:yo" - z`,
     `"Roses are red violets are blue and this website is a cannon event for your life and tragedies too" - Finn Tarmar`,
     `"who ever is reading this plays games in class" - Ethan Lai`,
     `"Why did Benn have to leave me" - Rayyan Asif`,
