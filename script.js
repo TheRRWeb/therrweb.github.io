@@ -7,6 +7,14 @@ function myFunction() {
   }
 }
 
-function promptAddToHomeScreen() {
-  alert('Make it EASY to open The RR Web and still get updates automatically by getting the app!\n\nTo add this app to your Home Screen:.\n1. Click on the share button.\n2. Select "Add to Home Screen."');
-}
+const firebaseConfig = {
+  apiKey: "AIzaSyDnLY_bS5z2yG6kwfES597fUq_8n5rl5HU",
+  authDomain: "the-rr-web.firebaseapp.com",
+  projectId: "the-rr-web",
+  storageBucket: "the-rr-web.appspot.com",
+  messagingSenderId: "164968568706",
+  appId: "1:164968568706:web:1de6a6e34ab866bacd219b"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);

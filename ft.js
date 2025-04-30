@@ -4,7 +4,6 @@ const quotes = [
     `"In Africa, every day is 24 hrs" - Mike Cox`,
     `"Shut up, im not a frog" - Totallynotfrog`,
     `"RR is Benn's Cookie" - Benn Cern Tang`,
-    `"My mom died when we couldn't remember her blood type. As she died, she kept telling us to be positive but it's hard without her." - Ben Lee Tang`,
     `"I like cats" - Aritro Roy`,
     `"Roses are red, violets are blue, RR made this website, we made it for you" - Murdoch Mackenzie`,
     `"Alex likes planes, cats and this website ;P :D" - Alex Stankov`,
@@ -12,9 +11,9 @@ const quotes = [
     `"I am Asian" - Hani Shen`,
     `"Im going to eat u" - Quijun Tang`,
     `"Nico likes to play bus driver simulator" - Aditya Joseph Philip`,
-    `"Buy my baby oil and see diddy.com" - P-ranil Diddi`,
+    `"Buy my baby oil and see diddy.com" - Pranil Diddi`,
     `"With great power comes great responsibility...im not responsible" - Jenson Cooper`,
-    `"The quotes above me are cringe" - Bzzzzz`,
+    `"gurt:yo" - z`,
     `"Roses are red violets are blue and this website is a cannon event for your life and tragedies too" - Finn Tarmar`,
     `"who ever is reading this plays games in class" - Ethan Lai`,
     `"Why did Benn have to leave me" - Rayyan Asif`,
@@ -28,14 +27,12 @@ const quotes = [
     `"Lil phoebeeeee" - Carl Deeb`,
     `"tihe" - Xitong Zhang`,
     `"Michaelsoft Binbows 95" - Agastyn Manivannan`,
-    `"My husband left a note on the fridge that said, This isn't working. I'm not sure what he's talking about. I opened the fridge door, and it's working fine" - RR Web Helper`,
     `"I like stacking Tetris blocks & Tomb in masks" - RE`,
     `"Hatta Rules" - Aiden from TAC`,
     `"I am the greatest - LeBron" - Enbo Zeus`,
     `"King" - Izak - Michael Zinn`,
-    `"Reuben likes Amaya" - Rishi Bannerjee`,
     `"Chicken Jockey" - Jack Black`,
-    `"It’s crazy how everyone in year 8 plays on this website now" - HD`
+    `"It’s crazy how everyone in Year 8 plays on this website now" - HD`
 ];
 
 let currentQuoteIndex = Math.floor(Math.random() * quotes.length); // Start at random index
