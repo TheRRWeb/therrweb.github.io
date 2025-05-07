@@ -7,6 +7,7 @@ const quotes = [
     `"I like cats" - Aritro Roy`,
     `"Roses are red, violets are blue, RR made this website, we made it for you" - Murdoch Mackenzie`,
     `"Alex likes planes, cats and this website ;P :D" - Alex Stankov`,
+    `"Still hungry" - Y.`,
     `"Happiness starts with a smile and this website makes Ethan smile" - Ethan Welch`,
     `"I am Asian" - Hani Shen`,
     `"Im going to eat u" - Quijun Tang`,
