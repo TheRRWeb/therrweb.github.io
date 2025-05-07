@@ -1,4 +1,11 @@
 // Function to open the game in fullscreen or the desired format
+// Assuming you have the user's name after Google sign-in
+const userName = 'John Doe'; // Replace this with the actual user name obtained from Google
+
+// Call umami.identify with the user's name
+umami.identify({ name: userName });
+
+
 function openFullscreen(url) {
   var container = document.getElementById('fullscreenContainer');
   var iframe = document.getElementById('fullscreenIframe');
