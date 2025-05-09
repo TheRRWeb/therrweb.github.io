@@ -1,5 +1,3 @@
-// touch-controls.js
-
 (function() {
   // Create and append styles
   const style = document.createElement('style');
@@ -15,8 +13,8 @@
       z-index: 1000;
     }
     .touch-button {
-      width: 100px;
-      height: 100px;
+      width: 120px;
+      height: 120px;
       font-size: 48px;
       color: white;
       border: none;
@@ -56,6 +54,9 @@
   function simulateKeyEvent(key, type) {
     const event = new KeyboardEvent(type, {
       key: key,
+      code: key,
+      keyCode: key === 'ArrowLeft' ? 37 : 39,
+      which: key === 'ArrowLeft' ? 37 : 39,
       bubbles: true,
       cancelable: true
     });
@@ -80,4 +81,7 @@
     e.preventDefault();
     simulateKeyEvent('ArrowRight', 'keyup');
   });
+
+  // Continuously monitor touch events
+  document.addEventListener('touchstart', function() {}, true);
 })();
