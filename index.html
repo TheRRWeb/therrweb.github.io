@@ -84,11 +84,24 @@
       window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
     </script>
     <script defer src="/_vercel/speed-insights/script.js"></script>
-    <!-- Firebase App (the core Firebase SDK) -->
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
 
-<!-- Firebase Authentication -->
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyD34uwp0C9IKdJKctW8-cK2MNjzQHp9uM4",
+    authDomain: "the-rr-web-firebase.firebaseapp.com",
+    projectId: "the-rr-web-firebase",
+    storageBucket: "the-rr-web-firebase.firebasestorage.app",
+    messagingSenderId: "346095124678",
+    appId: "1:346095124678:web:76a493013394860afa17c7"
+  };
 
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+</script>
   </body>
 </html>
