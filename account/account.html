@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en-AE">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The RR Account Manager</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/account.css">
+    <link rel="icon" href="/logos/RRlogo12.png" type="image/x-icon">
+    <meta name="description" content="Manage your account settings">
+    <meta name="author" content="The RR Guy">
+  </head>
+  <body>
+    <header>
+      <div class="navbar" id="Navbar">
+        <a href="/" class="homeimg"><img src="/logos/RRlogo12.png" alt="logo"></a>
+        <a href="/games/index.html">Games</a>
+        <a href="/">Home</a>
+        <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+          <i class="fa fa-bars"></i>
+        </a>
+      </div>
+    </header>
+
+    <main id="account-manager">
+      <h2>Account Manager</h2>
+      <div id="auth-container">
+        <div id="auth-form">
+          <input type="email" id="email" placeholder="Email" required>
+          <input type="password" id="password" placeholder="Password" required>
+          <button id="sign-in-btn">Sign In</button>
+          <button id="sign-up-btn">Sign Up</button>
+          <button id="forgot-password-btn">Forgot Password?</button>
+          <p id="error-message"></p>
+        </div>
+      </div>
+      <div id="user-controls" style="display: none;">
+        <h3>Hello, <span id="user-email"></span></h3>
+        <button id="save-game-data">Save Game Data</button>
+        <button id="load-game-data">Load Game Data</button>
+        <button id="change-email">Change Email</button>
+        <button id="change-password">Change Password</button>
+        <button id="delete-account">Delete Account</button>
+        <button id="sign-out">Sign Out</button>
+      </div>
+    </main>
+
+    <footer>
+      <div class="container">
+        <div class="footer-col">
+          <h3>Site Map</h3>
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/games/index.html">Games</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="container">
+        <h5>This website is protected by the BSD 3-Clause License. <a href="/LICENSE">Click here to learn more.</a></h5>
+      </div>
+    </footer>
+    <script type="text/javascript" src="/account.js"></script>
+    <script type="text/javascript" src="/script.js"></script>
+    <script defer src="https://cloud.umami.is/script.js" data-website-id="f493113c-eb84-4958-809a-c84a5c898bf5"></script>
+    <script>
+      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+    <script>
+      window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+    <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyD34uwp0C9IKdJKctW8-cK2MNjzQHp9uM4",
+    authDomain: "the-rr-web-firebase.firebaseapp.com",
+    projectId: "the-rr-web-firebase",
+    storageBucket: "the-rr-web-firebase.firebasestorage.app",
+    messagingSenderId: "346095124678",
+    appId: "1:346095124678:web:76a493013394860afa17c7"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+</script>
+  </body>
+</html>
