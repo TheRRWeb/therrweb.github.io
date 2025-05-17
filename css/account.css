@@ -1,0 +1,115 @@
+#account-manager {
+  max-width: 600px;
+  margin: 20px auto;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  padding: 20px;
+  color: #dedede;
+  box-shadow: 0 0 15px rgba(92, 201, 59, 0.5);
+}
+
+#account-manager h1 {
+  color: #5cc93b;
+  margin-bottom: 15px;
+}
+
+#account-manager h2 {
+  color: #4193c9;
+  margin-bottom: 15px;
+}
+
+form#auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+input[type="email"],
+input[type="password"] {
+  background-color: #2a2a2a;
+  border: 1px solid #5cc93b;
+  border-radius: 5px;
+  padding: 10px;
+  color: #dedede;
+  font-size: 16px;
+  text-align: left;
+}
+
+input[type="email"]::placeholder,
+input[type="password"]::placeholder {
+  color: #888;
+}
+
+button {
+  background-color: #5cc93b;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #4193c9;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+button:active {
+  background-color: #2a2a2a;
+  color: #dedede;
+}
+
+#error-message {
+  color: #ff4d4d;
+  font-weight: bold;
+  font-size: 14px;
+  min-height: 20px;
+}
+
+#user-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+#user-controls button {
+  background-color: #4193c9;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+#user-controls button:hover {
+  background-color: #5cc93b;
+  cursor: pointer;
+}
+
+#user-controls .danger {
+  background-color: #ff4d4d;
+}
+
+#user-controls .danger:hover {
+  background-color: #cc0000;
+}
+
+@media (max-width: 600px) {
+  #account-manager {
+    margin: 10px;
+    padding: 15px;
+  }
+
+  input[type="email"],
+  input[type="password"],
+  button {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+}
