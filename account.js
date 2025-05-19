@@ -48,11 +48,14 @@ firebase.auth().onAuthStateChanged((user) => {
 // Sign In
 signInForm.addEventListener("submit", (e) => {
   e.preventDefault();
-  firebase.auth().signInWithEmailAndPassword(emailInput.value, passwordInput.value)
+  const email = emailInput.value;
+  const password = passwordInput.value;
+
+  firebase.auth().signInWithEmailAndPassword(email, password)
     .then(() => {
-      umami.track('user_sign_in', {
-        userId: firebase.auth().currentUser.uid
-      });
+      if (typeof umami !== 'undefined') {
+        umami.track('user_sign_in', { email: email });
+      }
     })
     .catch((error) => {
       errorMessage.textContent = getFriendlyError(error);
@@ -61,11 +64,14 @@ signInForm.addEventListener("submit", (e) => {
 
 // Sign Up
 signUpBtn.addEventListener("click", () => {
-  firebase.auth().createUserWithEmailAndPassword(emailInput.value, passwordInput.value)
+  const email = emailInput.value;
+  const password = passwordInput.value;
+
+  firebase.auth().createUserWithEmailAndPassword(email, password)
     .then(() => {
-      umami.track('user_sign_up', {
-        userId: firebase.auth().currentUser.uid
-      });
+      if (typeof umami !== 'undefined') {
+        umami.track('user_sign_up', { email: email });
+      }
       alert("Account created successfully.");
     })
     .catch((error) => {
@@ -75,7 +81,9 @@ signUpBtn.addEventListener("click", () => {
 
 // Forgot Password
 resetPasswordBtn.addEventListener("click", () => {
-  firebase.auth().sendPasswordResetEmail(emailInput.value)
+  const email = emailInput.value;
+
+  firebase.auth().sendPasswordResetEmail(email)
     .then(() => {
       alert("Password reset email sent.");
     })
