@@ -1,4 +1,4 @@
-// 1) Firebase init (v8 namespace)
+// 1) Initialize Firebase (v8 namespace)
 const firebaseConfig = {
   apiKey: "AIzaSyD34uwp0C9IKdJKctW8-cK2MNjzQHp9uM4",
   authDomain: "the-rr-web-firebase.firebaseapp.com",
@@ -9,18 +9,19 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 
-// 2) Element references
+// 2) Grab your elements
 const emailInput        = document.getElementById("email");
 const passwordInput     = document.getElementById("password");
 const signInBtn         = document.getElementById("sign-in-btn");
 const signUpBtn         = document.getElementById("sign-up-btn");
-const resetBtn          = document.getElementById("forgot-password-btn");
+const forgotPasswordBtn = document.getElementById("forgot-password-btn");
 const errorMessageEl    = document.getElementById("error-message");
 const signedOutView     = document.getElementById("auth-container");
 const signedInView      = document.getElementById("user-controls");
+const userEmailSpan     = document.getElementById("user-email");
 const signOutBtn        = document.getElementById("sign-out");
-const changeEmailBtn    = document.getElementById("change-email");
 const changePasswordBtn = document.getElementById("change-password");
+const changeEmailBtn    = document.getElementById("change-email");
 const deleteAccountBtn  = document.getElementById("delete-account");
 const saveBtn           = document.getElementById("save-game-data");
 const loadBtn           = document.getElementById("load-game-data");
@@ -32,7 +33,7 @@ firebase.auth().onAuthStateChanged(user => {
     signedInView.style.display  = "block";
     document.querySelectorAll(".memshow").forEach(el => el.style.display = "block");
     document.querySelectorAll(".memhide").forEach(el => el.style.display = "none");
-    document.getElementById("user-email").textContent = user.email;
+    userEmailSpan.textContent = user.email;
   } else {
     signedOutView.style.display = "block";
     signedInView.style.display  = "none";
@@ -45,41 +46,56 @@ firebase.auth().onAuthStateChanged(user => {
 signInBtn.addEventListener("click", () => {
   const email = emailInput.value;
   const pwd   = passwordInput.value;
-
   firebase.auth().signInWithEmailAndPassword(email, pwd)
     .then(() => {
       if (typeof umami !== "undefined") umami.track("user_sign_in", { email });
     })
     .catch(err => {
-      errorMessageEl.textContent = err.code
-        ? friendlyError(err)
-        : "Incorrect email or password.";
+      // Simplify credential/network errors
+      if (err.code === "auth/invalid-email" ||
+          err.code === "auth/user-not-found" ||
+          err.code === "auth/wrong-password") {
+        errorMessageEl.textContent = "Incorrect email or password.";
+      } else if (err.message.toLowerCase().includes("network error")) {
+        errorMessageEl.textContent = "There is a network issue, try again later.";
+      } else {
+        errorMessageEl.textContent = err.message;
+      }
     });
 });
 
-// 5) Sign Up (reload on success)
+// 5) Sign Up
 signUpBtn.addEventListener("click", () => {
   const email = emailInput.value;
   const pwd   = passwordInput.value;
-
   firebase.auth().createUserWithEmailAndPassword(email, pwd)
     .then(() => {
       if (typeof umami !== "undefined") umami.track("user_sign_up", { email });
-      location.reload();
+      alert("Account successfully created!");
+      // no auto-refresh
     })
     .catch(err => {
-      errorMessageEl.textContent = friendlyError(err);
+      if (err.code === "auth/email-already-in-use") {
+        errorMessageEl.textContent = "Email already used.";
+      } else if (err.message.toLowerCase().includes("network error")) {
+        errorMessageEl.textContent = "There is a network issue, try again later.";
+      } else {
+        errorMessageEl.textContent = err.message;
+      }
     });
 });
 
-// 6) Password Reset
-resetBtn.addEventListener("click", () => {
+// 6) Forgot Password
+forgotPasswordBtn.addEventListener("click", () => {
   const email = emailInput.value;
-
+  if (!email) {
+    errorMessageEl.textContent = "Please enter your email to reset password.";
+    return;
+  }
   firebase.auth().sendPasswordResetEmail(email)
     .then(() => alert("Password reset email sent."))
     .catch(err => {
-      errorMessageEl.textContent = friendlyError(err);
+      errorMessageEl.textContent = "There is a network issue, try again later.";
     });
 });
 
@@ -88,47 +104,45 @@ signOutBtn.addEventListener("click", () => {
   firebase.auth().signOut();
 });
 
-// 8) Change Email
-changeEmailBtn.addEventListener("click", () => {
-  const newEmail = prompt("Enter your new email:");
-  if (!newEmail) return;
-
-  firebase.auth().currentUser.updateEmail(newEmail)
-    .then(() => firebase.auth().currentUser.sendEmailVerification())
-    .then(() => alert("Verification email sent."))
-    .catch(err => alert(friendlyError(err)));
+// 8) Change Password (send reset link)
+changePasswordBtn.addEventListener("click", () => {
+  const user = firebase.auth().currentUser;
+  if (user) {
+    firebase.auth().sendPasswordResetEmail(user.email)
+      .then(() => alert("Password reset email sent."))
+      .catch(err => {
+        errorMessageEl.textContent = "There is a network issue, try again later.";
+      });
+  }
 });
 
-// 9) Change Password
-changePasswordBtn.addEventListener("click", () => {
-  const newPwd = prompt("Enter your new password:");
-  if (!newPwd) return;
-
-  firebase.auth().currentUser.updatePassword(newPwd)
-    .then(() => alert("Password updated!"))
-    .catch(err => alert(friendlyError(err)));
+// 9) Change Email (send verification link)
+changeEmailBtn.addEventListener("click", () => {
+  const user = firebase.auth().currentUser;
+  if (user) {
+    firebase.auth().currentUser.sendEmailVerification()
+      .then(() => alert("Verification email sent."))
+      .catch(err => {
+        errorMessageEl.textContent = "There is a network issue, try again later.";
+      });
+  }
 });
 
 // 10) Delete Account
 deleteAccountBtn.addEventListener("click", () => {
-  if (!confirm("Are you sure? This cannot be undone.")) return;
-  firebase.auth().currentUser.delete()
-    .then(() => alert("Account deleted."))
-    .catch(err => alert("Error deleting account: " + err.message));
+  const user = firebase.auth().currentUser;
+  if (user && confirm("Are you sure you want to delete your account?")) {
+    user.delete()
+      .then(() => {
+        alert("Account deleted.");
+        location.reload();
+      })
+      .catch(err => {
+        errorMessageEl.textContent = "There is a network issue, try again later.";
+      });
+  }
 });
 
-// 11) Save & Load Game Data (placeholders)
+// 11) Save & Load (placeholders)
 saveBtn.addEventListener("click", () => alert("Save game data clicked."));
 loadBtn.addEventListener("click", () => alert("Load game data clicked."));
-
-// Helper: user‐friendly error messages
-function friendlyError(err) {
-  switch (err.code) {
-    case "auth/invalid-email":        return "Invalid email.";
-    case "auth/user-not-found":       return "No account with that email.";
-    case "auth/wrong-password":       return "Wrong password.";
-    case "auth/email-already-in-use": return "Email already used.";
-    case "auth/weak-password":        return "Password too weak.";
-    default:                          return "Error: " + err.message;
-  }
-}
