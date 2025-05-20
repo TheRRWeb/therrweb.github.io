@@ -9,7 +9,7 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 
-// 2) Grab your elements
+// 2) Element references
 const emailInput        = document.getElementById("email");
 const passwordInput     = document.getElementById("password");
 const signInBtn         = document.getElementById("sign-in-btn");
@@ -45,12 +45,9 @@ firebase.auth().onAuthStateChanged(user => {
 signInBtn.addEventListener("click", () => {
   const email = emailInput.value;
   const pwd   = passwordInput.value;
+
   firebase.auth().signInWithEmailAndPassword(email, pwd)
-    .then(() => {
-      if (typeof umami !== "undefined") umami.track("user_sign_in", { email });
-    })
     .catch(err => {
-      // Simplify credential/network errors
       if (
         err.code === "auth/invalid-email" ||
         err.code === "auth/user-not-found" ||
@@ -69,11 +66,11 @@ signInBtn.addEventListener("click", () => {
 signUpBtn.addEventListener("click", () => {
   const email = emailInput.value;
   const pwd   = passwordInput.value;
+
   firebase.auth().createUserWithEmailAndPassword(email, pwd)
     .then(() => {
-      if (typeof umami !== "undefined") umami.track("user_sign_up", { email });
       alert("Account successfully created!");
-      // no auto-refresh
+      // no page refresh
     })
     .catch(err => {
       if (err.code === "auth/email-already-in-use") {
@@ -95,7 +92,7 @@ forgotPasswordBtn.addEventListener("click", () => {
   }
   firebase.auth().sendPasswordResetEmail(email)
     .then(() => alert("Password reset email sent."))
-    .catch(err => {
+    .catch(() => {
       errorMessageEl.textContent = "There is a network issue, try again later.";
     });
 });
@@ -111,7 +108,7 @@ changePasswordBtn.addEventListener("click", () => {
   if (user) {
     firebase.auth().sendPasswordResetEmail(user.email)
       .then(() => alert("Password reset email sent."))
-      .catch(err => {
+      .catch(() => {
         errorMessageEl.textContent = "There is a network issue, try again later.";
       });
   }
@@ -127,7 +124,11 @@ deleteAccountBtn.addEventListener("click", () => {
         location.reload();
       })
       .catch(err => {
-        errorMessageEl.textContent = "There is a network issue, try again later.";
+        if (err.message.toLowerCase().includes("network error")) {
+          errorMessageEl.textContent = "There is a network issue, try again later.";
+        } else {
+          errorMessageEl.textContent = err.message;
+        }
       });
   }
 });
