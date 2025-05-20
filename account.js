@@ -21,7 +21,6 @@ const signedInView      = document.getElementById("user-controls");
 const userEmailSpan     = document.getElementById("user-email");
 const signOutBtn        = document.getElementById("sign-out");
 const changePasswordBtn = document.getElementById("change-password");
-const changeEmailBtn    = document.getElementById("change-email");
 const deleteAccountBtn  = document.getElementById("delete-account");
 const saveBtn           = document.getElementById("save-game-data");
 const loadBtn           = document.getElementById("load-game-data");
@@ -52,9 +51,11 @@ signInBtn.addEventListener("click", () => {
     })
     .catch(err => {
       // Simplify credential/network errors
-      if (err.code === "auth/invalid-email" ||
-          err.code === "auth/user-not-found" ||
-          err.code === "auth/wrong-password") {
+      if (
+        err.code === "auth/invalid-email" ||
+        err.code === "auth/user-not-found" ||
+        err.code === "auth/wrong-password"
+      ) {
         errorMessageEl.textContent = "Incorrect email or password.";
       } else if (err.message.toLowerCase().includes("network error")) {
         errorMessageEl.textContent = "There is a network issue, try again later.";
@@ -116,19 +117,7 @@ changePasswordBtn.addEventListener("click", () => {
   }
 });
 
-// 9) Change Email (send verification link)
-changeEmailBtn.addEventListener("click", () => {
-  const user = firebase.auth().currentUser;
-  if (user) {
-    firebase.auth().currentUser.sendEmailVerification()
-      .then(() => alert("Verification email sent."))
-      .catch(err => {
-        errorMessageEl.textContent = "There is a network issue, try again later.";
-      });
-  }
-});
-
-// 10) Delete Account
+// 9) Delete Account
 deleteAccountBtn.addEventListener("click", () => {
   const user = firebase.auth().currentUser;
   if (user && confirm("Are you sure you want to delete your account?")) {
@@ -143,6 +132,6 @@ deleteAccountBtn.addEventListener("click", () => {
   }
 });
 
-// 11) Save & Load (placeholders)
+// 10) Save & Load (placeholders)
 saveBtn.addEventListener("click", () => alert("Save game data clicked."));
 loadBtn.addEventListener("click", () => alert("Load game data clicked."));
