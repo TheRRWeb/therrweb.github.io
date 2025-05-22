@@ -1,12 +1,13 @@
 // 1) Initialize Firebase (v8 namespace)
 const firebaseConfig = {
-  apiKey: "AIzaSyD34uwp0C9IKdJKctW8-cK2MNjzQHp9uM4",
-  authDomain: "the-rr-web-firebase.firebaseapp.com",
-  projectId: "the-rr-web-firebase",
-  storageBucket: "the-rr-web-firebase.firebasestorage.app",
-  messagingSenderId: "346095124678",
-  appId: "1:346095124678:web:76a493013394860afa17c7"
-};
+    apiKey: "AIzaSyB1OXqvU6bi9cp-aPs6AGNnCaTGwHtkuUs",
+    authDomain: "therrweb.firebaseapp.com",
+    projectId: "therrweb",
+    storageBucket: "therrweb.firebasestorage.app",
+    messagingSenderId: "77162554401",
+    appId: "1:77162554401:web:4462bfcbbee40167b9af60",
+    measurementId: "G-WC9WXR0CY5"
+  };
 firebase.initializeApp(firebaseConfig);
 
 // 2) Element references
