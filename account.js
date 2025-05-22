@@ -1,16 +1,19 @@
 // 1) Initialize Firebase (v8 namespace)
 const firebaseConfig = {
-    apiKey: "AIzaSyB1OXqvU6bi9cp-aPs6AGNnCaTGwHtkuUs",
-    authDomain: "therrweb.firebaseapp.com",
-    projectId: "therrweb",
-    storageBucket: "therrweb.firebasestorage.app",
-    messagingSenderId: "77162554401",
-    appId: "1:77162554401:web:4462bfcbbee40167b9af60",
-    measurementId: "G-WC9WXR0CY5"
-  };
+  apiKey: "AIzaSyB1OXqvU6bi9cp-aPs6AGNnCaTGwHtkuUs",
+  authDomain: "therrweb.firebaseapp.com",
+  projectId: "therrweb",
+  storageBucket: "therrweb.firebasestorage.app",
+  messagingSenderId: "77162554401",
+  appId: "1:77162554401:web:4462bfcbbee40167b9af60",
+  measurementId: "G-WC9WXR0CY5"
+};
 firebase.initializeApp(firebaseConfig);
 
-// 2) Element references
+// 2) Initialize Firestore
+const db = firebase.firestore();
+
+// 3) Grab your elements
 const emailInput        = document.getElementById("email");
 const passwordInput     = document.getElementById("password");
 const signInBtn         = document.getElementById("sign-in-btn");
@@ -26,7 +29,7 @@ const deleteAccountBtn  = document.getElementById("delete-account");
 const saveBtn           = document.getElementById("save-game-data");
 const loadBtn           = document.getElementById("load-game-data");
 
-// 3) Auth state listener
+// 4) Auth state listener
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     signedOutView.style.display = "none";
@@ -42,11 +45,10 @@ firebase.auth().onAuthStateChanged(user => {
   }
 });
 
-// 4) Sign In
+// 5) Sign In
 signInBtn.addEventListener("click", () => {
   const email = emailInput.value;
   const pwd   = passwordInput.value;
-
   firebase.auth().signInWithEmailAndPassword(email, pwd)
     .catch(err => {
       if (
@@ -63,15 +65,14 @@ signInBtn.addEventListener("click", () => {
     });
 });
 
-// 5) Sign Up
+// 6) Sign Up
 signUpBtn.addEventListener("click", () => {
   const email = emailInput.value;
   const pwd   = passwordInput.value;
-
   firebase.auth().createUserWithEmailAndPassword(email, pwd)
     .then(() => {
       alert("Account successfully created!");
-      // no page refresh
+      // no auto-refresh
     })
     .catch(err => {
       if (err.code === "auth/email-already-in-use") {
@@ -84,7 +85,7 @@ signUpBtn.addEventListener("click", () => {
     });
 });
 
-// 6) Forgot Password
+// 7) Forgot Password
 forgotPasswordBtn.addEventListener("click", () => {
   const email = emailInput.value;
   if (!email) {
@@ -98,12 +99,12 @@ forgotPasswordBtn.addEventListener("click", () => {
     });
 });
 
-// 7) Sign Out
+// 8) Sign Out
 signOutBtn.addEventListener("click", () => {
   firebase.auth().signOut();
 });
 
-// 8) Change Password (send reset link)
+// 9) Change Password (send reset link)
 changePasswordBtn.addEventListener("click", () => {
   const user = firebase.auth().currentUser;
   if (user) {
@@ -115,7 +116,7 @@ changePasswordBtn.addEventListener("click", () => {
   }
 });
 
-// 9) Delete Account
+// 10) Delete Account
 deleteAccountBtn.addEventListener("click", () => {
   const user = firebase.auth().currentUser;
   if (user && confirm("Are you sure you want to delete your account?")) {
@@ -134,6 +135,45 @@ deleteAccountBtn.addEventListener("click", () => {
   }
 });
 
-// 10) Save & Load (placeholders)
-saveBtn.addEventListener("click", () => alert("Save game data clicked."));
-loadBtn.addEventListener("click", () => alert("Load game data clicked."));
+// 11) Save localStorage → Firestore
+saveBtn.addEventListener("click", async () => {
+  const user = firebase.auth().currentUser;
+  if (!user) {
+    alert("Please sign in first.");
+    return;
+  }
+  const data = { ...localStorage };
+  try {
+    await db.collection("userdata").doc(user.uid).set(data);
+    alert("Game data saved to Firestore!");
+  } catch (e) {
+    console.error(e);
+    alert("Failed to save data. Try again.");
+  }
+});
+
+// 12) Load Firestore → localStorage
+loadBtn.addEventListener("click", async () => {
+  const user = firebase.auth().currentUser;
+  if (!user) {
+    alert("Please sign in first.");
+    return;
+  }
+  try {
+    const snap = await db.collection("userdata").doc(user.uid).get();
+    if (!snap.exists) {
+      alert("No saved data found.");
+      return;
+    }
+    localStorage.clear();
+    const obj = snap.data();
+    for (let key in obj) {
+      localStorage.setItem(key, obj[key]);
+    }
+    alert("Game data loaded from Firestore!");
+    location.reload();
+  } catch (e) {
+    console.error(e);
+    alert("Failed to load data. Try again.");
+  }
+});
