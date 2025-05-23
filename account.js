@@ -1,7 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // ---------------------------
   // 1) Firebase Initialization
-  // ---------------------------
   const firebaseConfig = {
     apiKey: "AIzaSyB1OXqvU6bi9cp-aPs6AGNnCaTGwHtkuUs",
     authDomain: "therrweb.firebaseapp.com",
@@ -14,9 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // ---------------------------
   // 2) Element References
-  // ---------------------------
   const emailInput         = document.getElementById("email");
   const passwordInput      = document.getElementById("password");
   const signInBtn          = document.getElementById("sign-in-btn");
@@ -32,33 +28,26 @@ document.addEventListener("DOMContentLoaded", () => {
   const saveBtn            = document.getElementById("save-game-data");
   const loadBtn            = document.getElementById("load-game-data");
 
-  // ---------------------------
   // 3) Helper: apply membership view
-  // ---------------------------
   function applyMembershipView(isMember) {
-    console.log("→ applyMembershipView(", isMember, ")");
+    // Members see .memshow, non-members see .memhide
     document.querySelectorAll(".memshow")
-      .forEach(el => el.style.display = isMember ? "" : "none");
+      .forEach(el => el.style.display = isMember ? "block" : "none");
     document.querySelectorAll(".memhide")
-      .forEach(el => el.style.display = isMember ? "none" : "");
+      .forEach(el => el.style.display = isMember ? "none" : "block");
   }
 
-  // ---------------------------
   // 4) Auth State Listener
-  // ---------------------------
   firebase.auth().onAuthStateChanged(async user => {
-    console.log("⚡ onAuthStateChanged:", user && user.email);
     if (!user) {
-      // Signed out → show non‑member view
-      console.log("↪ No user signed in — showing non‑member view");
-      signedOutView.style.display  = "block";
-      signedInView.style.display   = "none";
+      // Signed out → non‑member view
+      signedOutView.style.display = "block";
+      signedInView.style.display  = "none";
       applyMembershipView(false);
       return;
     }
 
     // Signed in → show account UI
-    console.log("↪ User is signed in:", user.email);
     signedOutView.style.display = "none";
     signedInView.style.display  = "block";
     userEmailSpan.textContent   = user.email;
@@ -66,20 +55,16 @@ document.addEventListener("DOMContentLoaded", () => {
     // Check membership by email
     let isMember = false;
     try {
-      console.log("… fetching membership document for:", user.email);
       const memberDoc = await db.collection("membership").doc(user.email).get();
-      console.log("… membership doc exists?", memberDoc.exists, "data:", memberDoc.data());
       isMember = memberDoc.exists && memberDoc.data().membership === true;
     } catch (e) {
-      console.error("‼️ Error checking membership:", e);
+      console.error("Error checking membership:", e);
     }
 
     applyMembershipView(isMember);
   });
 
-  // ---------------------------
   // 5) Sign In
-  // ---------------------------
   signInBtn.addEventListener("click", () => {
     const email = emailInput.value.trim();
     const pwd   = passwordInput.value;
@@ -95,9 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   });
 
-  // ---------------------------
   // 6) Sign Up
-  // ---------------------------
   signUpBtn.addEventListener("click", () => {
     const email = emailInput.value.trim();
     const pwd   = passwordInput.value;
@@ -117,9 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   });
 
-  // ---------------------------
   // 7) Forgot Password
-  // ---------------------------
   forgotPasswordBtn.addEventListener("click", () => {
     const email = emailInput.value.trim();
     if (!email) {
@@ -128,59 +109,47 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     firebase.auth().sendPasswordResetEmail(email)
       .then(() => alert("Password reset email sent."))
-      .catch(() => {
-        errorMessageEl.textContent = "There is a network issue, try again later.";
-      });
+      .catch(() => { errorMessageEl.textContent = "There is a network issue, try again later."; });
   });
 
-  // ---------------------------
   // 8) Sign Out
-  // ---------------------------
-  signOutBtn.addEventListener("click", () => firebase.auth().signOut());
+  signOutBtn.addEventListener("click", () => {
+    firebase.auth().signOut();
+  });
 
-  // ---------------------------
-  // 9) Change Password (reset link)
-  // ---------------------------
+  // 9) Change Password
   changePasswordBtn.addEventListener("click", () => {
-    const user = firebase.auth().currentUser;
-    if (user) {
-      firebase.auth().sendPasswordResetEmail(user.email)
+    const u = firebase.auth().currentUser;
+    if (u) {
+      firebase.auth().sendPasswordResetEmail(u.email)
         .then(() => alert("Password reset email sent."))
-        .catch(() => {
-          errorMessageEl.textContent = "There is a network issue, try again later.";
-        });
+        .catch(() => { errorMessageEl.textContent = "There is a network issue, try again later."; });
     }
   });
 
-  // ---------------------------
   // 10) Delete Account
-  // ---------------------------
   deleteAccountBtn.addEventListener("click", () => {
-    const user = firebase.auth().currentUser;
-    if (user && confirm("Are you sure you want to delete your account?")) {
-      user.delete()
-        .then(() => {
-          alert("Account deleted.");
-          location.reload();
-        })
-        .catch(err => {
-          if (err.message.toLowerCase().includes("network error")) {
-            errorMessageEl.textContent = "There is a network issue, try again later.";
-          } else {
-            errorMessageEl.textContent = err.message;
-          }
-        });
+    const u = firebase.auth().currentUser;
+    if (u && confirm("Are you sure you want to delete your account?")) {
+      u.delete()
+       .then(() => {
+         alert("Account deleted.");
+         location.reload();
+       })
+       .catch(err => {
+         errorMessageEl.textContent = err.message.toLowerCase().includes("network error")
+           ? "There is a network issue, try again later."
+           : err.message;
+       });
     }
   });
 
-  // ---------------------------
   // 11) Save localStorage → Firestore
-  // ---------------------------
   saveBtn.addEventListener("click", async () => {
-    const user = firebase.auth().currentUser;
-    if (!user) return alert("Please sign in first.");
+    const u = firebase.auth().currentUser;
+    if (!u) return alert("Please sign in first.");
     try {
-      await db.collection("userdata").doc(user.uid).set({ ...localStorage });
+      await db.collection("userdata").doc(u.uid).set({ ...localStorage });
       alert("Game data saved to Firestore!");
     } catch (e) {
       console.error("Save error:", e);
@@ -188,14 +157,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // ---------------------------
   // 12) Load Firestore → localStorage
-  // ---------------------------
   loadBtn.addEventListener("click", async () => {
-    const user = firebase.auth().currentUser;
-    if (!user) return alert("Please sign in first.");
+    const u = firebase.auth().currentUser;
+    if (!u) return alert("Please sign in first.");
     try {
-      const snap = await db.collection("userdata").doc(user.uid).get();
+      const snap = await db.collection("userdata").doc(u.uid).get();
       if (!snap.exists) {
         alert("No saved data found.");
         return;
