@@ -100,6 +100,11 @@ button:active {
   background-color: #cc0000;
 }
 
+.memshow,
+.memhide {
+  display: none !important;
+}
+
 @media (max-width: 600px) {
   #account-manager {
     margin: 10px;
