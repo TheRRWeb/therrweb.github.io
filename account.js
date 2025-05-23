@@ -1,52 +1,82 @@
-// 1) Initialize Firebase (v8 namespace)
+// ---------------------------
+// 1) Firebase Initialization
+// ---------------------------
 const firebaseConfig = {
-  apiKey: "AIzaSyD34uwp0C9IKdJKctW8-cK2MNjzQHp9uM4",
-  authDomain: "the-rr-web-firebase.firebaseapp.com",
-  projectId: "the-rr-web-firebase",
-  storageBucket: "the-rr-web-firebase.firebasestorage.app",
-  messagingSenderId: "346095124678",
-  appId: "1:346095124678:web:76a493013394860afa17c7"
+  apiKey: "AIzaSyB1OXqvU6bi9cp-aPs6AGNnCaTGwHtkuUs",
+  authDomain: "therrweb.firebaseapp.com",
+  projectId: "therrweb",
+  storageBucket: "therrweb.firebasestorage.app",
+  messagingSenderId: "77162554401",
+  appId: "1:77162554401:web:4462bfcbbee40167b9af60",
+  measurementId: "G-WC9WXR0CY5"
 };
 firebase.initializeApp(firebaseConfig);
-
-// 2) Initialize Firestore
 const db = firebase.firestore();
 
-// 3) Grab your elements
-const emailInput        = document.getElementById("email");
-const passwordInput     = document.getElementById("password");
-const signInBtn         = document.getElementById("sign-in-btn");
-const signUpBtn         = document.getElementById("sign-up-btn");
-const forgotPasswordBtn = document.getElementById("forgot-password-btn");
-const errorMessageEl    = document.getElementById("error-message");
-const signedOutView     = document.getElementById("auth-container");
-const signedInView      = document.getElementById("user-controls");
-const userEmailSpan     = document.getElementById("user-email");
-const signOutBtn        = document.getElementById("sign-out");
-const changePasswordBtn = document.getElementById("change-password");
-const deleteAccountBtn  = document.getElementById("delete-account");
-const saveBtn           = document.getElementById("save-game-data");
-const loadBtn           = document.getElementById("load-game-data");
+// ---------------------------
+// 2) Element References
+// ---------------------------
+const emailInput         = document.getElementById("email");
+const passwordInput      = document.getElementById("password");
+const signInBtn          = document.getElementById("sign-in-btn");
+const signUpBtn          = document.getElementById("sign-up-btn");
+const forgotPasswordBtn  = document.getElementById("forgot-password-btn");
+const errorMessageEl     = document.getElementById("error-message");
+const signedOutView      = document.getElementById("auth-container");
+const signedInView       = document.getElementById("user-controls");
+const userEmailSpan      = document.getElementById("user-email");
+const signOutBtn         = document.getElementById("sign-out");
+const changePasswordBtn  = document.getElementById("change-password");
+const deleteAccountBtn   = document.getElementById("delete-account");
+const saveBtn            = document.getElementById("save-game-data");
+const loadBtn            = document.getElementById("load-game-data");
 
-// 4) Auth state listener
-firebase.auth().onAuthStateChanged(user => {
-  if (user) {
-    signedOutView.style.display = "none";
-    signedInView.style.display  = "block";
-    document.querySelectorAll(".memshow").forEach(el => el.style.display = "block");
+// ---------------------------
+// 3) Auth State Listener
+// ---------------------------
+firebase.auth().onAuthStateChanged(async user => {
+  if (!user) {
+    // Signed out
+    signedOutView.style.display  = "block";
+    signedInView.style.display   = "none";
+    document.querySelectorAll(".memshow").forEach(el => el.style.display = "none");
     document.querySelectorAll(".memhide").forEach(el => el.style.display = "none");
-    userEmailSpan.textContent = user.email;
-  } else {
-    signedOutView.style.display = "block";
-    signedInView.style.display  = "none";
+    return;
+  }
+
+  // Signed in
+  signedOutView.style.display = "none";
+  signedInView.style.display  = "block";
+  userEmailSpan.textContent   = user.email;
+
+  // Check membership flag by email
+  try {
+    const memberDoc = await db
+      .collection("membership")
+      .doc(user.email)
+      .get();
+    const isMember = memberDoc.exists && memberDoc.data().membership === true;
+
+    if (isMember) {
+      document.querySelectorAll(".memshow").forEach(el => el.style.display = "block");
+      document.querySelectorAll(".memhide").forEach(el => el.style.display = "none");
+    } else {
+      document.querySelectorAll(".memshow").forEach(el => el.style.display = "none");
+      document.querySelectorAll(".memhide").forEach(el => el.style.display = "block");
+    }
+  } catch (e) {
+    console.error("Error checking membership:", e);
+    // Default to non-member view on error
     document.querySelectorAll(".memshow").forEach(el => el.style.display = "none");
     document.querySelectorAll(".memhide").forEach(el => el.style.display = "block");
   }
 });
 
-// 5) Sign In
+// ---------------------------
+// 4) Sign In
+// ---------------------------
 signInBtn.addEventListener("click", () => {
-  const email = emailInput.value;
+  const email = emailInput.value.trim();
   const pwd   = passwordInput.value;
   firebase.auth().signInWithEmailAndPassword(email, pwd)
     .catch(err => {
@@ -64,14 +94,16 @@ signInBtn.addEventListener("click", () => {
     });
 });
 
-// 6) Sign Up
+// ---------------------------
+// 5) Sign Up
+// ---------------------------
 signUpBtn.addEventListener("click", () => {
-  const email = emailInput.value;
+  const email = emailInput.value.trim();
   const pwd   = passwordInput.value;
   firebase.auth().createUserWithEmailAndPassword(email, pwd)
     .then(() => {
       alert("Account successfully created!");
-      // no auto-refresh
+      location.reload();
     })
     .catch(err => {
       if (err.code === "auth/email-already-in-use") {
@@ -84,9 +116,11 @@ signUpBtn.addEventListener("click", () => {
     });
 });
 
-// 7) Forgot Password
+// ---------------------------
+// 6) Forgot Password
+// ---------------------------
 forgotPasswordBtn.addEventListener("click", () => {
-  const email = emailInput.value;
+  const email = emailInput.value.trim();
   if (!email) {
     errorMessageEl.textContent = "Please enter your email to reset password.";
     return;
@@ -98,12 +132,16 @@ forgotPasswordBtn.addEventListener("click", () => {
     });
 });
 
-// 8) Sign Out
+// ---------------------------
+// 7) Sign Out
+// ---------------------------
 signOutBtn.addEventListener("click", () => {
   firebase.auth().signOut();
 });
 
-// 9) Change Password (send reset link)
+// ---------------------------
+// 8) Change Password (reset link)
+// ---------------------------
 changePasswordBtn.addEventListener("click", () => {
   const user = firebase.auth().currentUser;
   if (user) {
@@ -115,7 +153,9 @@ changePasswordBtn.addEventListener("click", () => {
   }
 });
 
-// 10) Delete Account
+// ---------------------------
+// 9) Delete Account
+// ---------------------------
 deleteAccountBtn.addEventListener("click", () => {
   const user = firebase.auth().currentUser;
   if (user && confirm("Are you sure you want to delete your account?")) {
@@ -134,7 +174,9 @@ deleteAccountBtn.addEventListener("click", () => {
   }
 });
 
-// 11) Save localStorage → Firestore
+// ---------------------------
+// 10) Save localStorage → Firestore
+// ---------------------------
 saveBtn.addEventListener("click", async () => {
   const user = firebase.auth().currentUser;
   if (!user) {
@@ -151,7 +193,9 @@ saveBtn.addEventListener("click", async () => {
   }
 });
 
-// 12) Load Firestore → localStorage
+// ---------------------------
+// 11) Load Firestore → localStorage
+// ---------------------------
 loadBtn.addEventListener("click", async () => {
   const user = firebase.auth().currentUser;
   if (!user) {
