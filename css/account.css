@@ -1,4 +1,4 @@
-#account-manager {
+#card-view {
   max-width: 600px;
   margin: 20px auto;
   background-color: #2a2a2a;
@@ -8,12 +8,12 @@
   box-shadow: 0 0 15px rgba(92, 201, 59, 0.5);
 }
 
-#account-manager h1 {
+#card-view h1 {
   color: #5cc93b;
   margin-bottom: 15px;
 }
 
-#account-manager h2 {
+#card-view h2 {
   color: #4193c9;
   margin-bottom: 15px;
 }
