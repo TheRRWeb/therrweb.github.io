@@ -84,8 +84,8 @@ button.text-link {
   color: #4193c9;
   font-size: 14px;
   padding: 0;
-  text-align: left;
   cursor: pointer;
+  align-self: center;
 }
 
 /* Hover effect for the 'Forgot Password?' button */
