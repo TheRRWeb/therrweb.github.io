@@ -143,6 +143,14 @@ button.text-link:hover {
   display: none;
 }
 
+#user-membership:empty {
+  display: none;
+}
+#user-membership:empty + br,
+#user-membership:empty + * {
+  display: none; /* hide any adjacent whitespace or line breaks if needed */
+}
+
 /* Responsive design */
 @media (max-width: 600px) {
   /* Card view tweaks */
