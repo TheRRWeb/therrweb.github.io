@@ -1,3 +1,4 @@
+/* Card view container */
 #card-view {
   max-width: 600px;
   margin: 20px auto;
@@ -18,13 +19,16 @@
   margin-bottom: 15px;
 }
 
-form#auth-form {
+/* AUTH FORM */
+/* Container for the form */
+#auth-form {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-bottom: 20px;
 }
 
+/* Input fields */
 input[type="email"],
 input[type="password"] {
   background-color: #2a2a2a;
@@ -33,14 +37,21 @@ input[type="password"] {
   padding: 10px;
   color: #dedede;
   font-size: 16px;
-  text-align: left;
 }
 
+/* Placeholder text color */
 input[type="email"]::placeholder,
 input[type="password"]::placeholder {
   color: #888;
 }
 
+/* Container for Sign In and Sign Up buttons */
+.auth-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+/* Buttons styling */
 button {
   background-color: #5cc93b;
   color: white;
@@ -48,20 +59,40 @@ button {
   border-radius: 5px;
   font-size: 16px;
   font-weight: bold;
+  border: none;
   transition: background-color 0.3s ease;
 }
 
+/* Hover effect for buttons */
 button:hover {
   background-color: #4193c9;
   cursor: pointer;
   text-decoration: none;
 }
 
+/* Active state for buttons */
 button:active {
   background-color: #2a2a2a;
   color: #dedede;
 }
 
+/* Styling for the 'Forgot Password?' button */
+button.text-link {
+  background: none;
+  border: none;
+  color: #4193c9;
+  font-size: 14px;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* Hover effect for the 'Forgot Password?' button */
+button.text-link:hover {
+  text-decoration: underline;
+}
+
+/* Error message styling */
 #error-message {
   color: #ff4d4d;
   font-weight: bold;
@@ -69,6 +100,7 @@ button:active {
   min-height: 20px;
 }
 
+/* User controls (after sign‑in) */
 #user-controls {
   display: flex;
   flex-direction: column;
@@ -76,6 +108,7 @@ button:active {
   margin-top: 15px;
 }
 
+/* Buttons inside user‑controls */
 #user-controls button {
   background-color: #4193c9;
   padding: 10px 15px;
@@ -100,17 +133,31 @@ button:active {
   background-color: #cc0000;
 }
 
+/* Hide/show classes (membership) */
 .memshow,
 .memhide {
   display: none;
 }
 
+/* Responsive design */
 @media (max-width: 600px) {
-  #account-manager {
+  /* Card view tweaks */
+  #card-view {
     margin: 10px;
     padding: 15px;
   }
 
+  /* Stack the auth buttons vertically */
+  .auth-buttons {
+    flex-direction: column;
+  }
+
+  /* Full‑width buttons on small screens */
+  button {
+    width: 100%;
+  }
+
+  /* Smaller inputs & buttons */
   input[type="email"],
   input[type="password"],
   button {
