@@ -121,6 +121,7 @@ button.text-link:hover {
   transition: background-color 0.3s ease;
   width: 100%;         /* Makes all buttons stretch to container width */
   box-sizing: border-box;
+  margin: 10px;
 }
 
 #user-controls button:hover {
