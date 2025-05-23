@@ -37,15 +37,17 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------------------------
   firebase.auth().onAuthStateChanged(async user => {
     if (!user) {
-      // Signed out: hide everything
+      // User is signed out → show non‑member view
       signedOutView.style.display  = "block";
       signedInView.style.display   = "none";
-      document.querySelectorAll(".memshow").forEach(el => el.style.display = "none");
-      document.querySelectorAll(".memhide").forEach(el => el.style.display = "none");
+      document.querySelectorAll(".memshow")
+              .forEach(el => el.style.display = "none");
+      document.querySelectorAll(".memhide")
+              .forEach(el => el.style.display = "");
       return;
     }
 
-    // Signed in: show account UI
+    // User is signed in → show account UI
     signedOutView.style.display = "none";
     signedInView.style.display  = "block";
     userEmailSpan.textContent   = user.email;
@@ -53,27 +55,27 @@ document.addEventListener("DOMContentLoaded", () => {
     // Check membership by email in "membership" collection
     let isMember = false;
     try {
-      const memberDoc = await db.collection("membership").doc(user.email).get();
+      const memberDoc = await db
+        .collection("membership")
+        .doc(user.email)
+        .get();
       isMember = memberDoc.exists && memberDoc.data().membership === true;
     } catch (e) {
       console.error("Error checking membership:", e);
     }
 
     // Toggle memshow/memhide elements
-    document.querySelectorAll(".memshow")
-      .forEach(el => el.style.display = isMember ? "" : "none");
-    document.querySelectorAll(".memhide")
-      .forEach(el => el.style.display = isMember ? "none" : "");
-
-    // Protect against DevTools toggling
-    const observer = new MutationObserver(() => {
+    if (isMember) {
       document.querySelectorAll(".memshow")
-        .forEach(el => el.style.display = isMember ? "" : "none");
+              .forEach(el => el.style.display = "");
       document.querySelectorAll(".memhide")
-        .forEach(el => el.style.display = isMember ? "none" : "");
-    });
-    document.querySelectorAll(".memshow, .memhide")
-      .forEach(el => observer.observe(el, { attributes: true, attributeFilter: ["style", "class"] }));
+              .forEach(el => el.style.display = "none");
+    } else {
+      document.querySelectorAll(".memshow")
+              .forEach(el => el.style.display = "none");
+      document.querySelectorAll(".memhide")
+              .forEach(el => el.style.display = "");
+    }
   });
 
   // ---------------------------
@@ -140,7 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ---------------------------
-  // 8) Change Password (reset link)
+  // 8) Change Password (send reset link)
   // ---------------------------
   changePasswordBtn.addEventListener("click", () => {
     const user = firebase.auth().currentUser;
