@@ -52,7 +52,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // -----------------------------------
   firebase.auth().onAuthStateChanged(async user => {
     if (!user) {
-      // signed out
       signedOutView.style.display  = "block";
       signedInView.style.display   = "none";
       userEmailSpan.textContent      = "";
@@ -62,13 +61,11 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // signed in
     signedOutView.style.display = "none";
     signedInView.style.display  = "block";
     userEmailSpan.textContent   = user.email;
     userUidSpan.textContent     = user.uid;
 
-    // check membership
     try {
       const docSnap = await db.collection("membership").doc(user.email).get();
       currentIsMember = docSnap.exists && docSnap.data().membership === true;
@@ -170,15 +167,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const u = firebase.auth().currentUser;
     if (!u) return;
     if (!confirm("Really delete your account AND all your cloud‑stored data?")) return;
-
     try {
-      // delete Firestore userdata
       await db.collection("userdata").doc(u.uid).delete();
-      // delete membership record (if any)
       await db.collection("membership").doc(u.email).delete().catch(() => {});
-      // delete auth user
       await u.delete();
-
       alert("Your account and all associated cloud data have been deleted.");
       location.reload();
     } catch (err) {
@@ -220,7 +212,19 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // -----------------------------------
-  // 13) Clear Local Storage Button
+  // 13) Sign Out Handler
+  // -----------------------------------
+  signOutBtn.addEventListener("click", () => {
+    firebase.auth().signOut()
+      .then(() => location.reload())
+      .catch(err => {
+        console.error("Sign‑out error:", err);
+        alert("Failed to sign out. Try again.");
+      });
+  });
+
+  // -----------------------------------
+  // 14) Clear Local Storage Button
   // -----------------------------------
   clearLocalBtn.addEventListener("click", () => {
     if (confirm("Clear all localStorage data?")) {
@@ -230,7 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // -----------------------------------
-  // 14) Clear Firestore Data Button
+  // 15) Clear Firestore Data Button
   // -----------------------------------
   clearFirestoreBtn.addEventListener("click", async () => {
     const u = firebase.auth().currentUser;
