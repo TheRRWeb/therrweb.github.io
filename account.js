@@ -1,3 +1,4 @@
+try {
 window.onerror = function(message, source, lineno, colno, error) {
   console.error("Global error caught:", {
     message, source, lineno, colno, 
@@ -221,3 +222,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+} catch(e) {
+  console.error("🔥 ERROR INSIDE account.js:", e);
+}
