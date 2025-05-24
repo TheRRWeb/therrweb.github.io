@@ -137,12 +137,6 @@ button.text-link:hover {
   background-color: #cc0000;
 }
 
-/* Hide/show classes (membership) */
-.memshow,
-.memhide {
-  display: none;
-}
-
 #user-membership:empty {
   display: none;
 }
