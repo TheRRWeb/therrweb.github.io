@@ -116,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const pwd   = passwordInput.value;
     firebase.auth().createUserWithEmailAndPassword(email, pwd)
       .then(() => {
-        alert("Account successfully created!");
+        alert("Your RR account has been created. Welcome to The RR Web");
         location.reload();
       })
       .catch(err => {
@@ -140,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     firebase.auth().sendPasswordResetEmail(email)
-      .then(() => alert("Password reset email sent."))
+      .then(() => alert("We have sent you a password reset email."))
       .catch(() => {
         errorMessageEl.textContent = "There is a network issue, try again later.";
       });
@@ -153,7 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const u = firebase.auth().currentUser;
     if (u) {
       firebase.auth().sendPasswordResetEmail(u.email)
-        .then(() => alert("Password reset email sent."))
+        .then(() => alert("We have sent you a password reset email."))
         .catch(() => {
           errorMessageEl.textContent = "There is a network issue, try again later.";
         });
@@ -166,16 +166,16 @@ document.addEventListener("DOMContentLoaded", () => {
   deleteAccountBtn.addEventListener("click", async () => {
     const u = firebase.auth().currentUser;
     if (!u) return;
-    if (!confirm("Really delete your account AND all your cloud‑stored data?")) return;
+    if (!confirm("Are you sure you want to delete your account and your RR Cloud data? This cannot be undone and will be deleted instantly!")) return;
     try {
       await db.collection("userdata").doc(u.uid).delete();
       await db.collection("membership").doc(u.email).delete().catch(() => {});
       await u.delete();
-      alert("Your account and all associated cloud data have been deleted.");
+      alert("Your account and RR Cloud data has been deleted.");
       location.reload();
     } catch (err) {
       console.error("Error deleting account or data:", err);
-      alert("Failed to delete account or data: " + err.message);
+      alert("There has been a problem deleting your account: " + err.message);
     }
   });
 
@@ -184,12 +184,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // -----------------------------------
   saveBtn.addEventListener("click", async () => {
     const u = firebase.auth().currentUser;
-    if (!u) return alert("Please sign in first.");
+    if (!u) return alert("Please sign in to RR first.");
     try {
       await db.collection("userdata").doc(u.uid).set({ ...localStorage });
-      alert("Game data saved to Firestore!");
+      alert("Your data has been saved to The RR Cloud.");
     } catch {
-      alert("Failed to save data. Try again.");
+      alert("We have failed to save your data to The RR Cloud.");
     }
   });
 
@@ -198,16 +198,16 @@ document.addEventListener("DOMContentLoaded", () => {
   // -----------------------------------
   loadBtn.addEventListener("click", async () => {
     const u = firebase.auth().currentUser;
-    if (!u) return alert("Please sign in first.");
+    if (!u) return alert("Please sign in to RR first.");
     try {
       const snap = await db.collection("userdata").doc(u.uid).get();
-      if (!snap.exists) return alert("No saved data found.");
+      if (!snap.exists) return alert("You have not saved anything to The RR Cloud yet.");
       localStorage.clear();
       Object.entries(snap.data()).forEach(([k, v]) => localStorage.setItem(k, v));
-      alert("Game data loaded from Firestore!");
+      alert("Your data has been loaded from The RR Cloud.");
       location.reload();
     } catch {
-      alert("Failed to load data. Try again.");
+      alert("We have failed to load your data from The RR Cloud.");
     }
   });
 
@@ -219,7 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .then(() => location.reload())
       .catch(err => {
         console.error("Sign‑out error:", err);
-        alert("Failed to sign out. Try again.");
+        alert("We have failed to sign you out.");
       });
   });
 
@@ -227,9 +227,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // 14) Clear Local Storage Button
   // -----------------------------------
   clearLocalBtn.addEventListener("click", () => {
-    if (confirm("Clear all localStorage data?")) {
+    if (confirm("Are you sure you want to clear your local storage. We recommend you to save your data to The RR Cloud, just in case.")) {
       localStorage.clear();
-      alert("Local storage cleared.");
+      alert("Your local storage has been cleared.");
     }
   });
 
@@ -238,13 +238,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // -----------------------------------
   clearFirestoreBtn.addEventListener("click", async () => {
     const u = firebase.auth().currentUser;
-    if (!u) return alert("Sign in first to clear cloud data.");
-    if (!confirm("Delete your saved game data from the cloud?")) return;
+    if (!u) return alert("You have to sign in first to clear your RR Cloud data");
+    if (!confirm("Are you sure you want to clear your RR Cloud data?")) return;
     try {
       await db.collection("userdata").doc(u.uid).delete();
-      alert("Cloud data cleared.");
+      alert("Your RR Cloud data has been cleared.");
     } catch {
-      alert("Failed to clear cloud data.");
+      alert("We have failed to clear your RR Cloud data");
     }
   });
 });
