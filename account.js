@@ -83,7 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Update membership span
-    userMembershipSpan.textContent = isMember ? "Membership" : "";
+    userMembershipSpan.textContent = isMember ? "You are a Membership user" : "";
 
     // Toggle member/non‑member content
     applyMembershipView(isMember);
