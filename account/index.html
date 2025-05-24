@@ -101,7 +101,7 @@
         <h5>This website is protected by the BSD 3 Claude License. In no event shall the copyright holder or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption). <a href="/LICENSE">Click me to learn more.</a></h5>
       </div>
     </footer>
-    <!--<script defer src="https://cloud.umami.is/script.js" data-website-id="f493113c-eb84-4958-809a-c84a5c898bf5"></script>-->
+    <script defer src="https://cloud.umami.is/script.js" data-website-id="f493113c-eb84-4958-809a-c84a5c898bf5"></script>
     <!-- Firebase v8 SDKs -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -120,9 +120,10 @@
   };
   firebase.initializeApp(firebaseConfig);
 </script>
-
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script> eruda.init(); </script>
 <!-- Your application scripts -->
 <script src="/account.js"></script>
-<!--<script src="/script.js"></script>-->
+<script src="/script.js"></script>
   </body>
 </html>
