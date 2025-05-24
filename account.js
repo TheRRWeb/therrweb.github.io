@@ -1,3 +1,13 @@
+window.onerror = function(message, source, lineno, colno, error) {
+  console.error("Global error caught:", {
+    message, source, lineno, colno, 
+    stack: error && error.stack
+  });
+};
+window.addEventListener("unhandledrejection", e => {
+  console.error("Unhandled promise rejection:", e.reason);
+});
+console.log("🐛 account.js loaded");  // confirm the file actually ran
 document.addEventListener("DOMContentLoaded", () => {
   // ---------------------------
   // 1) Firebase Initialization
