@@ -1,18 +1,7 @@
-try {
-window.onerror = function(message, source, lineno, colno, error) {
-  console.error("Global error caught:", {
-    message, source, lineno, colno, 
-    stack: error && error.stack
-  });
-};
-window.addEventListener("unhandledrejection", e => {
-  console.error("Unhandled promise rejection:", e.reason);
-});
-console.log("🐛 account.js loaded");  // confirm the file actually ran
 document.addEventListener("DOMContentLoaded", () => {
-  // ---------------------------
-  // 1) Firebase Initialization
-  // ---------------------------
+  // -----------------------------------
+  // 1) Firebase Initialization (v8)
+  // -----------------------------------
   const firebaseConfig = {
     apiKey: "AIzaSyB1OXqvU6bi9cp-aPs6AGNnCaTGwHtkuUs",
     authDomain: "therrweb.firebaseapp.com",
@@ -25,9 +14,9 @@ document.addEventListener("DOMContentLoaded", () => {
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // ---------------------------
+  // -----------------------------------
   // 2) Element References
-  // ---------------------------
+  // -----------------------------------
   const emailInput         = document.getElementById("email");
   const passwordInput      = document.getElementById("password");
   const signInBtn          = document.getElementById("sign-in-btn");
@@ -38,15 +27,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const signedInView       = document.getElementById("user-controls");
   const userEmailSpan      = document.getElementById("user-email");
   const userMembershipSpan = document.getElementById("user-membership");
+  const userUidSpan        = document.getElementById("user-uid");
   const signOutBtn         = document.getElementById("sign-out");
   const changePasswordBtn  = document.getElementById("change-password");
   const deleteAccountBtn   = document.getElementById("delete-account");
   const saveBtn            = document.getElementById("save-game-data");
   const loadBtn            = document.getElementById("load-game-data");
+  const clearLocalBtn      = document.getElementById("clear-local-btn");
+  const clearFirestoreBtn  = document.getElementById("clear-firestore-btn");
 
-  // ---------------------------
-  // 3) Helper: apply membership view
-  // ---------------------------
+  // -----------------------------------
+  // 3) Membership View Toggle
+  // -----------------------------------
+  let currentIsMember = false;
   function applyMembershipView(isMember) {
     document.querySelectorAll(".memshow")
       .forEach(el => el.style.display = isMember ? "block" : "none");
@@ -54,44 +47,55 @@ document.addEventListener("DOMContentLoaded", () => {
       .forEach(el => el.style.display = isMember ? "none" : "block");
   }
 
-  // ---------------------------
+  // -----------------------------------
   // 4) Auth State Listener
-  // ---------------------------
+  // -----------------------------------
   firebase.auth().onAuthStateChanged(async user => {
     if (!user) {
-      // Signed out → non‑member view
+      // signed out
       signedOutView.style.display  = "block";
       signedInView.style.display   = "none";
-      applyMembershipView(false);
       userEmailSpan.textContent      = "";
       userMembershipSpan.textContent = "";
+      userUidSpan.textContent        = "";
+      applyMembershipView(false);
       return;
     }
 
-    // Signed in → show account UI
+    // signed in
     signedOutView.style.display = "none";
     signedInView.style.display  = "block";
     userEmailSpan.textContent   = user.email;
+    userUidSpan.textContent     = user.uid;
 
-    // Check membership by email
-    let isMember = false;
+    // check membership
     try {
-      const memberDoc = await db.collection("membership").doc(user.email).get();
-      isMember = memberDoc.exists && memberDoc.data().membership === true;
-    } catch (e) {
-      console.error("Error checking membership:", e);
+      const docSnap = await db.collection("membership").doc(user.email).get();
+      currentIsMember = docSnap.exists && docSnap.data().membership === true;
+    } catch {
+      currentIsMember = false;
     }
-
-    // Update membership span
-    userMembershipSpan.textContent = isMember ? "You are a Membership user" : "";
-
-    // Toggle member/non‑member content
-    applyMembershipView(isMember);
+    userMembershipSpan.textContent = currentIsMember ? "Membership" : "";
+    applyMembershipView(currentIsMember);
   });
 
-  // ---------------------------
-  // 5) Sign In
-  // ---------------------------
+  // -----------------------------------
+  // 5) MutationObserver to enforce memshow/memhide
+  // -----------------------------------
+  const observer = new MutationObserver(() => {
+    applyMembershipView(currentIsMember);
+  });
+  function observeToggles() {
+    document.querySelectorAll(".memshow, .memhide")
+      .forEach(el =>
+        observer.observe(el, { attributes: true, attributeFilter: ["style","class"] })
+      );
+  }
+  observeToggles();
+
+  // -----------------------------------
+  // 6) Sign In Handler
+  // -----------------------------------
   signInBtn.addEventListener("click", () => {
     const email = emailInput.value.trim();
     const pwd   = passwordInput.value;
@@ -107,9 +111,9 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   });
 
-  // ---------------------------
-  // 6) Sign Up
-  // ---------------------------
+  // -----------------------------------
+  // 7) Sign Up Handler
+  // -----------------------------------
   signUpBtn.addEventListener("click", () => {
     const email = emailInput.value.trim();
     const pwd   = passwordInput.value;
@@ -129,9 +133,9 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   });
 
-  // ---------------------------
-  // 7) Forgot Password
-  // ---------------------------
+  // -----------------------------------
+  // 8) Forgot Password Handler
+  // -----------------------------------
   forgotPasswordBtn.addEventListener("click", () => {
     const email = emailInput.value.trim();
     if (!email) {
@@ -145,16 +149,9 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   });
 
-  // ---------------------------
-  // 8) Sign Out
-  // ---------------------------
-  signOutBtn.addEventListener("click", () => {
-    firebase.auth().signOut();
-  });
-
-  // ---------------------------
+  // -----------------------------------
   // 9) Change Password (reset link)
-  // ---------------------------
+  // -----------------------------------
   changePasswordBtn.addEventListener("click", () => {
     const u = firebase.auth().currentUser;
     if (u) {
@@ -166,63 +163,79 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // ---------------------------
-  // 10) Delete Account
-  // ---------------------------
+  // -----------------------------------
+  // 10) Delete Account Handler
+  // -----------------------------------
   deleteAccountBtn.addEventListener("click", () => {
     const u = firebase.auth().currentUser;
     if (u && confirm("Are you sure you want to delete your account?")) {
       u.delete()
-       .then(() => {
-         alert("Account deleted.");
-         location.reload();
-       })
-       .catch(err => {
-         errorMessageEl.textContent = err.message.toLowerCase().includes("network error")
-           ? "There is a network issue, try again later."
-           : err.message;
-       });
+        .then(() => {
+          alert("Account deleted.");
+          location.reload();
+        })
+        .catch(err => {
+          errorMessageEl.textContent = err.message.toLowerCase().includes("network error")
+            ? "There is a network issue, try again later."
+            : err.message;
+        });
     }
   });
 
-  // ---------------------------
-  // 11) Save localStorage → Firestore
-  // ---------------------------
+  // -----------------------------------
+  // 11) Save LocalStorage → Firestore
+  // -----------------------------------
   saveBtn.addEventListener("click", async () => {
     const u = firebase.auth().currentUser;
     if (!u) return alert("Please sign in first.");
     try {
       await db.collection("userdata").doc(u.uid).set({ ...localStorage });
       alert("Game data saved to Firestore!");
-    } catch (e) {
-      console.error("Save error:", e);
+    } catch {
       alert("Failed to save data. Try again.");
     }
   });
 
-  // ---------------------------
-  // 12) Load Firestore → localStorage
-  // ---------------------------
+  // -----------------------------------
+  // 12) Load Firestore → LocalStorage
+  // -----------------------------------
   loadBtn.addEventListener("click", async () => {
     const u = firebase.auth().currentUser;
     if (!u) return alert("Please sign in first.");
     try {
       const snap = await db.collection("userdata").doc(u.uid).get();
-      if (!snap.exists) {
-        alert("No saved data found.");
-        return;
-      }
+      if (!snap.exists) return alert("No saved data found.");
       localStorage.clear();
       Object.entries(snap.data()).forEach(([k, v]) => localStorage.setItem(k, v));
       alert("Game data loaded from Firestore!");
       location.reload();
-    } catch (e) {
-      console.error("Load error:", e);
+    } catch {
       alert("Failed to load data. Try again.");
     }
   });
-});
 
-} catch(e) {
-  console.error("🔥 ERROR INSIDE account.js:", e);
-}
+  // -----------------------------------
+  // 13) Clear Local Storage Button
+  // -----------------------------------
+  clearLocalBtn.addEventListener("click", () => {
+    if (confirm("Clear all localStorage data?")) {
+      localStorage.clear();
+      alert("Local storage cleared.");
+    }
+  });
+
+  // -----------------------------------
+  // 14) Clear Firestore Data Button
+  // -----------------------------------
+  clearFirestoreBtn.addEventListener("click", async () => {
+    const u = firebase.auth().currentUser;
+    if (!u) return alert("Sign in first to clear cloud data.");
+    if (!confirm("Delete your saved game data from the cloud?")) return;
+    try {
+      await db.collection("userdata").doc(u.uid).delete();
+      alert("Cloud data cleared.");
+    } catch {
+      alert("Failed to clear cloud data.");
+    }
+  });
+});
