@@ -8,8 +8,8 @@
     <link rel="icon" type="image/x-icon" href="/logos/RRlogo12.png"> <!--Logo-->
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta name="keywords" content="R, RR, Games, Fun, Web">
-    <meta name="description" content="Just have fun on this website">
-    <meta name="author" content="The RR Guy">
+    <meta name="description" content="The RR Web, home to the greatest fun and games available anywhere">
+    <meta name="author" content="Rutham Renish">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="The RR Games">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -23,7 +23,8 @@
     <header>
       <div class="navbar" id="Navbar">
         <a href="/" class="homeimg"><img src="/logos/RRlogo12.png" alt="logo"></a>
-        <a href="/games/index.html">Games</a>
+        <a href="/games/">Games</a>
+        <a href="/account/">Account</a>
         <a data-umami-event="Merch" href="/RRMerchKit.zip" download>Merch</a>
         <a href="/">Home</a>
         <a href="javascript:void(0);" class="icon" onclick="myFunction()">
@@ -34,7 +35,7 @@
     <h1>The RR Games</h1>
     <hr>
     <div class="reference">
-      <p>You can play some games here. If you want a game added, report a problem or have a friendly text <a data-umami-event="Forms" href="https://forms.office.com/Pages/ResponsePage.aspx?id=8LIk8ugClkGNohLHcIklNHf2zSA9E61IoosX7n_qv4hUMFZJM0NKU0NIR0kzWlNPM1JXUk1JMFY0Vy4u">Click Here.</a> Games are in alphabetical order</p>
+      <p>You can play some games here. If you want a game added, report a problem or have a friendly text, <a data-umami-event="Portal" href="https://forms.office.com/Pages/ResponsePage.aspx?id=8LIk8ugClkGNohLHcIklNHf2zSA9E61IoosX7n_qv4hUMFZJM0NKU0NIR0kzWlNPM1JXUk1JMFY0Vy4u">Go to The RR Portal</a> Games are in alphabetical order</p>
     </div>
     <h2>Our Games</h2>
     <div class="gallery">
@@ -218,10 +219,24 @@
                 <a href="/">Home</a>
               </li>
               <li>
+                <a href="/account/">Account</a>
+              </li>
+              <li>
+                <a href="/games/">Games</a>
+              </li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h3>Miscellaneous</h3>
+            <ul>
+              <li>
+                <a data-umami-event="Merch" href="/RRMerchKit.zip" download>Merch</a>
+              </li>
+              <li>
                 <a data-umami-event="Discord" href="https://discord.gg/u3Hs33Dq8b">Discord</a>
               </li>
               <li>
-                <a href="/games/index.html">Games</a>
+                <a data-umami-event="Portal" href="https://forms.office.com/Pages/ResponsePage.aspx?id=8LIk8ugClkGNohLHcIklNHf2zSA9E61IoosX7n_qv4hUMFZJM0NKU0NIR0kzWlNPM1JXUk1JMFY0Vy4u">Portal</a>
               </li>
             </ul>
           </div>
@@ -231,36 +246,10 @@
         <h5>This website is protected by the BSD 3 Claude License. In no event shall the copyright holder or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption). <a href="/LICENSE">Click me to learn more.</a></h5>
       </div>
     </footer>
-    <script type="text/javascript" src="/script.js"></script>
-    <script src="/gamesjs.js"></script>
     <script defer src="https://cloud.umami.is/script.js" data-website-id="f493113c-eb84-4958-809a-c84a5c898bf5"></script>
-    <script>
-      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-    </script>
-    <script defer src="/_vercel/insights/script.js"></script>
-    <script>
-      window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
-    </script>
-    <script defer src="/_vercel/speed-insights/script.js"></script>
-    <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyB1OXqvU6bi9cp-aPs6AGNnCaTGwHtkuUs",
-    authDomain: "therrweb.firebaseapp.com",
-    projectId: "therrweb",
-    storageBucket: "therrweb.firebasestorage.app",
-    messagingSenderId: "77162554401",
-    appId: "1:77162554401:web:4462bfcbbee40167b9af60",
-    measurementId: "G-WC9WXR0CY5"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-</script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script type="text/javascript" src="/script.js"></script>
   </body>
 </html>
