@@ -164,21 +164,26 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // -----------------------------------
-  // 10) Delete Account Handler
+  // 10) Delete Account + Firestore Cleanup
   // -----------------------------------
-  deleteAccountBtn.addEventListener("click", () => {
+  deleteAccountBtn.addEventListener("click", async () => {
     const u = firebase.auth().currentUser;
-    if (u && confirm("Are you sure you want to delete your account?")) {
-      u.delete()
-        .then(() => {
-          alert("Account deleted.");
-          location.reload();
-        })
-        .catch(err => {
-          errorMessageEl.textContent = err.message.toLowerCase().includes("network error")
-            ? "There is a network issue, try again later."
-            : err.message;
-        });
+    if (!u) return;
+    if (!confirm("Really delete your account AND all your cloud‑stored data?")) return;
+
+    try {
+      // delete Firestore userdata
+      await db.collection("userdata").doc(u.uid).delete();
+      // delete membership record (if any)
+      await db.collection("membership").doc(u.email).delete().catch(() => {});
+      // delete auth user
+      await u.delete();
+
+      alert("Your account and all associated cloud data have been deleted.");
+      location.reload();
+    } catch (err) {
+      console.error("Error deleting account or data:", err);
+      alert("Failed to delete account or data: " + err.message);
     }
   });
 
