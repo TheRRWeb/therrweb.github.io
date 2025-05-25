@@ -199,7 +199,8 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Delete failed.");
     }
   });
-  function myFunction() {
+});
+function myFunction() {
   var x = document.getElementById("Navbar");
   if (x.className === "navbar") {
     x.className += " responsive";
@@ -207,4 +208,3 @@ document.addEventListener("DOMContentLoaded", () => {
     x.className = "navbar";
   }
 }
-});
