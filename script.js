@@ -1,7 +1,6 @@
+// script.js
 document.addEventListener("DOMContentLoaded", () => {
-  // -----------------------------------
-  // 1) Firebase Initialization (v8)
-  // -----------------------------------
+  // 0) Firebase Initialization (v8)
   const firebaseConfig = {
     apiKey: "AIzaSyB1OXqvU6bi9cp-aPs6AGNnCaTGwHtkuUs",
     authDomain: "therrweb.firebaseapp.com",
@@ -14,9 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // -----------------------------------
-  // 2) Element References
-  // -----------------------------------
+  // 1) Element references
   const emailInput         = document.getElementById("email");
   const passwordInput      = document.getElementById("password");
   const signInBtn          = document.getElementById("sign-in-btn");
@@ -36,20 +33,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const clearLocalBtn      = document.getElementById("clear-local-btn");
   const clearFirestoreBtn  = document.getElementById("clear-firestore-btn");
 
-  // -----------------------------------
-  // 3) Membership View Toggle
-  // -----------------------------------
+  // 2) Membership view toggles
   let currentIsMember = false;
   function applyMembershipView(isMember) {
-    document.querySelectorAll(".memshow")
-      .forEach(el => el.style.display = isMember ? "block" : "none");
-    document.querySelectorAll(".memhide")
-      .forEach(el => el.style.display = isMember ? "none" : "block");
+    document.querySelectorAll(".memshow").forEach(el => {
+      el.style.display = isMember ? "block" : "none";
+    });
+    document.querySelectorAll(".memhide").forEach(el => {
+      el.style.display = isMember ? "none" : "block";
+    });
   }
 
-  // -----------------------------------
-  // 4) Auth State Listener
-  // -----------------------------------
+  // 3) Auth state listener
   firebase.auth().onAuthStateChanged(async user => {
     if (!user) {
       signedOutView.style.display  = "block";
@@ -60,15 +55,14 @@ document.addEventListener("DOMContentLoaded", () => {
       applyMembershipView(false);
       return;
     }
-
     signedOutView.style.display = "none";
     signedInView.style.display  = "block";
     userEmailSpan.textContent   = user.email;
     userUidSpan.textContent     = user.uid;
 
     try {
-      const docSnap = await db.collection("membership").doc(user.email).get();
-      currentIsMember = docSnap.exists && docSnap.data().membership === true;
+      const snap = await db.collection("membership").doc(user.email).get();
+      currentIsMember = snap.exists && snap.data().membership === true;
     } catch {
       currentIsMember = false;
     }
@@ -76,23 +70,13 @@ document.addEventListener("DOMContentLoaded", () => {
     applyMembershipView(currentIsMember);
   });
 
-  // -----------------------------------
-  // 5) MutationObserver to enforce memshow/memhide
-  // -----------------------------------
-  const observer = new MutationObserver(() => {
-    applyMembershipView(currentIsMember);
-  });
-  function observeToggles() {
-    document.querySelectorAll(".memshow, .memhide")
-      .forEach(el =>
-        observer.observe(el, { attributes: true, attributeFilter: ["style","class"] })
-      );
-  }
-  observeToggles();
+  // 4) Prevent memshow/memhide tampering
+  const observer = new MutationObserver(() => applyMembershipView(currentIsMember));
+  document.querySelectorAll(".memshow, .memhide").forEach(el =>
+    observer.observe(el, { attributes: true, attributeFilter: ["style","class"] })
+  );
 
-  // -----------------------------------
-  // 6) Sign In Handler
-  // -----------------------------------
+  // 5) Sign in handler
   signInBtn.addEventListener("click", () => {
     const email = emailInput.value.trim();
     const pwd   = passwordInput.value;
@@ -108,17 +92,12 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   });
 
-  // -----------------------------------
-  // 7) Sign Up Handler
-  // -----------------------------------
+  // 6) Sign up handler
   signUpBtn.addEventListener("click", () => {
     const email = emailInput.value.trim();
     const pwd   = passwordInput.value;
     firebase.auth().createUserWithEmailAndPassword(email, pwd)
-      .then(() => {
-        alert("Your RR account has been created. Welcome to The RR Web");
-        location.reload();
-      })
+      .then(() => { alert("Account created!"); location.reload(); })
       .catch(err => {
         if (err.code === "auth/email-already-in-use") {
           errorMessageEl.textContent = "Email already used.";
@@ -130,125 +109,97 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   });
 
-  // -----------------------------------
-  // 8) Forgot Password Handler
-  // -----------------------------------
+  // 7) Forgot password handler
   forgotPasswordBtn.addEventListener("click", () => {
     const email = emailInput.value.trim();
     if (!email) {
-      errorMessageEl.textContent = "Please enter your email to reset password.";
+      errorMessageEl.textContent = "Enter your email to reset password.";
       return;
     }
     firebase.auth().sendPasswordResetEmail(email)
-      .then(() => alert("We have sent you a password reset email."))
+      .then(() => alert("Reset email sent."))
       .catch(() => {
-        errorMessageEl.textContent = "There is a network issue, try again later.";
+        errorMessageEl.textContent = "Network issue, try again later.";
       });
   });
 
-  // -----------------------------------
-  // 9) Change Password (reset link)
-  // -----------------------------------
+  // 8) Change password (reset link)
   changePasswordBtn.addEventListener("click", () => {
     const u = firebase.auth().currentUser;
     if (u) {
       firebase.auth().sendPasswordResetEmail(u.email)
-        .then(() => alert("We have sent you a password reset email."))
+        .then(() => alert("Reset email sent."))
         .catch(() => {
-          errorMessageEl.textContent = "There is a network issue, try again later.";
+          errorMessageEl.textContent = "Network issue, try again later.";
         });
     }
   });
 
-  // -----------------------------------
-  // 10) Delete Account + Firestore Cleanup
-  // -----------------------------------
+  // 9) Delete account + data cleanup
   deleteAccountBtn.addEventListener("click", async () => {
     const u = firebase.auth().currentUser;
-    if (!u) return;
-    if (!confirm("Are you sure you want to delete your account and your RR Cloud data? This cannot be undone and will be deleted instantly!")) return;
+    if (!u || !confirm("Delete account AND all your cloud data?")) return;
     try {
       await db.collection("userdata").doc(u.uid).delete();
-      await db.collection("membership").doc(u.email).delete().catch(() => {});
+      await db.collection("membership").doc(u.email).delete().catch(()=>{});
       await u.delete();
-      alert("Your account and RR Cloud data has been deleted.");
-      location.reload();
-    } catch (err) {
-      console.error("Error deleting account or data:", err);
-      alert("There has been a problem deleting your account: " + err.message);
+      alert("Account & data deleted."); location.reload();
+    } catch (e) {
+      console.error(e);
+      alert("Error deleting: " + e.message);
     }
   });
 
-  // -----------------------------------
-  // 11) Save LocalStorage → Firestore
-  // -----------------------------------
+  // 10) Save localStorage → Firestore
   saveBtn.addEventListener("click", async () => {
     const u = firebase.auth().currentUser;
-    if (!u) return alert("Please sign in to RR first.");
+    if (!u) return alert("Sign in first.");
     try {
       await db.collection("userdata").doc(u.uid).set({ ...localStorage });
-      alert("Your data has been saved to The RR Cloud.");
+      alert("Data saved!");
     } catch {
-      alert("We have failed to save your data to The RR Cloud.");
+      alert("Save failed, try again.");
     }
   });
 
-  // -----------------------------------
-  // 12) Load Firestore → LocalStorage
-  // -----------------------------------
+  // 11) Load Firestore → localStorage
   loadBtn.addEventListener("click", async () => {
     const u = firebase.auth().currentUser;
-    if (!u) return alert("Please sign in to RR first.");
+    if (!u) return alert("Sign in first.");
     try {
       const snap = await db.collection("userdata").doc(u.uid).get();
-      if (!snap.exists) return alert("You have not saved anything to The RR Cloud yet.");
+      if (!snap.exists) return alert("No data found.");
       localStorage.clear();
-      Object.entries(snap.data()).forEach(([k, v]) => localStorage.setItem(k, v));
-      alert("Your data has been loaded from The RR Cloud.");
-      location.reload();
+      Object.entries(snap.data()).forEach(([k,v]) => localStorage.setItem(k, v));
+      alert("Data loaded!"); location.reload();
     } catch {
-      alert("We have failed to load your data from The RR Cloud.");
+      alert("Load failed, try again.");
     }
   });
 
-  // -----------------------------------
-  // 13) Sign Out Handler
-  // -----------------------------------
+  // 12) Sign out handler
   signOutBtn.addEventListener("click", () => {
     firebase.auth().signOut()
       .then(() => location.reload())
-      .catch(err => {
-        console.error("Sign‑out error:", err);
-        alert("We have failed to sign you out.");
-      });
+      .catch(e => { console.error(e); alert("Sign‑out failed."); });
   });
 
-  // -----------------------------------
-  // 14) Clear Local Storage Button
-  // -----------------------------------
+  // 13) Clear storage buttons
   clearLocalBtn.addEventListener("click", () => {
-    if (confirm("Are you sure you want to clear your local storage. We recommend you to save your data to The RR Cloud, just in case.")) {
-      localStorage.clear();
-      alert("Your local storage has been cleared.");
-    }
+    if (confirm("Clear all localStorage?")) { localStorage.clear(); alert("Cleared."); }
   });
-
-  // -----------------------------------
-  // 15) Clear Firestore Data Button
-  // -----------------------------------
   clearFirestoreBtn.addEventListener("click", async () => {
     const u = firebase.auth().currentUser;
-    if (!u) return alert("You have to sign in first to clear your RR Cloud data");
-    if (!confirm("Are you sure you want to clear your RR Cloud data?")) return;
+    if (!u) return alert("Sign in first.");
+    if (!confirm("Delete cloud data?")) return;
     try {
       await db.collection("userdata").doc(u.uid).delete();
-      alert("Your RR Cloud data has been cleared.");
+      alert("Cloud data deleted.");
     } catch {
-      alert("We have failed to clear your RR Cloud data");
+      alert("Delete failed.");
     }
   });
-});
-function myFunction() {
+  function myFunction() {
   var x = document.getElementById("Navbar");
   if (x.className === "navbar") {
     x.className += " responsive";
@@ -256,3 +207,4 @@ function myFunction() {
     x.className = "navbar";
   }
 }
+});
