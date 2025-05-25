@@ -1,8 +1,6 @@
 // script.js
 document.addEventListener("DOMContentLoaded", () => {
-  // -----------------------------
-  // 0) Firebase Initialization
-  // -----------------------------
+  // 0) Firebase init
   const firebaseConfig = {
     apiKey: "AIzaSyB1OXqvU6bi9cp-aPs6AGNnCaTGwHtkuUs",
     authDomain: "therrweb.firebaseapp.com",
@@ -15,9 +13,10 @@ document.addEventListener("DOMContentLoaded", () => {
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // ------------------------------------------------
-  // 1) Site‑wide: membership toggles (memshow/hide)
-  // ------------------------------------------------
+  // Grab the membership span if it exists
+  const userMembershipSpan = document.getElementById("user-membership");
+
+  // 1) Site‑wide memshow/memhide
   let currentIsMember = false;
   function applyMembershipView(isMember) {
     document.querySelectorAll(".memshow")
@@ -26,68 +25,66 @@ document.addEventListener("DOMContentLoaded", () => {
       .forEach(el => el.style.display = isMember ? "none" : "block");
   }
 
-  // Listen for auth state changes
+  // 2) Single auth listener for both membership & account view
   firebase.auth().onAuthStateChanged(async user => {
     if (!user) {
+      // not signed in
       applyMembershipView(false);
+      if (userMembershipSpan) userMembershipSpan.textContent = "";
       return;
     }
-    // check membership flag in Firestore
+
+    // signed in → check membership doc (keyed by UID)
     try {
-      const snap = await db.collection("membership").doc(user.email).get();
+      const snap = await db.collection("membership").doc(user.uid).get();
       currentIsMember = snap.exists && snap.data().membership === true;
     } catch {
       currentIsMember = false;
     }
+
+    // apply memshow / memhide
     applyMembershipView(currentIsMember);
+
+    // update the span if present
+    if (userMembershipSpan) {
+      userMembershipSpan.textContent = currentIsMember ? "Membership" : "";
+    }
+
+    // ALSO toggle the account‑page UI here so we only need one listener
+    const signedOutView  = document.getElementById("auth-container");
+    const signedInView   = document.getElementById("user-controls");
+    const userEmailSpan  = document.getElementById("user-email");
+    const userUidSpan    = document.getElementById("user-uid");
+
+    if (signedOutView && signedInView) {
+      signedOutView.style.display = user ? "none" : "block";
+      signedInView .style.display = user ? "block": "none";
+    }
+    if (userEmailSpan) userEmailSpan.textContent = user.email;
+    if (userUidSpan)   userUidSpan.textContent   = user.uid;
   });
 
-  // Prevent manual tampering
-  const observer = new MutationObserver(() => applyMembershipView(currentIsMember));
-  document.querySelectorAll(".memshow, .memhide").forEach(el =>
-    observer.observe(el, { attributes: true, attributeFilter: ["style","class"] })
-  );
+  // prevent tampering
+  const obs = new MutationObserver(() => applyMembershipView(currentIsMember));
+  document.querySelectorAll(".memshow, .memhide")
+    .forEach(el => obs.observe(el, { attributes: true, attributeFilter: ["style","class"] }));
 
-  // -------------------------------
-  // 2) Account‑page logic (guarded)
-  // -------------------------------
+  // 3) Account‑page only JS (guarded by existence of #email)
   const emailInput        = document.getElementById("email");
   const passwordInput     = document.getElementById("password");
   const signInBtn         = document.getElementById("sign-in-btn");
   const signUpBtn         = document.getElementById("sign-up-btn");
   const forgotPasswordBtn = document.getElementById("forgot-password-btn");
   const errorMessageEl    = document.getElementById("error-message");
-  const signedOutView     = document.getElementById("auth-container");
-  const signedInView      = document.getElementById("user-controls");
-  const userEmailSpan     = document.getElementById("user-email");
-  const userMembershipSpan= document.getElementById("user-membership");
-  const userUidSpan       = document.getElementById("user-uid");
-  const signOutBtn        = document.getElementById("sign-out");
   const changePasswordBtn = document.getElementById("change-password");
   const deleteAccountBtn  = document.getElementById("delete-account");
   const saveBtn           = document.getElementById("save-game-data");
   const loadBtn           = document.getElementById("load-game-data");
+  const signOutBtn        = document.getElementById("sign-out");
   const clearLocalBtn     = document.getElementById("clear-local-btn");
   const clearFirestoreBtn = document.getElementById("clear-firestore-btn");
 
-  // Only run this block if we're on account.html
   if (emailInput && signInBtn && signUpBtn) {
-    // Show/hide the signed‑in vs signed‑out views
-    firebase.auth().onAuthStateChanged(user => {
-      if (!user) {
-        signedOutView.style.display = "block";
-        signedInView .style.display = "none";
-        userEmailSpan.textContent      = "";
-        userMembershipSpan.textContent = "";
-        userUidSpan.textContent        = "";
-      } else {
-        signedOutView.style.display = "none";
-        signedInView .style.display = "block";
-        userEmailSpan.textContent   = user.email;
-        userUidSpan.textContent     = user.uid;
-      }
-    });
-
     // Sign In
     signInBtn.addEventListener("click", () => {
       const email = emailInput.value.trim();
@@ -147,23 +144,22 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // Delete Account + Firestore Cleanup
+    // Delete Account + Cleanup
     deleteAccountBtn.addEventListener("click", async () => {
       const u = firebase.auth().currentUser;
       if (!u || !confirm("Delete account AND all your cloud data?")) return;
       try {
         await db.collection("userdata").doc(u.uid).delete();
-        await db.collection("membership").doc(u.email).delete().catch(()=>{});
+        await db.collection("membership").doc(u.uid).delete().catch(()=>{});
         await u.delete();
-        alert("Account & data deleted.");
-        location.reload();
+        alert("Deleted account & data."); location.reload();
       } catch (e) {
         console.error(e);
         alert("Error deleting: " + e.message);
       }
     });
 
-    // Save LocalStorage → Firestore
+    // Save → Firestore
     saveBtn.addEventListener("click", async () => {
       const u = firebase.auth().currentUser;
       if (!u) return alert("Sign in first.");
@@ -175,7 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // Load Firestore → LocalStorage
+    // Load ← Firestore
     loadBtn.addEventListener("click", async () => {
       const u = firebase.auth().currentUser;
       if (!u) return alert("Sign in first.");
@@ -197,12 +193,11 @@ document.addEventListener("DOMContentLoaded", () => {
         .catch(e => { console.error(e); alert("Sign‑out failed."); });
     });
 
-    // Clear Local Storage
+    // Clear Local
     clearLocalBtn.addEventListener("click", () => {
       if (confirm("Clear all localStorage?")) { localStorage.clear(); alert("Cleared."); }
     });
-
-    // Clear Firestore Data
+    // Clear Firestore
     clearFirestoreBtn.addEventListener("click", async () => {
       const u = firebase.auth().currentUser;
       if (!u) return alert("Sign in first.");
