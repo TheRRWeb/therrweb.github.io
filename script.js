@@ -1,6 +1,8 @@
 // script.js
 document.addEventListener("DOMContentLoaded", () => {
-  // 0) Firebase init
+  // -----------------------------
+  // 0) Firebase Initialization
+  // -----------------------------
   const firebaseConfig = {
     apiKey: "AIzaSyB1OXqvU6bi9cp-aPs6AGNnCaTGwHtkuUs",
     authDomain: "therrweb.firebaseapp.com",
@@ -13,10 +15,12 @@ document.addEventListener("DOMContentLoaded", () => {
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // Grab the membership span if it exists
+  // Grab the span if present
   const userMembershipSpan = document.getElementById("user-membership");
 
-  // 1) Site‑wide memshow/memhide
+  // ------------------------------------------------
+  // 1) Site‑wide: membership toggles (memshow/hide)
+  // ------------------------------------------------
   let currentIsMember = false;
   function applyMembershipView(isMember) {
     document.querySelectorAll(".memshow")
@@ -25,36 +29,31 @@ document.addEventListener("DOMContentLoaded", () => {
       .forEach(el => el.style.display = isMember ? "none" : "block");
   }
 
-  // 2) Single auth listener for both membership & account view
+  // Single auth listener for everything
   firebase.auth().onAuthStateChanged(async user => {
     if (!user) {
-      // not signed in
       applyMembershipView(false);
       if (userMembershipSpan) userMembershipSpan.textContent = "";
       return;
     }
 
-    // signed in → check membership doc (keyed by UID)
-    try {
-      const snap = await db.collection("membership").doc(user.uid).get();
-      currentIsMember = snap.exists && snap.data().membership === true;
-    } catch {
-      currentIsMember = false;
+    // ** Try UID first, then fallback to email **
+    let snap = await db.collection("membership").doc(user.uid).get().catch(() => null);
+    if (!snap || !snap.exists) {
+      snap = await db.collection("membership").doc(user.email).get().catch(() => null);
     }
+    currentIsMember = snap && snap.exists && snap.data().membership === true;
 
-    // apply memshow / memhide
     applyMembershipView(currentIsMember);
-
-    // update the span if present
     if (userMembershipSpan) {
       userMembershipSpan.textContent = currentIsMember ? "Membership" : "";
     }
 
-    // ALSO toggle the account‑page UI here so we only need one listener
-    const signedOutView  = document.getElementById("auth-container");
-    const signedInView   = document.getElementById("user-controls");
-    const userEmailSpan  = document.getElementById("user-email");
-    const userUidSpan    = document.getElementById("user-uid");
+    // Also toggle account‑page UI here
+    const signedOutView   = document.getElementById("auth-container");
+    const signedInView    = document.getElementById("user-controls");
+    const userEmailSpan   = document.getElementById("user-email");
+    const userUidSpan     = document.getElementById("user-uid");
 
     if (signedOutView && signedInView) {
       signedOutView.style.display = user ? "none" : "block";
@@ -69,7 +68,9 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".memshow, .memhide")
     .forEach(el => obs.observe(el, { attributes: true, attributeFilter: ["style","class"] }));
 
-  // 3) Account‑page only JS (guarded by existence of #email)
+  // -----------------------------------
+  // 2) Account‑page only logic (guarded)
+  // -----------------------------------
   const emailInput        = document.getElementById("email");
   const passwordInput     = document.getElementById("password");
   const signInBtn         = document.getElementById("sign-in-btn");
@@ -193,7 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
         .catch(e => { console.error(e); alert("Sign‑out failed."); });
     });
 
-    // Clear Local
+    // Clear local
     clearLocalBtn.addEventListener("click", () => {
       if (confirm("Clear all localStorage?")) { localStorage.clear(); alert("Cleared."); }
     });
