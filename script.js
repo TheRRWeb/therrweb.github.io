@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const userUidSpan    = document.getElementById("user-uid");
     if (signedOutView && signedInView) {
       signedOutView.style.display = user ? "none" : "block";
-      signedInView .style.display = user ? "block": "none";
+      signedInView.style.display  = user ? "block" : "none";
     }
     if (userEmailSpan) userEmailSpan.textContent = user.email;
     if (userUidSpan)   userUidSpan.textContent   = user.uid;
@@ -208,6 +208,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // -----------------------------
+  // 3) Navbar toggle (site‑wide)
+  // -----------------------------
   function myFunction() {
     var x = document.getElementById("Navbar");
     if (x.className === "navbar") {
@@ -218,107 +221,103 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ──────────────────────────────────────────────────
-  // 4) Title & Favicon Selector
+  // 4) Title & Favicon Selector (robust across pages)
   // ──────────────────────────────────────────────────
 
-  // 4.1) Grab favicon link & defaults
+  // 4.1) Grab favicon link and page defaults
   const faviconLink  = document.getElementById("favicon");
   const defaultTitle = document.title;
   const defaultIcon  = faviconLink ? faviconLink.href : "";
 
-  // 4.2) Presets (none restores defaults)
-  const PRESETS = {
-    none:   { title: defaultTitle, icon: defaultIcon },
-    google: {
-      title: "Google",
-      icon:  "https://www.gstatic.com/classroom/icongrayscale/teacher/48dp.png"
-    },
-    teams: {
-      title: "Microsoft Teams",
-      icon:  "https://static2.sharepointonline.com/files/fabric/assets/brand-icons/product/svg/teams_48x1.svg"
+  // 4.2) Bail if no favicon link present
+  if (faviconLink) {
+    // 4.3) Presets (none restores defaults)
+    const PRESETS = {
+      none:   { title: defaultTitle, icon: defaultIcon },
+      google: {
+        title: "Google",
+        icon:  "https://www.gstatic.com/classroom/icongrayscale/teacher/48dp.png"
+      },
+      teams: {
+        title: "Microsoft Teams",
+        icon:  "https://static2.sharepointonline.com/files/fabric/assets/brand-icons/product/svg/teams_48x1.svg"
+      }
+    };
+
+    // 4.4) applyTheme helper
+    function applyTheme(theme) {
+      document.title = theme.title;
+      faviconLink.href = theme.icon;
     }
-  };
 
-  // 4.3) Elements
-  const radios        = document.querySelectorAll('input[name="siteTheme"]');
-  const customOptions = document.getElementById("custom-options");
-  const customTitleIn = document.getElementById("custom-title-input");
-  const customIconIn  = document.getElementById("custom-icon-input");
-
-  // 4.4) applyTheme helper
-  function applyTheme(theme) {
-    document.title = theme.title;
-    if (faviconLink) faviconLink.href = theme.icon;
-  }
-
-  // 4.5) Load saved or default
-  let saved = {};
-  try {
-    saved = JSON.parse(localStorage.getItem("siteTheme")) || {};
-  } catch (_) {}
-
-  if (saved.mode) {
-    // saved choice exists
-    const sel = document.querySelector(`input[name="siteTheme"][value="${saved.mode}"]`);
-    if (sel) sel.checked = true;
-    customOptions.style.display = saved.mode === "custom" ? "block" : "none";
-    if (saved.mode === "custom") {
-      customTitleIn.value = saved.title || defaultTitle;
-      applyTheme({ title: saved.title || defaultTitle, icon: saved.icon || defaultIcon });
+    // 4.5) Load saved or default theme
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem("siteTheme")) || {}; }
+    catch(_) {}
+    if (saved.mode) {
+      if (saved.mode === "custom") {
+        applyTheme({ title: saved.title || defaultTitle, icon: saved.icon || defaultIcon });
+      } else {
+        applyTheme(PRESETS[saved.mode] || PRESETS.none);
+      }
     } else {
-      applyTheme(PRESETS[saved.mode] || PRESETS.none);
+      // first visit: preselect none and restore defaults
+      const noneRadio = document.querySelector('input[name="siteTheme"][value="none"]');
+      if (noneRadio) noneRadio.checked = true;
+      applyTheme(PRESETS.none);
     }
-  } else {
-    // first visit → preselect “none” and restore defaults
-    const noneRadio = document.querySelector('input[name="siteTheme"][value="none"]');
-    if (noneRadio) noneRadio.checked = true;
-    applyTheme(PRESETS.none);
+
+    // 4.6) If selector controls exist, wire them up
+    const radios        = document.querySelectorAll('input[name="siteTheme"]');
+    const customOptions = document.getElementById("custom-options");
+    const customTitleIn = document.getElementById("custom-title-input");
+    const customIconIn  = document.getElementById("custom-icon-input");
+
+    if (radios.length && customOptions && customTitleIn && customIconIn) {
+      // radio change handler
+      radios.forEach(radio => radio.addEventListener("change", () => {
+        const mode = radio.value;
+        if (mode === "custom") {
+          customOptions.style.display = "block";
+          saved = { mode: "custom", title: defaultTitle, icon: defaultIcon };
+          localStorage.setItem("siteTheme", JSON.stringify(saved));
+        } else {
+          customOptions.style.display = "none";
+          applyTheme(PRESETS[mode] || PRESETS.none);
+          localStorage.setItem("siteTheme", JSON.stringify({ mode }));
+        }
+      }));
+
+      // custom title live‑update
+      customTitleIn.addEventListener("input", () => {
+        if (document.querySelector('input[name="siteTheme"]:checked').value === "custom") {
+          const title = customTitleIn.value || defaultTitle;
+          const icon  = saved.icon || defaultIcon;
+          applyTheme({ title, icon });
+          saved = { mode: "custom", title, icon };
+          localStorage.setItem("siteTheme", JSON.stringify(saved));
+        }
+      });
+
+      // custom favicon file handler
+      customIconIn.addEventListener("change", () => {
+        if (
+          document.querySelector('input[name="siteTheme"]:checked').value === "custom" &&
+          customIconIn.files.length
+        ) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const iconData = reader.result;
+            const title    = customTitleIn.value || defaultTitle;
+            applyTheme({ title, icon: iconData });
+            saved = { mode: "custom", title, icon: iconData };
+            localStorage.setItem("siteTheme", JSON.stringify(saved));
+          };
+          reader.readAsDataURL(customIconIn.files[0]);
+        }
+      });
+    }
   }
-
-  // 4.6) Radio change handler
-  radios.forEach(radio => radio.addEventListener("change", () => {
-    const mode = radio.value;
-    if (mode === "custom") {
-      customOptions.style.display = "block";
-      saved = { mode:"custom", title: defaultTitle, icon: defaultIcon };
-      localStorage.setItem("siteTheme", JSON.stringify(saved));
-    } else {
-      customOptions.style.display = "none";
-      applyTheme(PRESETS[mode]);
-      localStorage.setItem("siteTheme", JSON.stringify({ mode }));
-    }
-  }));
-
-  // 4.7) Custom title input handler
-  customTitleIn.addEventListener("input", () => {
-    if (document.querySelector('input[name="siteTheme"]:checked').value === "custom") {
-      const title = customTitleIn.value || defaultTitle;
-      const icon  = saved.icon || defaultIcon;
-      applyTheme({ title, icon });
-      saved = { mode:"custom", title, icon };
-      localStorage.setItem("siteTheme", JSON.stringify(saved));
-    }
-  });
-
-  // 4.8) Custom icon file input handler
-  customIconIn.addEventListener("change", () => {
-    if (
-      document.querySelector('input[name="siteTheme"]:checked').value === "custom" &&
-      customIconIn.files.length
-    ) {
-      const file = customIconIn.files[0];
-      const reader = new FileReader();
-      reader.onload = () => {
-        const iconData = reader.result;
-        const title    = customTitleIn.value || defaultTitle;
-        applyTheme({ title, icon: iconData });
-        saved = { mode:"custom", title, icon: iconData };
-        localStorage.setItem("siteTheme", JSON.stringify(saved));
-      };
-      reader.readAsDataURL(file);
-    }
-  });
-
   // ──────────────────────────────────────────────────
 
 }); // end DOMContentLoaded
