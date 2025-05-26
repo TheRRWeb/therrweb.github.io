@@ -221,18 +221,21 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ──────────────────────────────────────────────────
-  // 4) Title & Favicon Selector (robust across pages)
+  // 4) Title & Favicon Selector (with debug)
   // ──────────────────────────────────────────────────
 
-  // 4.1) Grab favicon link and page defaults
+  // 4.1) Grab favicon links and defaults
   const faviconLink         = document.getElementById("favicon");
   const shortcutFaviconLink = document.querySelector("link[rel='shortcut icon']");
   const defaultTitle        = document.title;
   const defaultIcon         = faviconLink ? faviconLink.href : "";
 
-  // 4.2) Bail if no favicon link present
+  console.log("🔥 faviconLink is", faviconLink);
+  console.log("🔥 shortcutFaviconLink is", shortcutFaviconLink);
+
+  // 4.2) Bail if no favicon link
   if (faviconLink) {
-    // 4.3) Presets (none restores defaults)
+    // 4.3) Presets
     const PRESETS = {
       none:   { title: defaultTitle, icon: defaultIcon },
       google: {
@@ -245,58 +248,58 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
 
-    // 4.4) applyTheme helper updates both link types
+    // 4.4) applyTheme updates both links
     function applyTheme(theme) {
       document.title = theme.title;
       faviconLink.href = theme.icon;
       if (shortcutFaviconLink) shortcutFaviconLink.href = theme.icon;
+      console.log("✅ applied theme:", theme);
     }
 
-    // 4.5) Load saved or default theme
+    // 4.5) Load saved or default
     let saved = {};
     try { saved = JSON.parse(localStorage.getItem("siteTheme")) || {}; }
     catch(_) {}
     if (saved.mode) {
       if (saved.mode === "custom") {
-        applyTheme({ title: saved.title || defaultTitle, icon: saved.icon || defaultIcon });
+        applyTheme({ title: saved.title||defaultTitle, icon: saved.icon||defaultIcon });
       } else {
-        applyTheme(PRESETS[saved.mode] || PRESETS.none);
+        applyTheme(PRESETS[saved.mode]||PRESETS.none);
       }
     } else {
-      // first visit: preselect none and restore defaults
+      // first visit: preselect none & restore defaults
       const noneRadio = document.querySelector('input[name="siteTheme"][value="none"]');
       if (noneRadio) noneRadio.checked = true;
       applyTheme(PRESETS.none);
     }
 
-    // 4.6) If selector controls exist, wire them up
+    // 4.6) Wire up controls if present
     const radios        = document.querySelectorAll('input[name="siteTheme"]');
     const customOptions = document.getElementById("custom-options");
     const customTitleIn = document.getElementById("custom-title-input");
     const customIconIn  = document.getElementById("custom-icon-input");
 
     if (radios.length && customOptions && customTitleIn && customIconIn) {
-      // radio change handler
+      // radio change
       radios.forEach(radio => radio.addEventListener("change", () => {
         const mode = radio.value;
         if (mode === "custom") {
           customOptions.style.display = "block";
-          saved = { mode: "custom", title: defaultTitle, icon: defaultIcon };
+          saved = { mode:"custom", title: defaultTitle, icon: defaultIcon };
           localStorage.setItem("siteTheme", JSON.stringify(saved));
         } else {
           customOptions.style.display = "none";
-          applyTheme(PRESETS[mode] || PRESETS.none);
+          applyTheme(PRESETS[mode]||PRESETS.none);
           localStorage.setItem("siteTheme", JSON.stringify({ mode }));
         }
       }));
 
-      // custom title live‑update
+      // custom title live update
       customTitleIn.addEventListener("input", () => {
         if (document.querySelector('input[name="siteTheme"]:checked').value === "custom") {
           const title = customTitleIn.value || defaultTitle;
-          const icon  = saved.icon || defaultIcon;
-          applyTheme({ title, icon });
-          saved = { mode: "custom", title, icon };
+          applyTheme({ title, icon: saved.icon||defaultIcon });
+          saved = { mode:"custom", title, icon: saved.icon||defaultIcon };
           localStorage.setItem("siteTheme", JSON.stringify(saved));
         }
       });
@@ -310,9 +313,10 @@ document.addEventListener("DOMContentLoaded", () => {
           const reader = new FileReader();
           reader.onload = () => {
             const iconData = reader.result;
-            const title    = customTitleIn.value || defaultTitle;
+            console.log("📌 loaded data URL:", iconData.slice(0,30) + "…");
+            const title = customTitleIn.value || defaultTitle;
             applyTheme({ title, icon: iconData });
-            saved = { mode: "custom", title, icon: iconData };
+            saved = { mode:"custom", title, icon: iconData };
             localStorage.setItem("siteTheme", JSON.stringify(saved));
           };
           reader.readAsDataURL(customIconIn.files[0]);
@@ -320,6 +324,5 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   }
-  // ──────────────────────────────────────────────────
 
 }); // end DOMContentLoaded
