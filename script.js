@@ -15,9 +15,6 @@ document.addEventListener("DOMContentLoaded", () => {
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // Grab the span if present
-  const userMembershipSpan = document.getElementById("user-membership");
-
   // ------------------------------------------------
   // 1) Site‑wide: membership toggles (memshow/hide)
   // ------------------------------------------------
@@ -28,16 +25,15 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".memhide")
       .forEach(el => el.style.display = isMember ? "none" : "block");
   }
+  const userMembershipSpan = document.getElementById("user-membership");
 
-  // Single auth listener for everything
   firebase.auth().onAuthStateChanged(async user => {
     if (!user) {
       applyMembershipView(false);
       if (userMembershipSpan) userMembershipSpan.textContent = "";
       return;
     }
-
-    // ** Try UID first, then fallback to email **
+    // check membership by UID then email
     let snap = await db.collection("membership").doc(user.uid).get().catch(() => null);
     if (!snap || !snap.exists) {
       snap = await db.collection("membership").doc(user.email).get().catch(() => null);
@@ -49,12 +45,11 @@ document.addEventListener("DOMContentLoaded", () => {
       userMembershipSpan.textContent = currentIsMember ? "Membership" : "";
     }
 
-    // Also toggle account‑page UI here
-    const signedOutView   = document.getElementById("auth-container");
-    const signedInView    = document.getElementById("user-controls");
-    const userEmailSpan   = document.getElementById("user-email");
-    const userUidSpan     = document.getElementById("user-uid");
-
+    // toggle account‑page views
+    const signedOutView  = document.getElementById("auth-container");
+    const signedInView   = document.getElementById("user-controls");
+    const userEmailSpan  = document.getElementById("user-email");
+    const userUidSpan    = document.getElementById("user-uid");
     if (signedOutView && signedInView) {
       signedOutView.style.display = user ? "none" : "block";
       signedInView .style.display = user ? "block": "none";
@@ -63,10 +58,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (userUidSpan)   userUidSpan.textContent   = user.uid;
   });
 
-  // prevent tampering
-  const obs = new MutationObserver(() => applyMembershipView(currentIsMember));
+  // prevent DOM‑tampering
+  const tamperObserver = new MutationObserver(() => applyMembershipView(currentIsMember));
   document.querySelectorAll(".memshow, .memhide")
-    .forEach(el => obs.observe(el, { attributes: true, attributeFilter: ["style","class"] }));
+    .forEach(el => tamperObserver.observe(el, { attributes: true, attributeFilter: ["style","class"] }));
 
   // -----------------------------------
   // 2) Account‑page only logic (guarded)
@@ -133,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // Change Password (Reset Link)
+    // Change Password (reset link)
     changePasswordBtn.addEventListener("click", () => {
       const u = firebase.auth().currentUser;
       if (u) {
@@ -145,13 +140,13 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // Delete Account + Cleanup
+    // Delete Account + cleanup
     deleteAccountBtn.addEventListener("click", async () => {
       const u = firebase.auth().currentUser;
       if (!u || !confirm("Delete account AND all your cloud data?")) return;
       try {
         await db.collection("userdata").doc(u.uid).delete();
-        await db.collection("membership").doc(u.uid).delete().catch(()=>{});
+        await db.collection("membership").doc(u.uid).delete().catch(() => {});
         await u.delete();
         alert("Deleted account & data."); location.reload();
       } catch (e) {
@@ -194,11 +189,12 @@ document.addEventListener("DOMContentLoaded", () => {
         .catch(e => { console.error(e); alert("Sign‑out failed."); });
     });
 
-    // Clear local
+    // Clear LocalStorage
     clearLocalBtn.addEventListener("click", () => {
       if (confirm("Clear all localStorage?")) { localStorage.clear(); alert("Cleared."); }
     });
-    // Clear Firestore
+
+    // Clear Firestore data
     clearFirestoreBtn.addEventListener("click", async () => {
       const u = firebase.auth().currentUser;
       if (!u) return alert("Sign in first.");
@@ -211,12 +207,118 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-});
-function myFunction() {
-  var x = document.getElementById("Navbar");
-  if (x.className === "navbar") {
-    x.className += " responsive";
-  } else {
-    x.className = "navbar";
+
+  function myFunction() {
+    var x = document.getElementById("Navbar");
+    if (x.className === "navbar") {
+      x.className += " responsive";
+    } else {
+      x.className = "navbar";
+    }
   }
-}
+
+  // ──────────────────────────────────────────────────
+  // 4) Title & Favicon Selector
+  // ──────────────────────────────────────────────────
+
+  // 4.1) Grab favicon link & defaults
+  const faviconLink  = document.getElementById("favicon");
+  const defaultTitle = document.title;
+  const defaultIcon  = faviconLink ? faviconLink.href : "";
+
+  // 4.2) Presets (none restores defaults)
+  const PRESETS = {
+    none:   { title: defaultTitle, icon: defaultIcon },
+    google: {
+      title: "Google",
+      icon:  "https://www.gstatic.com/classroom/icongrayscale/teacher/48dp.png"
+    },
+    teams: {
+      title: "Microsoft Teams",
+      icon:  "https://static2.sharepointonline.com/files/fabric/assets/brand-icons/product/svg/teams_48x1.svg"
+    }
+  };
+
+  // 4.3) Elements
+  const radios        = document.querySelectorAll('input[name="siteTheme"]');
+  const customOptions = document.getElementById("custom-options");
+  const customTitleIn = document.getElementById("custom-title-input");
+  const customIconIn  = document.getElementById("custom-icon-input");
+
+  // 4.4) applyTheme helper
+  function applyTheme(theme) {
+    document.title = theme.title;
+    if (faviconLink) faviconLink.href = theme.icon;
+  }
+
+  // 4.5) Load saved or default
+  let saved = {};
+  try {
+    saved = JSON.parse(localStorage.getItem("siteTheme")) || {};
+  } catch (_) {}
+
+  if (saved.mode) {
+    // saved choice exists
+    const sel = document.querySelector(`input[name="siteTheme"][value="${saved.mode}"]`);
+    if (sel) sel.checked = true;
+    customOptions.style.display = saved.mode === "custom" ? "block" : "none";
+    if (saved.mode === "custom") {
+      customTitleIn.value = saved.title || defaultTitle;
+      applyTheme({ title: saved.title || defaultTitle, icon: saved.icon || defaultIcon });
+    } else {
+      applyTheme(PRESETS[saved.mode] || PRESETS.none);
+    }
+  } else {
+    // first visit → preselect “none” and restore defaults
+    const noneRadio = document.querySelector('input[name="siteTheme"][value="none"]');
+    if (noneRadio) noneRadio.checked = true;
+    applyTheme(PRESETS.none);
+  }
+
+  // 4.6) Radio change handler
+  radios.forEach(radio => radio.addEventListener("change", () => {
+    const mode = radio.value;
+    if (mode === "custom") {
+      customOptions.style.display = "block";
+      saved = { mode:"custom", title: defaultTitle, icon: defaultIcon };
+      localStorage.setItem("siteTheme", JSON.stringify(saved));
+    } else {
+      customOptions.style.display = "none";
+      applyTheme(PRESETS[mode]);
+      localStorage.setItem("siteTheme", JSON.stringify({ mode }));
+    }
+  }));
+
+  // 4.7) Custom title input handler
+  customTitleIn.addEventListener("input", () => {
+    if (document.querySelector('input[name="siteTheme"]:checked').value === "custom") {
+      const title = customTitleIn.value || defaultTitle;
+      const icon  = saved.icon || defaultIcon;
+      applyTheme({ title, icon });
+      saved = { mode:"custom", title, icon };
+      localStorage.setItem("siteTheme", JSON.stringify(saved));
+    }
+  });
+
+  // 4.8) Custom icon file input handler
+  customIconIn.addEventListener("change", () => {
+    if (
+      document.querySelector('input[name="siteTheme"]:checked').value === "custom" &&
+      customIconIn.files.length
+    ) {
+      const file = customIconIn.files[0];
+      const reader = new FileReader();
+      reader.onload = () => {
+        const iconData = reader.result;
+        const title    = customTitleIn.value || defaultTitle;
+        applyTheme({ title, icon: iconData });
+        saved = { mode:"custom", title, icon: iconData };
+        localStorage.setItem("siteTheme", JSON.stringify(saved));
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // ──────────────────────────────────────────────────
+
+}); // end DOMContentLoaded
