@@ -46,13 +46,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // toggle account‑page views
-    const signedOutView  = document.getElementById("auth-container");
-    const signedInView   = document.getElementById("user-controls");
-    const userEmailSpan  = document.getElementById("user-email");
-    const userUidSpan    = document.getElementById("user-uid");
+    const signedOutView = document.getElementById("auth-container");
+    const signedInView  = document.getElementById("user-controls");
+    const userEmailSpan = document.getElementById("user-email");
+    const userUidSpan   = document.getElementById("user-uid");
     if (signedOutView && signedInView) {
       signedOutView.style.display = user ? "none" : "block";
-      signedInView.style.display  = user ? "block" : "none";
+      signedInView .style.display = user ? "block" : "none";
     }
     if (userEmailSpan) userEmailSpan.textContent = user.email;
     if (userUidSpan)   userUidSpan.textContent   = user.uid;
@@ -61,7 +61,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // prevent DOM‑tampering
   const tamperObserver = new MutationObserver(() => applyMembershipView(currentIsMember));
   document.querySelectorAll(".memshow, .memhide")
-    .forEach(el => tamperObserver.observe(el, { attributes: true, attributeFilter: ["style","class"] }));
+    .forEach(el => tamperObserver.observe(el, {
+      attributes: true,
+      attributeFilter: ["style","class"]
+    }));
 
   // -----------------------------------
   // 2) Account‑page only logic (guarded)
@@ -208,9 +211,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // -----------------------------
-  // 3) Navbar toggle (site‑wide)
-  // -----------------------------
   function myFunction() {
     var x = document.getElementById("Navbar");
     if (x.className === "navbar") {
@@ -225,9 +225,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // ──────────────────────────────────────────────────
 
   // 4.1) Grab favicon link and page defaults
-  const faviconLink  = document.getElementById("favicon");
-  const defaultTitle = document.title;
-  const defaultIcon  = faviconLink ? faviconLink.href : "";
+  const faviconLink         = document.getElementById("favicon");
+  const shortcutFaviconLink = document.querySelector("link[rel='shortcut icon']");
+  const defaultTitle        = document.title;
+  const defaultIcon         = faviconLink ? faviconLink.href : "";
 
   // 4.2) Bail if no favicon link present
   if (faviconLink) {
@@ -244,10 +245,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
 
-    // 4.4) applyTheme helper
+    // 4.4) applyTheme helper updates both link types
     function applyTheme(theme) {
       document.title = theme.title;
       faviconLink.href = theme.icon;
+      if (shortcutFaviconLink) shortcutFaviconLink.href = theme.icon;
     }
 
     // 4.5) Load saved or default theme
