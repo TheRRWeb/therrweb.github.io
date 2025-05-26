@@ -221,7 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ──────────────────────────────────────────────────
-  // 4) Title & Favicon Selector (with debug)
+  // 4) Title & Favicon Selector (clean)
   // ──────────────────────────────────────────────────
 
   // 4.1) Grab favicon links and defaults
@@ -230,12 +230,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const defaultTitle        = document.title;
   const defaultIcon         = faviconLink ? faviconLink.href : "";
 
-  console.log("🔥 faviconLink is", faviconLink);
-  console.log("🔥 shortcutFaviconLink is", shortcutFaviconLink);
-
   // 4.2) Bail if no favicon link
   if (faviconLink) {
-    // 4.3) Presets
+    // 4.3) Presets (to change icons, edit these URLs)
     const PRESETS = {
       none:   { title: defaultTitle, icon: defaultIcon },
       google: {
@@ -248,12 +245,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
 
-    // 4.4) applyTheme updates both links
+    // 4.4) applyTheme helper updates both links
     function applyTheme(theme) {
       document.title = theme.title;
       faviconLink.href = theme.icon;
       if (shortcutFaviconLink) shortcutFaviconLink.href = theme.icon;
-      console.log("✅ applied theme:", theme);
     }
 
     // 4.5) Load saved or default
@@ -313,7 +309,6 @@ document.addEventListener("DOMContentLoaded", () => {
           const reader = new FileReader();
           reader.onload = () => {
             const iconData = reader.result;
-            console.log("📌 loaded data URL:", iconData.slice(0,30) + "…");
             const title = customTitleIn.value || defaultTitle;
             applyTheme({ title, icon: iconData });
             saved = { mode:"custom", title, icon: iconData };
