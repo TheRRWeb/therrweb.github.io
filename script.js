@@ -1,5 +1,8 @@
 // script.js
 document.addEventListener("DOMContentLoaded", () => {
+  if (localStorage.getItem("r-touch") === null) {
+    localStorage.setItem("r-touch", "on");
+  }
   // -----------------------------
   // 0) Firebase Initialization
   // -----------------------------
