@@ -329,7 +329,7 @@ document.addEventListener("DOMContentLoaded", () => {
     rtToggle.checked = isOn;
     rtToggle.addEventListener("change", () => {
       if (rtToggle.checked) localStorage.setItem("r-touch","on");
-      else                  localStorage.removeItem("r-touch");
+      else                  localStorage.setItem("r-touch", "off");
       window.dispatchEvent(new Event("r-touch-changed"));
     });
   }
