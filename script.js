@@ -325,22 +325,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const rtToggle = document.getElementById("r-touch-toggle");
 
   if (rtToggle) {
-    // 1. Initialize the checkbox based on localStorage
-    function updateCheckboxFromStorage() {
-      const isOn = localStorage.getItem("r-touch") === "on";
-      rtToggle.checked = isOn;
+    // Update checkbox from localStorage
+    function syncCheckboxWithLocalStorage() {
+      rtToggle.checked = localStorage.getItem("r-touch") === "on";
     }
 
-    updateCheckboxFromStorage(); // set initial state
+    // Init
+    syncCheckboxWithLocalStorage();
 
-    // 2. Save to localStorage when user changes checkbox
+    // Update localStorage when checkbox changes
     rtToggle.addEventListener("change", () => {
-      localStorage.setItem("r-touch", rtToggle.checked ? "on" : "off");
+      const newVal = rtToggle.checked ? "on" : "off";
+      localStorage.setItem("r-touch", newVal);
       window.dispatchEvent(new Event("r-touch-changed"));
     });
 
-    // 3. If the toolbar or anything else changes localStorage, keep checkbox in sync
-    window.addEventListener("r-touch-changed", updateCheckboxFromStorage);
+    // Listen for external changes (toolbar or anything else)
+    window.addEventListener("r-touch-changed", syncCheckboxWithLocalStorage);
   }
   // Toolbar‑pos radios in Account.html
   const toolbarRadios = document.querySelectorAll('#toolbar-selector input[name="toolbar-pos"]');
