@@ -330,4 +330,15 @@ document.addEventListener("DOMContentLoaded", () => {
       window.dispatchEvent(new Event("r-touch-changed"));
     });
   }
+  const posSelect = document.getElementById("toolbar-pos-select");
+  if (posSelect) {
+    // Initialize from localStorage
+    posSelect.value = localStorage.getItem("toolbar-pos") || "right";
+
+    posSelect.addEventListener("change", () => {
+      localStorage.setItem("toolbar-pos", posSelect.value);
+      // inform toolbar script if it’s loaded
+      window.dispatchEvent(new Event("toolbar-pos-changed"));
+    });
+  }
 }); // end DOMContentLoaded
