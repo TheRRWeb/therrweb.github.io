@@ -322,17 +322,27 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   }
- const rtToggle = document.getElementById("r-touch-toggle");
+  const rtToggle = document.getElementById("r-touch-toggle");
   if (rtToggle) {
-    // init from localStorage
-    const isOn = localStorage.getItem("r-touch")==="on";
+    // 1) Initialize from localStorage
+    const isOn = localStorage.getItem("r-touch") === "on";
     rtToggle.checked = isOn;
+
+    // 2) When the user flips the checkbox, update storage + notify
     rtToggle.addEventListener("change", () => {
-      if (rtToggle.checked) localStorage.setItem("r-touch","on");
-      else                  localStorage.setItem("r-touch", "off");
+      if (rtToggle.checked) {
+        localStorage.setItem("r-touch", "on");
+      } else {
+        localStorage.setItem("r-touch", "off");
+      }
       window.dispatchEvent(new Event("r-touch-changed"));
     });
   }
+  // 3) If toolbar toggles it, mirror that change back into the checkbox
+  window.addEventListener("r-touch-changed", () => {
+    rtToggle.checked = (localStorage.getItem("r-touch") === "on");
+  });
+}
   // Toolbar‑pos radios in Account.html
   const toolbarRadios = document.querySelectorAll('#toolbar-selector input[name="toolbar-pos"]');
   if (toolbarRadios.length) {
