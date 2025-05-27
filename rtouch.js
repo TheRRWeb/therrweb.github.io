@@ -13,7 +13,7 @@
       font-size: 32px;
       line-height: 60px;
       text-align: center;
-      background: #2a2a2a;
+      background: red;
       color: #dedede;
       border-radius: 8px;
       cursor: move;
