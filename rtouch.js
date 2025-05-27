@@ -13,14 +13,14 @@
       font-size: 32px;
       line-height: 60px;
       text-align: center;
-      background: red;
+      background: red;              /* always red now */
       color: #dedede;
       border-radius: 8px;
       cursor: move;
       z-index: 2000;
       user-select: none;
     }
-    #gameToolbar:hover { background: #333; }
+    #gameToolbar:hover { background: darkred; }
     #gameMenu {
       position: fixed;
       top: 90px;
@@ -60,61 +60,55 @@
   const menu = document.createElement("div");
   menu.id = "gameMenu";
 
-  // ---- Menu items ----
-  const backItem = Object.assign(document.createElement("div"), {
-    className: "gameMenuItem",
-    textContent: "Back to The RR Games"
-  });
-  backItem.addEventListener("click", () => {
-    window.location.href = "/games/";
-  });
+  // Back to games
+  const backItem = document.createElement("div");
+  backItem.className = "gameMenuItem";
+  backItem.textContent = "Back to The RR Games";
+  backItem.addEventListener("click", () => window.location.href = "/games/");
 
-  const rtItem = Object.assign(document.createElement("div"), {
-    className: "gameMenuItem toggle",
-  });
+  // R Touch toggle
+  const rtItem = document.createElement("div");
+  rtItem.className = "gameMenuItem toggle";
   const rtLabel = document.createElement("span");
   const rtSwitch = document.createElement("span");
   rtItem.append(rtLabel, rtSwitch);
-
-  function refreshRTItem() {
-    const on = localStorage.getItem("r-touch") === "on";
+  function refreshRT() {
+    const on = localStorage.getItem("r-touch")==="on";
     rtLabel.textContent  = "R Touch:";
     rtSwitch.textContent = on ? "ON" : "OFF";
     rtSwitch.style.color = on ? "#5cc93b" : "#ff4d4d";
   }
   rtItem.addEventListener("click", () => {
-    const on = localStorage.getItem("r-touch") === "on";
-    if (on) localStorage.removeItem("r-touch");
-    else    localStorage.setItem   ("r-touch", "on");
-    refreshRTItem();
-    // notify touch‑control script
+    if (localStorage.getItem("r-touch")==="on") localStorage.removeItem("r-touch");
+    else localStorage.setItem("r-touch","on");
+    refreshRT();
     window.dispatchEvent(new Event("r-touch-changed"));
   });
 
-  const closeItem = Object.assign(document.createElement("div"), {
-    className: "gameMenuItem",
-    textContent: "Close the game immediately"
-  });
+  // Close the game
+  const closeItem = document.createElement("div");
+  closeItem.className = "gameMenuItem";
+  closeItem.textContent = "Close the game immediately";
   closeItem.addEventListener("click", () => {
-    // Try window.close(); if that fails, navigate away
     window.close();
     window.location.href = "about:blank";
   });
 
   menu.append(backItem, rtItem, closeItem);
   document.body.append(toolbar, menu);
-
-  // initialize
-  refreshRTItem();
+  refreshRT();
 
   // ─────────────────────────────────────────────────────
   // 3) Toggle menu visibility
   // ─────────────────────────────────────────────────────
-  toolbar.addEventListener("click", () => {
+  toolbar.addEventListener("click", e => {
+    e.stopPropagation();
     menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+    // position menu beneath toolbar
+    const rect = toolbar.getBoundingClientRect();
+    menu.style.left = rect.left + "px";
+    menu.style.top  = (rect.bottom + 10) + "px";
   });
-
-  // Hide menu if clicking outside
   document.addEventListener("click", e => {
     if (!toolbar.contains(e.target) && !menu.contains(e.target)) {
       menu.style.display = "none";
@@ -122,38 +116,39 @@
   });
 
   // ─────────────────────────────────────────────────────
-  // 4) Drag behavior
+  // 4) Drag behavior (desktop)
   // ─────────────────────────────────────────────────────
-  let isDragging = false, startX, startY, origX, origY;
+  let dragging = false, startX, startY, origX, origY;
   toolbar.addEventListener("mousedown", e => {
-    isDragging = true;
+    dragging = true;
     startX = e.clientX; startY = e.clientY;
     const rect = toolbar.getBoundingClientRect();
     origX = rect.left; origY = rect.top;
+    // clear right so left takes over
+    toolbar.style.right = "auto";
+    menu   .style.right = "auto";
     e.preventDefault();
   });
   document.addEventListener("mousemove", e => {
-    if (!isDragging) return;
-    let dx = e.clientX - startX, dy = e.clientY - startY;
-    toolbar.style.left = `${origX + dx}px`;
-    toolbar.style.top  = `${origY + dy}px`;
-    menu .style.left  = `${origX + dx}px`;
-    menu .style.top   = `${origY + dy + toolbar.offsetHeight + 10}px`;
+    if (!dragging) return;
+    const dx = e.clientX - startX, dy = e.clientY - startY;
+    toolbar.style.left = (origX + dx) + "px";
+    toolbar.style.top  = (origY + dy) + "px";
+    // move menu in tandem
+    menu.style.left = (origX + dx) + "px";
+    menu.style.top  = (origY + dy + toolbar.offsetHeight + 10) + "px";
   });
-  document.addEventListener("mouseup", () => {
-    isDragging = false;
-  });
+  document.addEventListener("mouseup", () => { dragging = false; });
 
   // ─────────────────────────────────────────────────────
-  // 5) Activate touch controls only when R Touch is on
+  // 5) Initialize touch controls if R‑Touch is on
   // ─────────────────────────────────────────────────────
-  function maybeInitTouch() {
-    if (window.initializeTouchControls && localStorage.getItem("r-touch") === "on") {
+  function initTouchIfOn() {
+    if (typeof window.initializeTouchControls === "function"
+      && localStorage.getItem("r-touch")==="on") {
       window.initializeTouchControls();
     }
   }
-  // Run on load
-  maybeInitTouch();
-  // And any time the toggle changes
-  window.addEventListener("r-touch-changed", maybeInitTouch);
+  initTouchIfOn();
+  window.addEventListener("r-touch-changed", initTouchIfOn);
 })();
