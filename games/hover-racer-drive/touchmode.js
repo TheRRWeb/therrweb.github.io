@@ -1,5 +1,8 @@
-(function() {
-  // Create and append styles
+// touch-controls.js
+
+// Expose a global initializer—does NOT auto-run
+window.initializeTouchControls = function() {
+  // 1) Inject touch‑button styles
   const style = document.createElement('style');
   style.textContent = `
     .touch-controls {
@@ -31,57 +34,51 @@
   `;
   document.head.appendChild(style);
 
-  // Create container
+  // 2) Create the control container + buttons
   const container = document.createElement('div');
   container.className = 'touch-controls';
 
-  // Create left button
   const leftButton = document.createElement('button');
   leftButton.className = 'touch-button left-button';
   leftButton.textContent = '<';
 
-  // Create right button
   const rightButton = document.createElement('button');
   rightButton.className = 'touch-button right-button';
   rightButton.textContent = '>';
 
-  // Append buttons to container
-  container.appendChild(leftButton);
-  container.appendChild(rightButton);
-  document.body.appendChild(container);
+  container.append(leftButton, rightButton);
+  document.body.append(container);
 
-  // Function to simulate key events
+  // 3) Key‑event simulator
   function simulateKeyEvent(key, type) {
-    const event = new KeyboardEvent(type, {
-      key: key,
-      code: key,
-      keyCode: key === 'ArrowLeft' ? 37 : 39,
-      which: key === 'ArrowLeft' ? 37 : 39,
-      bubbles: true,
-      cancelable: true
+    const code = key === 'ArrowLeft' ? 37 : 39;
+    const evt = new KeyboardEvent(type, {
+      key, code: key,
+      keyCode: code, which: code,
+      bubbles: true, cancelable: true
     });
-    document.dispatchEvent(event);
+    document.dispatchEvent(evt);
   }
 
-  // Add touch event listeners
-  leftButton.addEventListener('touchstart', function(e) {
+  // 4) Touch listeners
+  leftButton.addEventListener('touchstart', e => {
     e.preventDefault();
-    simulateKeyEvent('ArrowLeft', 'keydown');
+    simulateKeyEvent('ArrowLeft','keydown');
   });
-  leftButton.addEventListener('touchend', function(e) {
+  leftButton.addEventListener('touchend', e => {
     e.preventDefault();
-    simulateKeyEvent('ArrowLeft', 'keyup');
-  });
-
-  rightButton.addEventListener('touchstart', function(e) {
-    e.preventDefault();
-    simulateKeyEvent('ArrowRight', 'keydown');
-  });
-  rightButton.addEventListener('touchend', function(e) {
-    e.preventDefault();
-    simulateKeyEvent('ArrowRight', 'keyup');
+    simulateKeyEvent('ArrowLeft','keyup');
   });
 
-  // Continuously monitor touch events
-  document.addEventListener('touchstart', function() {}, true);
-})();
+  rightButton.addEventListener('touchstart', e => {
+    e.preventDefault();
+    simulateKeyEvent('ArrowRight','keydown');
+  });
+  rightButton.addEventListener('touchend', e => {
+    e.preventDefault();
+    simulateKeyEvent('ArrowRight','keyup');
+  });
+
+  // 5) Dummy listener to activate passive touch handling
+  document.addEventListener('touchstart', () => {}, true);
+};
