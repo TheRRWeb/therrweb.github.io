@@ -1,94 +1,158 @@
 // game-toolbar.js
 (function() {
+  // ─────────────────────────────────────────────────────
   // 1) Inject CSS
+  // ─────────────────────────────────────────────────────
   const css = `
     #gameToolbar {
       position: fixed;
       top: 20px;
-      right: 20px;
-      width: 60px; height: 60px;
-      font-size: 32px; line-height: 60px;
+      /* we’ll set left/right in JS */
+      width: 60px;
+      height: 60px;
+      font-size: 32px;
+      line-height: 60px;
       text-align: center;
-      background: red; color: #dedede;
-      border-radius: 8px; cursor: move;
-      z-index: 2000; user-select: none;
-      touch-action: none; /* allow touch dragging */
+      background: red;
+      color: #dedede;
+      border-radius: 8px;
+      cursor: pointer;
+      z-index: 2000;
+      user-select: none;
+      touch-action: none;
     }
-    #gameToolbar:hover { background: red; }
     #gameMenu {
       position: fixed;
       background: #2a2a2a;
       border: 1px solid #5cc93b;
       border-radius: 5px;
-      padding: 8px 0; display: none;
-      flex-direction: column; z-index: 2000;
+      padding: 4px 0;
+      display: none;
+      flex-direction: column;
+      z-index: 2000;
     }
     .gameMenuItem {
-      color: #dedede; padding: 8px 16px;
-      font-size: 16px; cursor: pointer;
+      color: #dedede;
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
       white-space: nowrap;
     }
-    .gameMenuItem:hover { background: #4193c9; }
+    .gameMenuItem:hover {
+      background: #4193c9;
+    }
     .gameMenuItem.toggle {
-      display: flex; justify-content: space-between;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
     }
-    .gameMenuItem.toggle span { font-weight: bold; }
+    .gameMenuItem.toggle span {
+      font-weight: bold;
+    }
   `;
-  const st = document.createElement("style");
-  st.textContent = css;
-  document.head.appendChild(st);
+  const styleTag = document.createElement("style");
+  styleTag.textContent = css;
+  document.head.appendChild(styleTag);
 
-  // 2) Build toolbar + menu
+  // ─────────────────────────────────────────────────────
+  // 2) Build toolbar & menu elements
+  // ─────────────────────────────────────────────────────
   const toolbar = document.createElement("div");
   toolbar.id = "gameToolbar";
   toolbar.textContent = "🎮";
+
   const menu = document.createElement("div");
   menu.id = "gameMenu";
 
-  // Menu items
+  // — Move toggle item
+  const posItem = document.createElement("div");
+  posItem.className = "gameMenuItem toggle";
+  const posLabel = document.createElement("span");
+  const posSwitch = document.createElement("span");
+  posItem.append(posLabel, posSwitch);
+
+  function refreshPosition() {
+    const pos = localStorage.getItem("toolbar-pos") || "right";
+    posLabel.textContent = "Move:";
+    posSwitch.textContent = pos === "right" ? "Right" : "Left";
+    // Clear both before setting one
+    toolbar.style.left = toolbar.style.right = "";
+    if (pos === "right") {
+      toolbar.style.right = "20px";
+    } else {
+      toolbar.style.left = "20px";
+    }
+  }
+  posItem.addEventListener("click", () => {
+    const curr = localStorage.getItem("toolbar-pos") || "right";
+    const next = curr === "right" ? "left" : "right";
+    localStorage.setItem("toolbar-pos", next);
+    refreshPosition();
+  });
+
+  // — Back to games
   const backItem = document.createElement("div");
   backItem.className = "gameMenuItem";
   backItem.textContent = "Back to The RR Games";
-  backItem.addEventListener("click", () => location.href = "/games/");
+  backItem.addEventListener("click", () => {
+    window.location.href = "/games/";
+  });
 
+  // — R Touch toggle
   const rtItem = document.createElement("div");
   rtItem.className = "gameMenuItem toggle";
   const rtLabel = document.createElement("span");
   const rtSwitch = document.createElement("span");
   rtItem.append(rtLabel, rtSwitch);
+
   function refreshRT() {
-    const on = localStorage.getItem("r-touch")==="on";
-    rtLabel.textContent  = "R Touch:";
+    const on = localStorage.getItem("r-touch") === "on";
+    rtLabel.textContent = "R Touch:";
     rtSwitch.textContent = on ? "ON" : "OFF";
     rtSwitch.style.color = on ? "#5cc93b" : "#ff4d4d";
   }
   rtItem.addEventListener("click", () => {
-    if (localStorage.getItem("r-touch")==="on") localStorage.removeItem("r-touch");
-    else localStorage.setItem("r-touch","on");
+    if (localStorage.getItem("r-touch") === "on") {
+      localStorage.removeItem("r-touch");
+    } else {
+      localStorage.setItem("r-touch", "on");
+    }
     refreshRT();
     window.dispatchEvent(new Event("r-touch-changed"));
   });
 
+  // — Close game
   const closeItem = document.createElement("div");
   closeItem.className = "gameMenuItem";
   closeItem.textContent = "Close the game immediately";
   closeItem.addEventListener("click", () => {
     window.close();
-    location.href = "about:blank";
+    window.location.href = "about:blank";
   });
 
-  menu.append(backItem, rtItem, closeItem);
+  menu.append(posItem, backItem, rtItem, closeItem);
   document.body.append(toolbar, menu);
-  refreshRT();
 
-  // 3) Toggle menu placement/visibility
+  // ─────────────────────────────────────────────────────
+  // 3) Menu show/hide & inside‑screen positioning
+  // ─────────────────────────────────────────────────────
   toolbar.addEventListener("click", e => {
     e.stopPropagation();
-    menu.style.display = menu.style.display === "flex" ? "none" : "flex";
-    const rect = toolbar.getBoundingClientRect();
-    menu.style.left = rect.left + "px";
-    menu.style.top  = rect.bottom + 10 + "px";
+    const showing = menu.style.display === "flex";
+    menu.style.display = showing ? "none" : "flex";
+
+    // Position menu relative to toolbar
+    const tbRect = toolbar.getBoundingClientRect();
+    const pos = localStorage.getItem("toolbar-pos") || "right";
+
+    if (pos === "right") {
+      // menu to the left of button
+      menu.style.left = (tbRect.left - menu.offsetWidth - 10) + "px";
+    } else {
+      // menu to the right
+      menu.style.left = (tbRect.right + 10) + "px";
+    }
+    menu.style.top = tbRect.bottom + "px";
   });
   document.addEventListener("click", e => {
     if (!toolbar.contains(e.target) && !menu.contains(e.target)) {
@@ -96,65 +160,21 @@
     }
   });
 
-  // 4) Drag behavior (mouse + touch)
-  let dragging = false,
-      startX, startY,
-      origX, origY;
+  // ─────────────────────────────────────────────────────
+  // 4) Initialize states
+  // ─────────────────────────────────────────────────────
+  refreshPosition();
+  refreshRT();
 
-  function dragStart(clientX, clientY) {
-    dragging = true;
-    startX = clientX; startY = clientY;
-    const rect = toolbar.getBoundingClientRect();
-    origX = rect.left; origY = rect.top;
-    toolbar.style.left   = rect.left + "px";
-    toolbar.style.top    = rect.top  + "px";
-    toolbar.style.right  = "auto";
-    toolbar.style.bottom = "auto";
-    menu.style.right  = "auto";
-    menu.style.bottom = "auto";
-  }
-
-  function dragMove(clientX, clientY) {
-    if (!dragging) return;
-    const dx = clientX - startX, dy = clientY - startY;
-    toolbar.style.left = origX + dx + "px";
-    toolbar.style.top  = origY + dy + "px";
-    menu.style.left = origX + dx + "px";
-    menu.style.top  = origY + dy + toolbar.offsetHeight + 10 + "px";
-  }
-
-  function dragEnd() {
-    dragging = false;
-  }
-
-  // Mouse events
-  toolbar.addEventListener("mousedown", e => {
-    dragStart(e.clientX, e.clientY);
-    e.preventDefault();
-  });
-  document.addEventListener("mousemove", e => dragMove(e.clientX, e.clientY));
-  document.addEventListener("mouseup", () => dragEnd());
-
-  // Touch events
-  toolbar.addEventListener("touchstart", e => {
-    const t = e.touches[0];
-    dragStart(t.clientX, t.clientY);
-    e.preventDefault();
-  }, {passive: false});
-  document.addEventListener("touchmove", e => {
-    const t = e.touches[0];
-    dragMove(t.clientX, t.clientY);
-  }, {passive: false});
-  document.addEventListener("touchend", () => dragEnd());
-
-  // 5) Init touch controls if R‑Touch on
+  // ─────────────────────────────────────────────────────
+  // 5) Auto‑init touch controls if R‑Touch is ON
+  // ─────────────────────────────────────────────────────
   function initTouchIfOn() {
-    if (typeof initializeTouchControls === "function"
-      && localStorage.getItem("r-touch")==="on") {
-      initializeTouchControls();
+    if (typeof window.initializeTouchControls === "function" &&
+        localStorage.getItem("r-touch") === "on") {
+      window.initializeTouchControls();
     }
   }
   initTouchIfOn();
   window.addEventListener("r-touch-changed", initTouchIfOn);
-
 })();
