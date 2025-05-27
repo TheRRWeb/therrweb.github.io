@@ -244,9 +244,23 @@ document.addEventListener("DOMContentLoaded", () => {
   // 3) applyTheme helper
   function applyTheme(theme) {
     document.title = theme.title;
-    if (faviconLink)         faviconLink.href         = theme.icon;
-    if (shortcutFaviconLink) shortcutFaviconLink.href = theme.icon;
+    document
+      .querySelectorAll("link[rel='icon'], link[rel='shortcut icon']")
+      .forEach(el => el.remove());
+
+    const link1 = document.createElement("link");
+    link1.rel  = "icon";
+    link1.href = theme.icon;
+    link1.type = "image/x-icon";
+    document.head.appendChild(link1);
+
+    const link2 = document.createElement("link");
+    link2.rel  = "shortcut icon";
+    link2.href = theme.icon;
+    link2.type = "image/x-icon";
+    document.head.appendChild(link2);
   }
+
 
   // 4) Load last‑used theme
   let saved = {};
