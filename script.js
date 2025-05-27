@@ -330,15 +330,20 @@ document.addEventListener("DOMContentLoaded", () => {
       window.dispatchEvent(new Event("r-touch-changed"));
     });
   }
-  const posSelect = document.getElementById("toolbar-pos-select");
-  if (posSelect) {
-    // Initialize from localStorage
-    posSelect.value = localStorage.getItem("toolbar-pos") || "right";
+  // Toolbar‑pos radios in Account.html
+  const toolbarRadios = document.querySelectorAll('#toolbar-selector input[name="toolbar-pos"]');
+  if (toolbarRadios.length) {
+    // On load, check the saved or default ("right")
+    const saved = localStorage.getItem("toolbar-pos") || "right";
+    toolbarRadios.forEach(r => r.checked = (r.value === saved));
 
-    posSelect.addEventListener("change", () => {
-      localStorage.setItem("toolbar-pos", posSelect.value);
-      // inform toolbar script if it’s loaded
-      window.dispatchEvent(new Event("toolbar-pos-changed"));
+    // When user clicks a radio, save & notify
+    toolbarRadios.forEach(radio => {
+      radio.addEventListener("change", () => {
+        if (!radio.checked) return;
+        localStorage.setItem("toolbar-pos", radio.value);
+        window.dispatchEvent(new Event("toolbar-pos-changed"));
+      });
     });
   }
 }); // end DOMContentLoaded
