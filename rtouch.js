@@ -107,6 +107,7 @@
   closeItem.textContent = "Close the game immediately";
   closeItem.addEventListener("click", () => {
     window.close();
+    location.href = "about:blank";
   });
 
   menu.append(posItem, backItem, rtItem, closeItem);
