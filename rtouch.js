@@ -95,11 +95,8 @@
   }
 
   rtItem.addEventListener("click", () => {
-    if (localStorage.getItem("r-touch") === "on") {
-      localStorage.removeItem("r-touch");
-    } else {
-      localStorage.setItem("r-touch", "on");
-    }
+    const isOn = localStorage.getItem("r-touch") === "on";
+    localStorage.setItem("r-touch", isOn ? "off" : "on");
     refreshRT();
     window.dispatchEvent(new Event("r-touch-changed"));
   });
@@ -148,7 +145,7 @@
   // ─────────────────────────────────────────────────────
   refreshPosition();
   refreshRT();
-
+  window.addEventListener("r-touch-changed", refreshRT);
   // ─────────────────────────────────────────────────────
   // 5) Auto‑init touch controls if R‑Touch ON
   // ─────────────────────────────────────────────────────
