@@ -20,7 +20,7 @@
       z-index: 2000;
       user-select: none;
     }
-    #gameToolbar:hover { background: darkred; }
+    #gameToolbar:hover { background: red; }
     #gameMenu {
       position: fixed;
       top: 90px;
