@@ -1,8 +1,10 @@
 // touch-controls.js
 
-// Expose a global initializer—does NOT auto-run
-window.initializeTouchControls = function() {
-  // 1) Inject touch‑button styles
+(function() {
+  // Create a container ref so we can remove it later
+  let container = null;
+
+  // 1) Inject touch‑button styles once
   const style = document.createElement('style');
   style.textContent = `
     .touch-controls {
@@ -34,51 +36,71 @@ window.initializeTouchControls = function() {
   `;
   document.head.appendChild(style);
 
-  // 2) Create the control container + buttons
-  const container = document.createElement('div');
-  container.className = 'touch-controls';
+  // 2) Build & show the buttons
+  function showTouchControls() {
+    if (container) return; // already shown
+    container = document.createElement('div');
+    container.className = 'touch-controls';
 
-  const leftButton = document.createElement('button');
-  leftButton.className = 'touch-button left-button';
-  leftButton.textContent = '<';
+    const leftButton = document.createElement('button');
+    leftButton.className = 'touch-button left-button';
+    leftButton.textContent = '<';
 
-  const rightButton = document.createElement('button');
-  rightButton.className = 'touch-button right-button';
-  rightButton.textContent = '>';
+    const rightButton = document.createElement('button');
+    rightButton.className = 'touch-button right-button';
+    rightButton.textContent = '>';
 
-  container.append(leftButton, rightButton);
-  document.body.append(container);
+    container.append(leftButton, rightButton);
+    document.body.append(container);
 
-  // 3) Key‑event simulator
-  function simulateKeyEvent(key, type) {
-    const code = key === 'ArrowLeft' ? 37 : 39;
-    const evt = new KeyboardEvent(type, {
-      key, code: key,
-      keyCode: code, which: code,
-      bubbles: true, cancelable: true
+    // simulate arrow‑key events
+    function simulateKeyEvent(key, type) {
+      const code = key === 'ArrowLeft' ? 37 : 39;
+      const evt = new KeyboardEvent(type, {
+        key, code: key,
+        keyCode: code, which: code,
+        bubbles: true, cancelable: true
+      });
+      document.dispatchEvent(evt);
+    }
+
+    leftButton.addEventListener('touchstart', e => {
+      e.preventDefault(); simulateKeyEvent('ArrowLeft','keydown');
     });
-    document.dispatchEvent(evt);
+    leftButton.addEventListener('touchend',   e => {
+      e.preventDefault(); simulateKeyEvent('ArrowLeft','keyup');
+    });
+
+    rightButton.addEventListener('touchstart', e => {
+      e.preventDefault(); simulateKeyEvent('ArrowRight','keydown');
+    });
+    rightButton.addEventListener('touchend',   e => {
+      e.preventDefault(); simulateKeyEvent('ArrowRight','keyup');
+    });
+
+    // dummy listener to enable passive touch
+    document.addEventListener('touchstart', ()=>{}, true);
   }
 
-  // 4) Touch listeners
-  leftButton.addEventListener('touchstart', e => {
-    e.preventDefault();
-    simulateKeyEvent('ArrowLeft','keydown');
-  });
-  leftButton.addEventListener('touchend', e => {
-    e.preventDefault();
-    simulateKeyEvent('ArrowLeft','keyup');
-  });
+  // 3) Remove the buttons
+  function hideTouchControls() {
+    if (!container) return;
+    container.remove();
+    container = null;
+  }
 
-  rightButton.addEventListener('touchstart', e => {
-    e.preventDefault();
-    simulateKeyEvent('ArrowRight','keydown');
-  });
-  rightButton.addEventListener('touchend', e => {
-    e.preventDefault();
-    simulateKeyEvent('ArrowRight','keyup');
-  });
+  // 4) Check flag and show/hide accordingly
+  function update() {
+    if (localStorage.getItem('r-touch') === 'on') {
+      showTouchControls();
+    } else {
+      hideTouchControls();
+    }
+  }
 
-  // 5) Dummy listener to activate passive touch handling
-  document.addEventListener('touchstart', () => {}, true);
-};
+  // 5) Auto‑run on load
+  document.addEventListener('DOMContentLoaded', update);
+
+  // 6) Listen for changes
+  window.addEventListener('r-touch-changed', update);
+})();
