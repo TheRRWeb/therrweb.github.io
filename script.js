@@ -248,18 +248,23 @@ document.addEventListener("DOMContentLoaded", () => {
       .querySelectorAll("link[rel='icon'], link[rel='shortcut icon']")
       .forEach(el => el.remove());
 
+    const cacheBuster = "?v=" + Date.now();
+
     const link1 = document.createElement("link");
     link1.rel  = "icon";
-    link1.href = theme.icon;
     link1.type = "image/x-icon";
+    link1.href = theme.icon + cacheBuster;
     document.head.appendChild(link1);
 
     const link2 = document.createElement("link");
     link2.rel  = "shortcut icon";
-    link2.href = theme.icon;
     link2.type = "image/x-icon";
+    link2.href = theme.icon + cacheBuster;
     document.head.appendChild(link2);
+
+    console.log("Favicon set to", link1.href);
   }
+
 
 
   // 4) Load last‑used theme
