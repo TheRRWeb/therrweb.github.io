@@ -223,106 +223,99 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-    // 1) Grab the two favicon links once
-  const faviconLink         = document.querySelector("link[rel='icon']");
-  const shortcutFaviconLink = document.querySelector("link[rel='shortcut icon']");
+    const shortcutFaviconLink = document.querySelector("link[rel='shortcut icon']");
   const defaultTitle        = document.title;
   const defaultIcon         = faviconLink ? faviconLink.href : "";
 
-  // 2) Global presets
-  const PRESETS = {
-    none:   { title: defaultTitle, icon: defaultIcon },
-    google: {
-      title: "Google",
-      icon:  "https://www.gstatic.com/classroom/icongrayscale/teacher/48dp.png"
-    },
-    teams: {
-      title: "Microsoft Teams",
-      icon:  "https://static2.sharepointonline.com/files/fabric/assets/brand-icons/product/svg/teams_48x1.svg"
-    }
-  };
-
-  // 3) Helper to apply theme
-  function applyTheme(theme) {
-    document.title = theme.title;
-    if (faviconLink)         faviconLink.href         = theme.icon;
-    if (shortcutFaviconLink) shortcutFaviconLink.href = theme.icon;
-  }
-
-  // 4) Load saved theme once
-  let savedTheme = {};
-  try {
-    savedTheme = JSON.parse(localStorage.getItem("siteTheme")) || {};
-  } catch (_) {
-    savedTheme = {};
-  }
-  if (savedTheme.mode === "custom") {
-    applyTheme({ title: savedTheme.title, icon: savedTheme.icon });
-  } else if (savedTheme.mode) {
-    applyTheme(PRESETS[savedTheme.mode] || PRESETS.none);
-  } else {
-    // first visit: default to none
-    applyTheme(PRESETS.none);
-  }
-
-  // 5) Wire up each .disguise-mode block
-  document.querySelectorAll(".disguise-mode").forEach(block => {
-    const radios        = block.querySelectorAll("input[name='siteTheme']");
-    const customOpts    = block.querySelector(".custom-options");
-    const titleInput    = block.querySelector(".custom-title-input");
-    const iconInput     = block.querySelector(".custom-icon-input");
-
-    // Initialize radio state
-    if (savedTheme.mode) {
-      const sel = block.querySelector(
-        `input[name="siteTheme"][value="${savedTheme.mode}"]`
-      );
-      if (sel) sel.checked = true;
-      customOpts.style.display = savedTheme.mode === "custom" ? "block" : "none";
-      if (savedTheme.mode === "custom") {
-        titleInput.value = savedTheme.title || defaultTitle;
+  // 4.2) Bail if no favicon link
+  if (faviconLink) {
+    // 4.3) Presets (to change icons, edit these URLs)
+    const PRESETS = {
+      none:   { title: defaultTitle, icon: defaultIcon },
+      google: {
+        title: "Google",
+        icon:  "https://www.gstatic.com/classroom/icongrayscale/teacher/48dp.png"
+      },
+      teams: {
+        title: "Microsoft Teams",
+        icon:  "https://static2.sharepointonline.com/files/fabric/assets/brand-icons/product/svg/teams_48x1.svg"
       }
+    };
+
+    // 4.4) applyTheme helper updates both links
+    function applyTheme(theme) {
+      document.title = theme.title;
+      faviconLink.href = theme.icon;
+      if (shortcutFaviconLink) shortcutFaviconLink.href = theme.icon;
     }
 
-    // Radio change handler
-    radios.forEach(radio => radio.addEventListener("change", () => {
-      const mode = radio.value;
-      if (mode === "custom") {
-        customOpts.style.display = "block";
-        savedTheme = { mode:"custom", title: defaultTitle, icon: defaultIcon };
+    // 4.5) Load saved or default
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem("siteTheme")) || {}; }
+    catch(_) {}
+    if (saved.mode) {
+      if (saved.mode === "custom") {
+        applyTheme({ title: saved.title||defaultTitle, icon: saved.icon||defaultIcon });
       } else {
-        customOpts.style.display = "none";
-        applyTheme(PRESETS[mode] || PRESETS.none);
-        savedTheme = { mode };
+        applyTheme(PRESETS[saved.mode]||PRESETS.none);
       }
-      localStorage.setItem("siteTheme", JSON.stringify(savedTheme));
-    }));
+    } else {
+      // first visit: preselect none & restore defaults
+      const noneRadio = document.querySelector('input[name="siteTheme"][value="none"]');
+      if (noneRadio) noneRadio.checked = true;
+      applyTheme(PRESETS.none);
+    }
 
-    // Custom title input
-    titleInput.addEventListener("input", () => {
-      if (block.querySelector('input[name="siteTheme"]:checked').value === "custom") {
-        savedTheme.title = titleInput.value || defaultTitle;
-        applyTheme({ title: savedTheme.title, icon: savedTheme.icon });
-        localStorage.setItem("siteTheme", JSON.stringify(savedTheme));
-      }
-    });
+    // 4.6) Wire up controls if present
+    const radios        = document.querySelectorAll('input[name="siteTheme"]');
+    const customOptions = document.getElementById("custom-options");
+    const customTitleIn = document.getElementById("custom-title-input");
+    const customIconIn  = document.getElementById("custom-icon-input");
 
-    // Custom icon file input
-    iconInput.addEventListener("change", () => {
-      if (
-        block.querySelector('input[name="siteTheme"]:checked').value === "custom" &&
-        iconInput.files.length
-      ) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          savedTheme.icon = reader.result;
-          applyTheme({ title: savedTheme.title, icon: savedTheme.icon });
-          localStorage.setItem("siteTheme", JSON.stringify(savedTheme));
-        };
-        reader.readAsDataURL(iconInput.files[0]);
-      }
-    });
-  });
+    if (radios.length && customOptions && customTitleIn && customIconIn) {
+      // radio change
+      radios.forEach(radio => radio.addEventListener("change", () => {
+        const mode = radio.value;
+        if (mode === "custom") {
+          customOptions.style.display = "block";
+          saved = { mode:"custom", title: defaultTitle, icon: defaultIcon };
+          localStorage.setItem("siteTheme", JSON.stringify(saved));
+        } else {
+          customOptions.style.display = "none";
+          applyTheme(PRESETS[mode]||PRESETS.none);
+          localStorage.setItem("siteTheme", JSON.stringify({ mode }));
+        }
+      }));
+
+      // custom title live update
+      customTitleIn.addEventListener("input", () => {
+        if (document.querySelector('input[name="siteTheme"]:checked').value === "custom") {
+          const title = customTitleIn.value || defaultTitle;
+          applyTheme({ title, icon: saved.icon||defaultIcon });
+          saved = { mode:"custom", title, icon: saved.icon||defaultIcon };
+          localStorage.setItem("siteTheme", JSON.stringify(saved));
+        }
+      });
+
+      // custom favicon file handler
+      customIconIn.addEventListener("change", () => {
+        if (
+          document.querySelector('input[name="siteTheme"]:checked').value === "custom" &&
+          customIconIn.files.length
+        ) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const iconData = reader.result;
+            const title = customTitleIn.value || defaultTitle;
+            applyTheme({ title, icon: iconData });
+            saved = { mode:"custom", title, icon: iconData };
+            localStorage.setItem("siteTheme", JSON.stringify(saved));
+          };
+          reader.readAsDataURL(customIconIn.files[0]);
+        }
+      });
+    }
+  }
     // — R Touch toggles (multiple possible)
   const rtToggles = document.querySelectorAll(".r-touch-toggle");
   if (rtToggles.length) {
@@ -345,18 +338,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // reflect toolbar‑side toggles back here
     window.addEventListener("r-touch-changed", syncAllCheckboxes);
   }
-
-  // — Toolbar‑pos radios (multiple possible blocks)
-  const toolbarRadios = document.querySelectorAll(".toolbar-selector input[name='toolbar-pos']");
+  // Toolbar‑pos radios in Account.html
+  const toolbarRadios = document.querySelectorAll('#toolbar-selector input[name="toolbar-pos"]');
   if (toolbarRadios.length) {
-    function syncAllRadios() {
-      const saved = localStorage.getItem("toolbar-pos") || "right";
-      toolbarRadios.forEach(r => r.checked = (r.value === saved));
-    }
-    // init state
-    syncAllRadios();
+    // On load, check the saved or default ("right")
+    const saved = localStorage.getItem("toolbar-pos") || "right";
+    toolbarRadios.forEach(r => r.checked = (r.value === saved));
 
-    // when any radio changes
+    // When user clicks a radio, save & notify
     toolbarRadios.forEach(radio => {
       radio.addEventListener("change", () => {
         if (!radio.checked) return;
@@ -364,8 +353,5 @@ document.addEventListener("DOMContentLoaded", () => {
         window.dispatchEvent(new Event("toolbar-pos-changed"));
       });
     });
-
-    // you can also re‑sync on change if needed:
-    window.addEventListener("toolbar-pos-changed", syncAllRadios);
   }
 }); // end DOMContentLoaded
