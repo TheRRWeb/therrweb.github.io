@@ -319,5 +319,15 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   }
-
+ const rtToggle = document.getElementById("r-touch-toggle");
+  if (rtToggle) {
+    // init from localStorage
+    const isOn = localStorage.getItem("r-touch")==="on";
+    rtToggle.checked = isOn;
+    rtToggle.addEventListener("change", () => {
+      if (rtToggle.checked) localStorage.setItem("r-touch","on");
+      else                  localStorage.removeItem("r-touch");
+      window.dispatchEvent(new Event("r-touch-changed"));
+    });
+  }
 }); // end DOMContentLoaded
