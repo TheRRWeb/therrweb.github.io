@@ -43,7 +43,7 @@ window.initializeTouchControls = (function() {
         width: 120px; height: 120px;
         font-size: 48px; color: white;
         border: none; border-radius: 20px;
-        background: #0000; /* allow per-button bg */ 
+        background: transparent;
         outline: none;
         cursor: pointer;
         -webkit-user-select: none; user-select: none;
@@ -51,12 +51,11 @@ window.initializeTouchControls = (function() {
         display: flex; align-items: center; justify-content: center;
         z-index: 2000;
       }
-      .rt-touch-btn:focus { outline: none; }
-      /* left/right at bottom-left */
-      .rt-touch-left  { left:  20px; bottom: 20px; background-color: #5cc93b; }
-      .rt-touch-right { left: calc(20px + 120px + 10px); bottom: 20px; background-color: #5cc93b; }
-      /* up (space) at bottom-right */
-      .rt-touch-up    { right: 20px; bottom: 20px; background-color: #4193c9; }
+      /* left/right at bottom‑left, raised 40px from bottom */
+      .rt-touch-left  { left:  20px; bottom: 40px; background-color: #5cc93b; }
+      .rt-touch-right { left: calc(20px + 120px + 10px); bottom: 40px; background-color: #5cc93b; }
+      /* up (space) at bottom‑right, raised 40px */
+      .rt-touch-up    { right: 20px; bottom: 40px; background-color: #4193c9; }
     `;
     document.head.appendChild(style);
 
@@ -99,7 +98,7 @@ window.initializeTouchControls = (function() {
 
   function removeControls() {
     if (!btnLeft) return;
-    // clear intervals
+    // clear any ongoing repeats
     repeaters.forEach(id => clearInterval(id));
     repeaters.clear();
     // remove elements
@@ -120,7 +119,7 @@ window.initializeTouchControls = (function() {
 
 
 // ─────────────────────────────────────────────────────────────────
-// 2) Auto‑init on full page load & on your toggle event
+// 2) Auto‑init on full page load & on toggle event
 // ─────────────────────────────────────────────────────────────────
 function initRTouchPad() {
   if (typeof window.initializeTouchControls === 'function') {
