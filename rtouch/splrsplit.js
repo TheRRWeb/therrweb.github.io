@@ -43,18 +43,20 @@ window.initializeTouchControls = (function() {
         width: 120px; height: 120px;
         font-size: 48px; color: white;
         border: none; border-radius: 20px;
-        background: #000;
-        cursor: pointer; 
-        user-select: none; /* disable text selection */
+        background: #0000; /* allow per-button bg */ 
+        outline: none;
+        cursor: pointer;
+        -webkit-user-select: none; user-select: none;
         touch-action: none;
         display: flex; align-items: center; justify-content: center;
         z-index: 2000;
       }
+      .rt-touch-btn:focus { outline: none; }
       /* left/right at bottom-left */
-      .rt-touch-left  { left:  20px; bottom: 20px; background: #5cc93b; }
-      .rt-touch-right { left: 150px; bottom: 20px; background: #5cc93b; }
+      .rt-touch-left  { left:  20px; bottom: 20px; background-color: #5cc93b; }
+      .rt-touch-right { left: calc(20px + 120px + 10px); bottom: 20px; background-color: #5cc93b; }
       /* up (space) at bottom-right */
-      .rt-touch-up    { right: 20px; bottom: 20px; background: #4193c9; }
+      .rt-touch-up    { right: 20px; bottom: 20px; background-color: #4193c9; }
     `;
     document.head.appendChild(style);
 
@@ -91,4 +93,39 @@ window.initializeTouchControls = (function() {
       });
     });
 
-   
+    // passive‑touch shim
+    document.addEventListener('touchstart', () => {}, { passive: true });
+  }
+
+  function removeControls() {
+    if (!btnLeft) return;
+    // clear intervals
+    repeaters.forEach(id => clearInterval(id));
+    repeaters.clear();
+    // remove elements
+    btnLeft.remove();
+    btnRight.remove();
+    btnUp.remove();
+    btnLeft = btnRight = btnUp = null;
+  }
+
+  return function() {
+    if (localStorage.getItem('r-touch') === 'on') {
+      makeControls();
+    } else {
+      removeControls();
+    }
+  };
+})();
+
+
+// ─────────────────────────────────────────────────────────────────
+// 2) Auto‑init on full page load & on your toggle event
+// ─────────────────────────────────────────────────────────────────
+function initRTouchPad() {
+  if (typeof window.initializeTouchControls === 'function') {
+    window.initializeTouchControls();
+  }
+}
+window.addEventListener('load',           initRTouchPad);
+window.addEventListener('r-touch-changed', initRTouchPad);
