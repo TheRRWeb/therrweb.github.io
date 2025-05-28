@@ -1,86 +1,115 @@
-// touch-controls.js
+// touch‑controls.js
 
-// Expose a global initializer—does NOT auto-run
-window.initializeTouchControls = function() {
-  // 1) Inject CSS for the inverted‑T pad
-  const style = document.createElement('style');
-  style.textContent = `
-    .rt-dpad {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 180px;
-      height: 180px;
-      display: grid;
-      grid-template:
-        ". up   ." 1fr
-        "lt  cntr rt" 1fr
-        ". down ." 1fr
-        / 1fr 1fr 1fr;
-      gap: 10px;
-      z-index: 1000;
-      user-select: none;
-      touch-action: none;
+// Expose a global initializer—does NOT auto‑run
+window.initializeTouchControls = (function() {
+  let dpadEl = null;
+
+  // Create & inject the inverted‑T pad
+  function makeDpad() {
+    if (dpadEl) return;  // already there
+
+    // 1) Inject CSS
+    const style = document.createElement('style');
+    style.textContent = `
+      .rt-dpad {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        display: grid;
+        grid-template:
+          ". up   ." 120px
+          "lt  cntr rt" 120px
+          ". down ." 120px
+          / 120px 120px 120px;
+        gap: 10px;
+        z-index: 2000;
+        user-select: none;
+        touch-action: none;
+      }
+      .dpad-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+      }
+      .dpad-up, .dpad-down { background-color: #5cc93b; }
+      .dpad-left, .dpad-right { background-color: #4193c9; }
+      .dpad-center { background: transparent; pointer-events: none; }
+    `;
+    document.head.appendChild(style);
+
+    // 2) Build the container
+    dpadEl = document.createElement('div');
+    dpadEl.className = 'rt-dpad';
+
+    // 3) Create each button
+    const btnUp    = Object.assign(document.createElement('button'), { className: 'dpad-button dpad-up',    textContent: '↑' });
+    const btnLeft  = Object.assign(document.createElement('button'), { className: 'dpad-button dpad-left',  textContent: '←' });
+    const center   = Object.assign(document.createElement('div'),    { className: 'dpad-button dpad-center' });
+    const btnRight = Object.assign(document.createElement('button'), { className: 'dpad-button dpad-right', textContent: '→' });
+    const btnDown  = Object.assign(document.createElement('button'), { className: 'dpad-button dpad-down',  textContent: '↓' });
+
+    // 4) Assign grid areas
+    btnUp   .style.gridArea = 'up';
+    btnLeft .style.gridArea = 'lt';
+    center  .style.gridArea = 'cntr';
+    btnRight.style.gridArea = 'rt';
+    btnDown .style.gridArea = 'down';
+
+    // 5) Append and done
+    dpadEl.append(btnUp, btnLeft, center, btnRight, btnDown);
+    document.body.append(dpadEl);
+
+    // 6) Helper to simulate arrow key events
+    function sendArrow(key) {
+      const code = key === 'ArrowUp'    ? 38
+                 : key === 'ArrowDown'  ? 40
+                 : key === 'ArrowLeft'  ? 37
+                 : key === 'ArrowRight' ? 39
+                 : 0;
+      ['keydown','keyup'].forEach(type => {
+        const ev = new KeyboardEvent(type, {
+          key, code: key,
+          keyCode: code, which: code,
+          bubbles: true, cancelable: true
+        });
+        document.dispatchEvent(ev);
+      });
     }
-    .dpad-button {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 32px;
-      color: white;
-      border: none;
-      border-radius: 10px;
-    }
-    .dpad-up, .dpad-down { background-color: #5cc93b; }
-    .dpad-left, .dpad-right { background-color: #4193c9; }
-    .dpad-center { background: transparent; }
-  `;
-  document.head.appendChild(style);
 
-  // 2) Build the pad container
-  const dpad = document.createElement('div');
-  dpad.className = 'rt-dpad';
-
-  // 3) Create buttons
-  const btnUp    = Object.assign(document.createElement('button'), { className: 'dpad-button dpad-up',    textContent: '↑', tabindex: -1 });
-  const btnDown  = Object.assign(document.createElement('button'), { className: 'dpad-button dpad-down',  textContent: '↓', tabindex: -1 });
-  const btnLeft  = Object.assign(document.createElement('button'), { className: 'dpad-button dpad-left',  textContent: '←', tabindex: -1 });
-  const btnRight = Object.assign(document.createElement('button'), { className: 'dpad-button dpad-right', textContent: '→', tabindex: -1 });
-  const center   = Object.assign(document.createElement('div'),    { className: 'dpad-button dpad-center' });
-
-  // 4) Assign grid areas
-  btnUp.style.gridArea    = 'up';
-  btnLeft.style.gridArea  = 'lt';
-  center.style.gridArea   = 'cntr';
-  btnRight.style.gridArea = 'rt';
-  btnDown.style.gridArea  = 'down';
-
-  // 5) Append to body
-  dpad.append(btnUp, btnLeft, center, btnRight, btnDown);
-  document.body.append(dpad);
-
-  // 6) Shim for key events
-  function sendKey(key) {
-    const code = key === 'ArrowUp'   ? 38
-               : key === 'ArrowDown' ? 40
-               : key === 'ArrowLeft' ? 37
-               : key === 'ArrowRight'? 39
-               : 0;
-    ['keydown','keyup'].forEach(type => {
-      document.dispatchEvent(new KeyboardEvent(type, {
-        key, code: key,
-        keyCode: code, which: code,
-        bubbles: true, cancelable: true
-      }));
+    // 7) Wire both click & touchstart for each
+    [
+      [btnUp,    'ArrowUp'],
+      [btnDown,  'ArrowDown'],
+      [btnLeft,  'ArrowLeft'],
+      [btnRight, 'ArrowRight']
+    ].forEach(([btn, key]) => {
+      btn.addEventListener('touchstart', e => { e.preventDefault(); sendArrow(key); });
+      btn.addEventListener('click',      e => { e.preventDefault(); sendArrow(key); });
     });
+
+    // 8) passive‑touch shim
+    document.addEventListener('touchstart', () => {}, { passive: true });
   }
 
-  // 7) Touch listeners
-  btnUp   .addEventListener('touchstart', e => { e.preventDefault(); sendKey('ArrowUp');    });
-  btnDown .addEventListener('touchstart', e => { e.preventDefault(); sendKey('ArrowDown');  });
-  btnLeft .addEventListener('touchstart', e => { e.preventDefault(); sendKey('ArrowLeft');  });
-  btnRight.addEventListener('touchstart', e => { e.preventDefault(); sendKey('ArrowRight'); });
+  // Remove the pad
+  function removeDpad() {
+    if (dpadEl) {
+      dpadEl.remove();
+      dpadEl = null;
+    }
+  }
 
-  // 8) Activate passive touch
-  document.addEventListener('touchstart', () => {}, true);
-};
+  // The global initializer toggles presence
+  return function() {
+    if (localStorage.getItem('r-touch') === 'on') {
+      makeDpad();
+    } else {
+      removeDpad();
+    }
+  };
+})();
