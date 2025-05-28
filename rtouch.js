@@ -5,7 +5,6 @@
   // ─────────────────────────────────────────────────────
   const css = `
     #gameToolbar {
-      font-family: 'Trebuchet MS', sans-serif;
       position: fixed;
       top: 20px;
       /* left or right set in JS */
@@ -17,7 +16,6 @@
       z-index: 2000; user-select: none; touch-action: none;
     }
     #gameMenu {
-      font-family: 'Trebuchet MS', sans-serif;
       position: fixed;
       background: #2a2a2a;
       border: 1px solid #5cc93b;
