@@ -1,14 +1,16 @@
-// touch‑controls.js
+// arrowkeyt.js
 
-// Expose a global initializer—does NOT auto‑run
+// ─────────────────────────────────────────────────────────────────
+// 1) Expose the pad‑injection function (does NOT auto‑run)
+// ─────────────────────────────────────────────────────────────────
 window.initializeTouchControls = (function() {
   let dpadEl = null;
 
   // Create & inject the inverted‑T pad
   function makeDpad() {
-    if (dpadEl) return;  // already there
+    if (dpadEl) return;  // already injected
 
-    // 1) Inject CSS
+    // 1a) Inject CSS
     const style = document.createElement('style');
     style.textContent = `
       .rt-dpad {
@@ -42,57 +44,60 @@ window.initializeTouchControls = (function() {
     `;
     document.head.appendChild(style);
 
-    // 2) Build the container
+    // 1b) Build the container
     dpadEl = document.createElement('div');
     dpadEl.className = 'rt-dpad';
 
-    // 3) Create each button
+    // 1c) Create buttons
     const btnUp    = Object.assign(document.createElement('button'), { className: 'dpad-button dpad-up',    textContent: '↑' });
     const btnLeft  = Object.assign(document.createElement('button'), { className: 'dpad-button dpad-left',  textContent: '←' });
     const center   = Object.assign(document.createElement('div'),    { className: 'dpad-button dpad-center' });
     const btnRight = Object.assign(document.createElement('button'), { className: 'dpad-button dpad-right', textContent: '→' });
     const btnDown  = Object.assign(document.createElement('button'), { className: 'dpad-button dpad-down',  textContent: '↓' });
 
-    // 4) Assign grid areas
+    // 1d) Assign grid areas
     btnUp   .style.gridArea = 'up';
     btnLeft .style.gridArea = 'lt';
     center  .style.gridArea = 'cntr';
     btnRight.style.gridArea = 'rt';
     btnDown .style.gridArea = 'down';
 
-    // 5) Append and done
+    // 1e) Append to body
     dpadEl.append(btnUp, btnLeft, center, btnRight, btnDown);
     document.body.append(dpadEl);
 
-    // 6) Helper to simulate arrow key events
-    function sendArrow(key) {
-      const code = key === 'ArrowUp'    ? 38
-                 : key === 'ArrowDown'  ? 40
-                 : key === 'ArrowLeft'  ? 37
-                 : key === 'ArrowRight' ? 39
+    // 1f) Key‑event simulator
+    function sendArrow(keyName) {
+      const code = keyName === 'ArrowUp'    ? 38
+                 : keyName === 'ArrowDown'  ? 40
+                 : keyName === 'ArrowLeft'  ? 37
+                 : keyName === 'ArrowRight' ? 39
                  : 0;
       ['keydown','keyup'].forEach(type => {
         const ev = new KeyboardEvent(type, {
-          key, code: key,
-          keyCode: code, which: code,
-          bubbles: true, cancelable: true
+          key: keyName,
+          code: keyName,
+          keyCode: code,
+          which: code,
+          bubbles: true,
+          cancelable: true
         });
         document.dispatchEvent(ev);
       });
     }
 
-    // 7) Wire both click & touchstart for each
+    // 1g) Wire both click & touchstart
     [
       [btnUp,    'ArrowUp'],
       [btnDown,  'ArrowDown'],
       [btnLeft,  'ArrowLeft'],
       [btnRight, 'ArrowRight']
     ].forEach(([btn, key]) => {
-      btn.addEventListener('touchstart', e => { e.preventDefault(); sendArrow(key); });
       btn.addEventListener('click',      e => { e.preventDefault(); sendArrow(key); });
+      btn.addEventListener('touchstart', e => { e.preventDefault(); sendArrow(key); });
     });
 
-    // 8) passive‑touch shim
+    // 1h) Passive‑touch shim
     document.addEventListener('touchstart', () => {}, { passive: true });
   }
 
@@ -104,7 +109,7 @@ window.initializeTouchControls = (function() {
     }
   }
 
-  // The global initializer toggles presence
+  // The function exposed globally
   return function() {
     if (localStorage.getItem('r-touch') === 'on') {
       makeDpad();
@@ -113,3 +118,19 @@ window.initializeTouchControls = (function() {
     }
   };
 })();
+
+
+// ─────────────────────────────────────────────────────────────────
+// 2) Self‑bootstrap on load & on toggle (matches your old LR logic)
+// ─────────────────────────────────────────────────────────────────
+function initRTouchPad() {
+  if (typeof window.initializeTouchControls === 'function') {
+    window.initializeTouchControls();
+  }
+}
+
+// Run once when the full page (and Crossy Road bootstrap) has loaded
+window.addEventListener('load', initRTouchPad);
+
+// Re‑run whenever the toolbar fires a toggle event
+window.addEventListener('r-touch-changed', initRTouchPad);
