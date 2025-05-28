@@ -152,14 +152,11 @@
   // 5) Auto‑init touch controls if R‑Touch ON
   // ─────────────────────────────────────────────────────
   function initTouchIfOn() {
-    if (
-      typeof window.initializeTouchControls === "function" &&
-      localStorage.getItem("r-touch") === "on"
-    ) {
+    if (typeof window.initializeTouchControls === 'function') {
       window.initializeTouchControls();
     }
   }
   initTouchIfOn();
-  window.addEventListener("r-touch-changed", initTouchIfOn);
+  window.addEventListener('r-touch-changed', initTouchIfOn);
   // ─────────────────────────────────────────────────────
 })();
