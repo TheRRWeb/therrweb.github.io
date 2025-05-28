@@ -9,12 +9,6 @@ body {
   gap: 20px;
   flex-wrap: wrap;  /* 🔥 This makes images move to the next line when needed */
   max-width: 90%;
-  margin: 20px auto;
-  background-color: #2a2a2a;
-  border-radius: 8px;
-  padding: 20px;
-  color: #dedede;
-  box-shadow: 0 0 15px rgba(92, 201, 59, 0.5);
 }
 
 .game-thumbnail {
