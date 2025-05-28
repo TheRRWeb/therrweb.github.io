@@ -44,11 +44,11 @@
 
     const leftButton = document.createElement('button');
     leftButton.className = 'touch-button left-button';
-    leftButton.textContent = '<';
+    leftButton.textContent = '←';
 
     const rightButton = document.createElement('button');
     rightButton.className = 'touch-button right-button';
-    rightButton.textContent = '>';
+    rightButton.textContent = '→';
 
     container.append(leftButton, rightButton);
     document.body.append(container);
