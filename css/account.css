@@ -1,0 +1,173 @@
+/* Card view container */
+#card-view {
+  max-width: 600px;
+  margin: 20px auto;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  padding: 20px;
+  color: #dedede;
+  box-shadow: 0 0 15px rgba(92, 201, 59, 0.5);
+}
+
+#card-view h1 {
+  color: #5cc93b;
+  margin-bottom: 15px;
+}
+
+#card-view h2 {
+  color: #4193c9;
+  margin-bottom: 15px;
+}
+
+/* AUTH FORM */
+/* Container for the form */
+#auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+/* Input fields */
+input[type="email"],
+input[type="password"] {
+  background-color: #2a2a2a;
+  border: 1px solid #5cc93b;
+  border-radius: 5px;
+  padding: 10px;
+  color: #dedede;
+  font-size: 16px;
+}
+
+/* Placeholder text color */
+input[type="email"]::placeholder,
+input[type="password"]::placeholder {
+  color: #888;
+}
+
+/* Container for Sign In and Sign Up buttons */
+.auth-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* Buttons styling */
+button {
+  background-color: #5cc93b;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+/* Hover effect for buttons */
+button:hover {
+  background-color: #4193c9;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+/* Active state for buttons */
+button:active {
+  background-color: #2a2a2a;
+  color: #dedede;
+}
+
+/* Styling for the 'Forgot Password?' button */
+button.text-link {
+  background: none;
+  border: none;
+  color: #4193c9;
+  font-size: 14px;
+  padding: 0; 
+  cursor: pointer;
+  align-self: center;
+}
+
+/* Hover effect for the 'Forgot Password?' button */
+button.text-link:hover {
+  text-decoration: underline;
+}
+
+/* Error message styling */
+#error-message {
+  color: #ff4d4d;
+  font-weight: bold;
+  font-size: 14px;
+  min-height: 20px;
+}
+
+/* User controls (after sign‑in) */
+#user-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;            /* Spacing between buttons */
+  margin-top: 15px;
+}
+
+/* Buttons inside user‑controls */
+#user-controls button {
+  background-color: #4193c9;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  border: none;
+  transition: background-color 0.3s ease;
+  width: 100%;         /* Makes all buttons stretch to container width */
+  box-sizing: border-box;
+  margin-top: 10px;
+}
+
+#user-controls button:hover {
+  background-color: #5cc93b;
+  cursor: pointer;
+}
+
+#user-controls .danger {
+  background-color: #ff4d4d;
+}
+
+#user-controls .danger:hover {
+  background-color: #cc0000;
+}
+
+#user-membership:empty {
+  display: none;
+}
+#user-membership:empty + br,
+#user-membership:empty + * {
+  display: none; /* hide any adjacent whitespace or line breaks if needed */
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+  /* Card view tweaks */
+  #card-view {
+    margin: 10px;
+    padding: 15px;
+  }
+
+  /* Stack the auth buttons vertically */
+  .auth-buttons {
+    flex-direction: column;
+  }
+
+  /* Full‑width buttons on small screens */
+  button {
+    width: 100%;
+  }
+
+  /* Smaller inputs & buttons */
+  input[type="email"],
+  input[type="password"],
+  button {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+}

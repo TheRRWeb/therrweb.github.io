@@ -74,6 +74,11 @@ i {
   color: #5c5c5c;
 }
 
+.memshow,
+.memhide {
+  display: none;
+}
+
 .navbar {
   overflow: hidden;
   background-color: #2a2a2a;
@@ -166,7 +171,7 @@ footer {
   margin-top: 10px;
   background: #2a2a2a;
   color: #dedede;
-  font-size: 14px;
+  font-size: 12.5px;
   padding: 25px 0px 5px;
 }
 

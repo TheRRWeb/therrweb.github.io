@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en-AE">
+  <head>
+    <title>The RR Account</title> <!--Title-->
+    <link rel="stylesheet" type="text/css" href="/css/style.css">
+    <link rel="stylesheet" type="text/css" href="/css/account.css"> <!--CSS Link-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!--Font Awesome-->
+    <link id="favicon" rel="icon" type="image/x-icon" href="/logos/RRlogo12.png"> <!--Logo-->
+    <link rel="shortcut icon" href="/logos/RRlogo12.png" type="image/x-icon"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="R, RR, Games, Fun, Web">
+    <meta name="description" content="The RR Web, home to the greatest fun and games available anywhere">
+    <meta name="author" content="Rutham Renish">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="The RR Account">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#2a2a2a">
+    <link rel="apple-touch-icon" href="/logos/RRlogo11.jpg">
+    <link rel="apple-touch-startup-image" href="/logos/RRlogo12.png">
+    <meta name="theme-color" content="#2a2a2a">
+  </head>
+  <body>
+    <header>
+      <div class="navbar" id="Navbar">
+        <a href="/" class="homeimg"><img src="/logos/RRlogo12.png" alt="logo"></a>
+        <a href="/games/">Games</a>
+        <a href="https://therrweb.beehiiv.com/">News</a>
+        <a href="/account/">Account</a>
+        <a data-umami-event="Merch" href="/RRMerchKit.zip" download>Merch</a>
+        <a href="/">Home</a>
+        <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+          <i class="fa fa-bars"></i>
+        </a>
+      </div>
+    </header>
+    <h1>The RR Account</h1>
+    <hr>
+    <main id="card-view">
+      <div id="auth-container">
+        <h2>Sign in to RR</h2>
+        <div id="auth-form">
+          <input type="email" id="email" placeholder="Email" required>
+          <input type="password" id="password" placeholder="Password" required>
+          <div class="auth-buttons">
+            <button id="sign-in-btn">Sign In</button>
+            <button id="sign-up-btn">Sign Up</button>
+          </div>
+          <button id="forgot-password-btn" class="text-link">Forgot Password?</button>
+          <p id="error-message"></p>
+        </div>
+        <hr style="border: none; border-top: 1px solid #dedede; margin: 20px 0;">
+        <h3>Newsletter Signup</h3>
+        <p style="color: #dedede;">Sign up for our free newsletter and get updates in your inbox. Find out when and what the next update is, what games are coming soon, new The RR Web links, news and more!</p>
+        <iframe src="https://embeds.beehiiv.com/5de3b974-bfed-4801-bdb8-37b2e06d056e?slim=true" data-test-id="beehiiv-embed" height="52" frameborder="0" scrolling="no" style="margin: 0; border-radius: 0px !important; background-color: transparent;"></iframe>
+        <hr style="border: none; border-top: 1px solid #dedede; margin: 20px 0;">
+        <div class="disguise-mode">
+          <h3>Disguise Mode</h3>
+          <p style="color: #dedede;">Change the web title and icon</p>
+          <div class="theme-selector">
+            <label><input type="radio" name="siteTheme" value="none"> None</label>
+            <label><input type="radio" name="siteTheme" value="google"> Google</label>
+            <label><input type="radio" name="siteTheme" value="teams"> Teams</label>
+            <label><input type="radio" name="siteTheme" value="custom"> Custom…</label>
+          </div>
+          <div class="custom-options" style="display:none; margin-top:8px;">
+            <input type="text" class="custom-title-input" placeholder="Custom Title">
+            <input type="file" class="custom-icon-input" accept="image/*">
+          </div>
+        </div>
+        <hr style="border: none; border-top: 1px solid #dedede; margin: 20px 0;">
+        <h3>R Touch</h3>
+        <p style="color: #dedede;">Override some keyboard games with RR added touch controls (only on games with RT labels)</p>
+        <label><input type="checkbox" class="r-touch-toggle">R Touch</label>
+        <hr style="border:none;border-top:1px solid #dedede;margin:20px 0;">
+        <h3>Toolbar Position</h3>
+        <div class="toolbar-selector">
+          <label><input type="radio" name="toolbar-pos" value="left"> Left</label>
+          <label><input type="radio" name="toolbar-pos" value="right"> Right</label>
+        </div>
+      </div>
+      <div id="user-controls" style="display: none;">
+        <h2>Settings</h2>
+        <h3>Account Information</h3>
+        <p style="color: #dedede;">Email: <span id="user-email"></span></p>
+        <p style="color: #dedede;">UID: <span id="user-uid"></span></p>
+        <p style="color: #dedede;"><span id="user-membership" style="margin-left:8px;"></span></p>
+        <hr style="border: none; border-top: 1px solid #dedede; margin: 20px 0;">
+        <h3>Newsletter Signup</h3>
+        <p style="color: #dedede;">Sign up for our free newsletter and get updates in your inbox. Find out when and what the next update is, what games are coming soon, new The RR Web links, news and more!</p>
+        <iframe src="https://embeds.beehiiv.com/5de3b974-bfed-4801-bdb8-37b2e06d056e?slim=true" data-test-id="beehiiv-embed" height="52" frameborder="0" scrolling="no" style="margin: 0; border-radius: 0px !important; background-color: transparent;"></iframe>
+        <hr style="border: none; border-top: 1px solid #dedede; margin: 20px 0;">
+        <h3>Data Settings</h3>
+        <button id="save-game-data">Save Game Data</button>
+        <button id="load-game-data">Load Game Data</button>
+        <hr style="border: none; border-top: 1px solid #dedede; margin: 20px 0;">
+        <div class="disguise-mode">
+          <h3>Disguise Mode</h3>
+          <p style="color: #dedede;">Change the web title and icon</p>
+          <div class="theme-selector">
+            <label><input type="radio" name="siteTheme" value="none"> None</label>
+            <label><input type="radio" name="siteTheme" value="google"> Google</label>
+            <label><input type="radio" name="siteTheme" value="teams"> Teams</label>
+            <label><input type="radio" name="siteTheme" value="custom"> Custom…</label>
+          </div>
+          <div class="custom-options" style="display:none; margin-top:8px;">
+            <input type="text" class="custom-title-input" placeholder="Custom Title">
+            <input type="file" class="custom-icon-input" accept="image/*">
+          </div>
+        </div>
+        <hr style="border: none; border-top: 1px solid #dedede; margin: 20px 0;">
+        <h3>R Touch</h3>
+        <p style="color: #dedede;">Override some keyboard games with RR added touch controls (only on games with RT labels)</p>
+        <label><input type="checkbox" class="r-touch-toggle">R Touch</label>
+        <hr style="border:none;border-top:1px solid #dedede;margin:20px 0;">
+        <h3>Toolbar Position</h3>
+        <div class="toolbar-selector">
+          <label><input type="radio" name="toolbar-pos" value="left"> Left</label>
+          <label><input type="radio" name="toolbar-pos" value="right"> Right</label>
+        </div>
+        <hr style="border: none; border-top: 1px solid #dedede; margin: 20px 0;">
+        <h3>Account Settings</h3>
+        <button id="change-password">Change Password</button>
+        <button id="sign-out">Sign Out</button>
+        <hr style="border: none; border-top: 1px solid #dedede; margin: 20px 0;">
+        <h3 style="color: #ff4d4d;">Danger Zone</h3>
+        <button style="background-color: #ff4d4d;" id="clear-local-btn">Clear Local Storage</button>
+        <button style="background-color: #ff4d4d;" id="clear-firestore-btn">Clear Cloud Data</button>
+        <button style="background-color: #ff4d4d;" id="delete-account">Delete Account</button>
+      </div>
+    </main>
+    <div style="height: 20px;"></div>
+    <p>By signing in and using The RR Account System, you agree to the following:</p>
+    <ol>
+      <li>
+        <p>We respect your data and do not misuse, sell or share it.</p>
+      </li>
+      <li>
+        <p>In no event shall the copyright holder or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption).</p>
+      </li>
+    </ol>
+    <div style="height: 20px;"></div>
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class="footer-col">
+            <h3>Site Map</h3>
+            <ul>
+              <li>
+                <a href="/">Home</a>
+              </li>
+              <li>
+                <a href="/account/">Account</a>
+              </li>
+              <li>
+                <a href="https://therrweb.beehiiv.com/">News</a>
+              </li>
+              <li>
+                <a href="/games/">Games</a>
+              </li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h3>Miscellaneous</h3>
+            <ul>
+              <li>
+                <a data-umami-event="Merch" href="/RRMerchKit.zip" download>Merch</a>
+              </li>
+              <li>
+                <a data-umami-event="Discord" href="https://discord.gg/u3Hs33Dq8b">Discord</a>
+              </li>
+              <li>
+                <a data-umami-event="Portal" href="https://forms.office.com/Pages/ResponsePage.aspx?id=8LIk8ugClkGNohLHcIklNHf2zSA9E61IoosX7n_qv4hUMFZJM0NKU0NIR0kzWlNPM1JXUk1JMFY0Vy4u">Portal</a>
+              </li>
+              <li>
+                <a href="/LICENSE">License</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="container">
+        <h5>This website is protected by the BSD 3-Clause License. In no event shall the copyright holder or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption). <a href="/LICENSE">Click me to learn more.</a></h5>
+      </div>
+    </footer>
+    <script defer src="https://cloud.umami.is/script.js" data-website-id="f493113c-eb84-4958-809a-c84a5c898bf5"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script type="text/javascript" src="/script.js"></script>
+  </body>
+</html>
