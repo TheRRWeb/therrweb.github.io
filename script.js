@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     applyMembershipView(currentIsMember);
     if (userMembershipSpan) {
-      userMembershipSpan.textContent = currentIsMember ? "Membership" : "";
+      userMembershipSpan.textContent = currentIsMember ? "You are a Membership User" : "";
     }
 
     // toggle account‑page views
