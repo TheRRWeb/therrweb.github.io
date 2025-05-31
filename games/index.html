@@ -48,6 +48,9 @@
       <p>You can play some games here. If you want a game added, report a problem or have a friendly text, <a data-umami-event="Portal" href="https://forms.office.com/Pages/ResponsePage.aspx?id=8LIk8ugClkGNohLHcIklNHf2zSA9E61IoosX7n_qv4hUMFZJM0NKU0NIR0kzWlNPM1JXUk1JMFY0Vy4u">Go to The RR Portal</a> Games are in alphabetical order</p>
     </div>
     <h2>Our Games</h2>
+    <div class="gallery-search-container">
+      <input type="text" id="gallery-search" placeholder="Search items..." aria-label="Search gallery items"/>
+    </div>
     <div class="gallery">
       <a href="/games/2048/" data-umami-event="2048" class="game-thumbnail">
         <img src="/games/2048/thumb.png" class="game-thumbnail">
@@ -266,5 +269,28 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script type="text/javascript" src="/script.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const searchInput = document.getElementById('gallery-search');
+  const galleryLinks = Array.from(document.querySelectorAll('.gallery a'));
+
+  if (!searchInput || galleryLinks.length === 0) {
+    return; // nothing to do if input or links are missing
+  }
+
+  searchInput.addEventListener('input', function() {
+    const query = searchInput.value.trim().toLowerCase();
+
+    galleryLinks.forEach(link => {
+      const text = link.textContent.trim().toLowerCase();
+      if (text.includes(query)) {
+        link.classList.remove('hidden');
+      } else {
+        link.classList.add('hidden');
+      }
+    });
+  });
+});
+</script>
   </body>
 </html>
