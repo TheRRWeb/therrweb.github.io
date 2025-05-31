@@ -213,15 +213,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-
-  function myFunction() {
-    var x = document.getElementById("Navbar");
-    if (x.className === "navbar") {
-      x.className += " responsive";
-    } else {
-      x.className = "navbar";
-    }
-  }
     // Disguise‑Mode (class‑based)
   const faviconLink         = document.querySelector("link[rel='icon']");
   const shortcutFaviconLink = document.querySelector("link[rel='shortcut icon']");
@@ -364,3 +355,12 @@ document.addEventListener("DOMContentLoaded", () => {
     window.addEventListener("toolbar-pos-changed", syncAllRadios);
   }
 }); // end DOMContentLoaded
+
+function myFunction() {
+    var x = document.getElementById("Navbar");
+    if (x.className === "navbar") {
+      x.className += " responsive";
+    } else {
+      x.className = "navbar";
+    }
+  }
