@@ -6,16 +6,17 @@ const quotes = [
     `"RR is Benn's Cookie" - Benn Cern Tang`,
     `"I like cats" - Aritro Roy`,
     `"Roses are red, violets are blue, RR made this website, we made it for you" - Murdoch Mackenzie`,
-    `"Alex likes planes, cats and this website ;P :D" - Alex Stankov`,
+    `"Alex likes planes, cats and this website" - Alex Stankov`,
     `"Still hungry" - Y.`,
     `"Happiness starts with a smile and this website makes Ethan smile" - Ethan Welch`,
     `"I am Asian" - Hani Shen`,
     `"Im going to eat u" - Quijun Tang`,
+    `"Ronan" - Ronan Bingham`,
+    `"Hippitie hoppitie, this website is amazing for my property!" - Nico Smit`,
     `"Nico likes to play bus driver simulator" - Aditya Joseph Philip`,
     `"Buy my baby oil and see diddy.com" - Pranil Diddi`,
     `"With great power comes great responsibility...im not responsible" - Jenson Cooper`,
-    `"gurt:yo" - z`,
-    `"Roses are red violets are blue and this website is a cannon event for your life and tragedies too" - Finn Tarmar`,
+    `"Roses are red violets are blue and this website is a cannon event for your life and 9,11 too" - Finn Tarmar`,
     `"who ever is reading this plays games in class" - Ethan Lai`,
     `"Why did Benn have to leave me" - Rayyan Asif`,
     `"I like year 5s" - Douglas Clow`,
@@ -24,7 +25,6 @@ const quotes = [
     `"Kick Paul Out!!!" - Spencer Samuel`,
     `"If you dont wear how did the floor taste boxers your not legit" - Ali Elnaggar`,
     `"I am officially tired of school" - Magdalena Slavkova`,
-    `"RR is the GOAT" - anonymous`,
     `"Lil phoebeeeee" - Carl Deeb`,
     `"tihe" - Xitong Zhang`,
     `"Michaelsoft Binbows 95" - Agastyn Manivannan`,
@@ -33,7 +33,13 @@ const quotes = [
     `"I am the greatest - LeBron" - Enbo Zeus`,
     `"King" - Izak - Michael Zinn`,
     `"Chicken Jockey" - Jack Black`,
-    `"It’s crazy how everyone in Year 8 plays on this website now" - HD`
+    `"It’s crazy how everyone in Year 8 plays on this website now" - HD`,
+    `"Papa Glenn" - Noah Fazal, Zak Flitti`,
+    `"A man who doesn't love fishing is not a man" - Sergio Christodoulou (The one who banned the web)`,
+    `"When she calls me passionate, unique, successful, special and youthful" - Louis Jack`,
+    `"Papas wingeria" - Oliver Wheeler`,
+    `"I pray on their success" - Abdulaziz Alayaseh`,
+    `"Lebroooooooooon" - Alexander Akidil`
 ];
 
 let currentQuoteIndex = Math.floor(Math.random() * quotes.length); // Start at random index
