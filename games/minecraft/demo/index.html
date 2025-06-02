@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Minecraft</title>
+    <link id="favicon" rel="icon" type="image/x-icon" href="/logos/RRlogo12.png"> <!--Logo-->
+    <link rel="shortcut icon" href="/logos/RRlogo12.png" type="image/x-icon"/>
+    <meta name="keywords" content="R, RR, Games, Fun, Web">
+    <meta name="description" content="The RR Web, home to the greatest fun and games available anywhere">
+    <meta name="author" content="Rutham Renish">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Minecraft">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#2a2a2a">
+    <link rel="apple-touch-icon" href="/logos/RRlogo11.jpg">
+    <link rel="apple-touch-startup-image" href="/logos/RRlogo12.png">
+    <meta name="theme-color" content="#2a2a2a">
+		<script type="text/javascript" src="classes.js"></script>
+		<script type="text/javascript" src="eaglerpocketmobile.user.js"></script>
+		<script type="text/javascript">
+			"use strict";
+			window.addEventListener("load", () => {
+				if(document.location.href.startsWith("file:")) {
+					alert("HTTP please, do not open this file locally, run a local HTTP server and load it via HTTP");
+				}else {
+					
+					// %%%%%%%%% launch options %%%%%%%%%%%%
+					
+					const relayId = Math.floor(Math.random() * 3);
+					window.eaglercraftXOpts = {
+						demoMode: false,
+						container: "game_frame",
+						assetsURI: "assets.epk",
+						localesURI: "lang/",
+						worldsDB: "worlds",
+						servers: [
+							/* example: { addr: "ws://localhost:8081/", name: "Local test server" } */
+						],
+						relays: [
+							{ addr: "wss://relay.deev.is/", comment: "lax1dude relay #1", primary: relayId == 0 },
+							{ addr: "wss://relay.lax1dude.net/", comment: "lax1dude relay #2", primary: relayId == 1 },
+							{ addr: "wss://relay.shhnowisnottheti.me/", comment: "ayunami relay #1", primary: relayId == 2 }
+						]
+					};
+					
+					// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+					
+					var q = window.location.search;
+					if(typeof q === "string" && q.startsWith("?")) {
+						q = new URLSearchParams(q);
+						var s = q.get("server");
+						if(s) window.eaglercraftXOpts.joinServer = s;
+					}
+					
+					main();
+					
+				}
+			});
+		</script>
+	</head>
+	<body style="margin:0px;width:100vw;height:100vh;overflow:hidden;" id="game_frame">
+		<script defer src="https://cloud.umami.is/script.js" data-website-id="f493113c-eb84-4958-809a-c84a5c898bf5"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script type="text/javascript" src="/script.js"></script>
+<script src="/rtouch.js"></script>
+	</body>
+</html>
