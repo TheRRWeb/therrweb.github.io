@@ -34,7 +34,6 @@ const quotes = [
     `"King" - Izak - Michael Zinn`,
     `"Chicken Jockey" - Jack Black`,
     `"It’s crazy how everyone in Year 8 plays on this website now" - HD`,
-    `"Papa Glenn" - Noah Fazal, Zak Flitti`,
     `"A man who doesn't love fishing is not a man" - Sergio Christodoulou (The one who banned the web)`,
     `"When she calls me passionate, unique, successful, special and youthful" - Louis Jack`,
     `"Papas wingeria" - Oliver Wheeler`,
