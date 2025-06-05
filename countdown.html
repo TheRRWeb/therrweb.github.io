@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>RR Summer Countdown</title>
+  <title>Countdown to June 27, 2025</title>
 
   <!-- =========================
        1. CUSTOM FONT + CSS
@@ -38,7 +38,7 @@
       line-height: 1.2;
     }
 
-    /* 1.3. Countdown container */
+    /* 1.3. Countdown container (visible until zero) */
     .countdown {
       display: flex;
       gap: 1.5rem;
@@ -52,16 +52,41 @@
       min-width: 4rem;
     }
     .time-segment .number {
+      /* 1.4.1. FIXED WIDTH to prevent jiggling: 
+         By giving each <span> a width in 'ch' (character) units, 
+         all numbers occupy the same space even as digits change. */
+      display: inline-block;
+      width: 4ch;           /* adjust if you expect > 9999 in any field */
       font-size: 3rem;
       line-height: 1;
-      color: #4193c9; /* blue */
+      color: #4193c9;        /* blue */
+      text-align: center;
+      font-variant-numeric: tabular‑nums; /* ensure digits are monospaced if font supports it */
     }
     .time-segment .label {
       margin-top: 0.25rem;
       font-size: 1rem;
-      color: #5cc93b; /* green */
+      color: #5cc93b;        /* green */
       text-transform: uppercase;
       letter-spacing: 0.05em;
+    }
+
+    /* 1.5. “Happy Summer Holiday” message (hidden until zero) */
+    .finished-message {
+      display: none;       /* will be shown when timer hits zero */
+      text-align: center;
+      font-size: 2rem;
+      gap: 0.5rem;
+      font-family: "TheRRs", sans-serif;
+    }
+    .finished-message .word-happy {
+      color: #5cc93b; /* green */
+    }
+    .finished-message .word-summer {
+      color: #4193c9; /* blue */
+    }
+    .finished-message .word-holiday {
+      color: #dedede; /* off‑white */
     }
   </style>
 </head>
@@ -70,7 +95,8 @@
   <!-- =========================
        2. HTML STRUCTURE
        ========================= -->
-  <div class="countdown">
+  <!-- 2.1. Countdown container (shown while time > 0) -->
+  <div class="countdown" id="countdownContainer">
     <!-- Weeks -->
     <div class="time-segment">
       <span class="number" id="weeks">0</span>
@@ -108,76 +134,80 @@
     </div>
   </div>
 
+  <!-- 2.2. Finished message (hidden until countdown hits zero) -->
+  <div class="finished-message" id="finishedMessage">
+    <span class="word-happy">Happy</span>
+    <span class="word-summer">Summer</span>
+    <span class="word-holiday">Holiday</span>
+  </div>
+
   <!-- =========================
        3. JAVASCRIPT COUNTDOWN
        ========================= -->
   <script>
-    // Target: June 27 2025 at 12:00:00 (local time)
+    // ───────────────────────────────────────────────────────────
+    // 3.1. TARGET DATE & TIME (change here if needed)
+    //      “2025‑06‑27 12:00:00 local time”:
     const targetDate = new Date(2025, 5, 27, 12, 0, 0, 0);
-    // Month index 5 → June.
+    //                ^^^^^^ month index 5 = June
+    // ───────────────────────────────────────────────────────────
 
-    // Grab references to each <span> by ID:
-    const elWeeks = document.getElementById("weeks");
-    const elDays = document.getElementById("days");
-    const elHours = document.getElementById("hours");
-    const elMinutes = document.getElementById("minutes");
-    const elSeconds = document.getElementById("seconds");
-    const elMs = document.getElementById("milliseconds");
+    // 3.2. Grab references to each <span> by ID:
+    const elWeeks       = document.getElementById("weeks");
+    const elDays        = document.getElementById("days");
+    const elHours       = document.getElementById("hours");
+    const elMinutes     = document.getElementById("minutes");
+    const elSeconds     = document.getElementById("seconds");
+    const elMs          = document.getElementById("milliseconds");
+    const countdownDiv  = document.getElementById("countdownContainer");
+    const finishedDiv   = document.getElementById("finishedMessage");
 
     function updateCountdown() {
-      const now = new Date();
-      let diff = targetDate.getTime() - now.getTime();
+      const now  = new Date();
+      let diff   = targetDate.getTime() - now.getTime();
 
       if (diff <= 0) {
-        // Time’s up: clear interval and zero out all fields
-        elWeeks.textContent = "0";
-        elDays.textContent = "0";
-        elHours.textContent = "0";
-        elMinutes.textContent = "0";
-        elSeconds.textContent = "0";
-        elMs.textContent = "0";
+        // Time is up → hide countdown, show “Happy Summer Holiday”
         clearInterval(timerID);
+        countdownDiv.style.display = "none";
+        finishedDiv.style.display = "flex"; // show the message container
         return;
       }
 
-      // 1 week = 7 × 24 × 60 × 60 × 1000 ms
-      const msInWeek = 7 * 24 * 60 * 60 * 1000;
-      const weeks = Math.floor(diff / msInWeek);
-      diff -= weeks * msInWeek;
+      // ───────────────────────────────────────────────────────────
+      // 3.3. Compute each unit from diff (in milliseconds):
+      const msInWeek   = 7 * 24 * 60 * 60 * 1000;
+      const weeks      = Math.floor(diff / msInWeek);
+      diff            -= weeks * msInWeek;
 
-      // 1 day = 24 × 60 × 60 × 1000 ms
-      const msInDay = 24 * 60 * 60 * 1000;
-      const days = Math.floor(diff / msInDay);
-      diff -= days * msInDay;
+      const msInDay    = 24 * 60 * 60 * 1000;
+      const days       = Math.floor(diff / msInDay);
+      diff            -= days * msInDay;
 
-      // 1 hour = 60 × 60 × 1000 ms
-      const msInHour = 60 * 60 * 1000;
-      const hours = Math.floor(diff / msInHour);
-      diff -= hours * msInHour;
+      const msInHour   = 60 * 60 * 1000;
+      const hours      = Math.floor(diff / msInHour);
+      diff            -= hours * msInHour;
 
-      // 1 minute = 60 × 1000 ms
       const msInMinute = 60 * 1000;
-      const minutes = Math.floor(diff / msInMinute);
-      diff -= minutes * msInMinute;
+      const minutes    = Math.floor(diff / msInMinute);
+      diff            -= minutes * msInMinute;
 
-      // 1 second = 1000 ms
       const msInSecond = 1000;
-      const seconds = Math.floor(diff / msInSecond);
-      diff -= seconds * msInSecond;
+      const seconds    = Math.floor(diff / msInSecond);
+      diff            -= seconds * msInSecond;
 
-      // Remaining diff is just milliseconds
-      const milliseconds = diff;
+      const milliseconds = diff; // remainder
 
-      // Update DOM
-      elWeeks.textContent = weeks;
-      elDays.textContent = days;
-      elHours.textContent = hours;
+      // 3.4. Update DOM (all <span> numbers)
+      elWeeks.textContent   = weeks;
+      elDays.textContent    = days;
+      elHours.textContent   = hours;
       elMinutes.textContent = minutes;
       elSeconds.textContent = seconds;
-      elMs.textContent = milliseconds;
+      elMs.textContent      = milliseconds;
     }
 
-    // Run once immediately, then every millisecond
+    // Run immediately, then every 1 ms
     updateCountdown();
     const timerID = setInterval(updateCountdown, 1);
   </script>
