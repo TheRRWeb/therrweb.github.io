@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The RR Summer Countdown</title>
+
+  <!-- =========================
+       1. CUSTOM FONT & CSS
+       ========================= -->
+  <style>
+    /* 1.1. Load custom font from /the-rrs.ttf as “TheRRs” */
+    @font-face {
+      font-family: "TheRRs";
+      src: url("/the-rrs.ttf") format("truetype");
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    /* 1.2. Basic reset + body styling */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: #2a2a2a; /* black */
+      color: #dedede;            /* off‑white */
+      font-family: "TheRRs", sans-serif;
+      font-size: 16px;
+      line-height: 1.2;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 1.3. Countdown container (hidden if in “finished” state) */
+    .countdown {
+      display: flex;
+      gap: 1.5rem;
+      text-align: center;
+    }
+
+    /* 1.4. Each “time‑segment” box */
+    .time-segment {
+      display: flex;
+      flex-direction: column;
+      min-width: 4rem;
+    }
+    .time-segment .number {
+      display: inline-block;
+      width: 4ch;               /* fixed width so digits never shift */
+      font-size: 3rem;
+      line-height: 1;
+      color: #4193c9;           /* blue */
+      text-align: center;
+      font-variant-numeric: tabular‑nums;
+    }
+    .time-segment .label {
+      margin-top: 0.25rem;
+      font-size: 1rem;
+      color: #5cc93b;           /* green */
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* 1.5. “Recommended Audio” (hidden until ≤ 60 000 ms remain or countdown over) */
+    #recommendedAudio {
+      margin-top: 1rem;
+      color: #dedede;           /* off‑white */
+      font-size: 1rem;
+      display: none;
+    }
+
+    /* 1.6. “Happy Summer Holiday” and extra text (hidden until countdown ends or shown immediately if over) */
+    .finished-message {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 1rem;
+      font-family: "TheRRs", sans-serif;
+      padding: 0 1rem;
+    }
+    /* 1.6.1. Make the “Happy Summer Holiday” title bigger */
+    .finished-message .finished-title {
+      display: flex;
+      gap: 0.5rem;
+      font-size: 3rem;
+    }
+    .finished-message .word-happy  { color: #5cc93b; /* green */  }
+    .finished-message .word-summer { color: #4193c9; /* blue  */  }
+    .finished-message .word-holiday{ color: #dedede; /* off‑white */ }
+
+    /* 1.6.2. Small paragraphs */
+    .finished-message .small-text {
+      font-size: 0.875rem; /* smaller than base 1rem */
+      color: #dedede;
+      margin: 0.25rem 0;
+    }
+    /* 1.6.3. Medium “Special Thanks:” */
+    .finished-message .medium-text {
+      font-size: 1.25rem;
+      color: #4193c9;
+      margin: 0.5rem 0 0.25rem 0;
+    }
+
+    /* 1.7. Invisible fullscreen overlay waiting for the first tap */
+    #firstTapOverlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(42, 42, 42, 0.95);
+      color: #dedede;
+      font-family: "TheRRs", sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.2rem;
+      text-align: center;
+      cursor: pointer;
+      z-index: 9999;
+    }
+    #firstTapOverlay.hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- =========================
+       2. TAP OVERLAY (Safari Autoplay) 
+       ========================= -->
+  <div id="firstTapOverlay">Tap to see and hear The RR Summer Countdown. Audio starts at 1min left!</div>
+
+  <!-- =========================
+       3. HTML STRUCTURE: COUNTDOWN + MESSAGES
+       ========================= -->
+  <!-- 3.1. Countdown container -->
+  <div class="countdown" id="countdownContainer">
+    <div class="time-segment">
+      <span class="number" id="weeks">0</span>
+      <span class="label">Weeks</span>
+    </div>
+    <div class="time-segment">
+      <span class="number" id="days">0</span>
+      <span class="label">Days</span>
+    </div>
+    <div class="time-segment">
+      <span class="number" id="hours">0</span>
+      <span class="label">Hours</span>
+    </div>
+    <div class="time-segment">
+      <span class="number" id="minutes">0</span>
+      <span class="label">Minutes</span>
+    </div>
+    <div class="time-segment">
+      <span class="number" id="seconds">0</span>
+      <span class="label">Seconds</span>
+    </div>
+    <div class="time-segment">
+      <span class="number" id="milliseconds">0</span>
+      <span class="label">Ms</span>
+    </div>
+  </div>
+
+  <!-- 3.2. “Recommended Audio” note -->
+  <div id="recommendedAudio">Recommended Audio - Audio by TheFatRat: Xenogenisis</div>
+
+  <!-- 3.3. “Happy Summer Holiday” message + extra text -->
+  <div class="finished-message" id="finishedMessage">
+    <!-- 3.3.1. Title, enlarged -->
+    <div class="finished-title">
+      <span class="word-happy">Happy</span>
+      <span class="word-summer">Summer</span>
+      <span class="word-holiday">Holiday</span>
+    </div>
+    <!-- 3.3.2. First small paragraph, green text -->
+    <p class="small-text" style="color: #5cc93b;">
+      Thank you for a great RR Year! We are coming back next year! Have a happy summer holiday and enjoy it to the fullest.
+    </p>
+    <!-- 3.3.3. “Special Thanks:” medium sized -->
+    <div class="medium-text">Special Thanks:</div>
+    <!-- 3.3.4. Second small paragraph, off‑white text -->
+    <p class="small-text">
+      Rutham Renish (me), Ruhaan Renish, Dhruv Mondal, Benn Cern Tang, Pranav Mummalaneneni, Adhrit Nirupam, Murdoch Mackenzie, Jenson Cooper, Xihao 'Hani' Shen, Alex Stankov, Ali Heiba, Ronan Bingham and YOU ALL!
+    </p>
+  </div>
+
+  <!-- 3.4. Audio element (preload & loop; initially muted) -->
+  <audio
+    id="warningAudio"
+    preload="auto"
+    loop
+    muted
+    src="/outromusic.mp3"
+  ></audio>
+
+  <!-- =========================
+       4. JAVASCRIPT COUNTDOWN + AUDIO LOGIC
+       ========================= -->
+  <script>
+    // 4.1. TARGET DATE & TIME (“June 27, 2025 @ 12:00:00 PM” local)
+    const targetDate = new Date(2025, 5, 27, 12, 0, 0, 0);
+
+    // 4.2. REFERENCES
+    const overlayDiv     = document.getElementById("firstTapOverlay");
+    const countdownDiv   = document.getElementById("countdownContainer");
+    const recommendedDiv = document.getElementById("recommendedAudio");
+    const finishedDiv    = document.getElementById("finishedMessage");
+    const audio          = document.getElementById("warningAudio");
+
+    let timerID;
+    let recommendedShown = false;
+    let audioScheduled   = false;
+    let tappedOnce       = false;
+
+    // 4.3. ANY TAP ONCE → HIDE OVERLAY & UNMUTE AUDIO
+    overlayDiv.addEventListener("click", () => {
+      audio.muted = false;
+      overlayDiv.classList.add("hidden");
+      tappedOnce = true;
+      // After this single tap, schedule playback logic immediately
+      scheduleAudioAndRecommendation();
+    });
+
+    // 4.4. SCHEDULE AUDIO & “RECOMMENDED AUDIO”
+    function scheduleAudioAndRecommendation() {
+      // If Safari hasn’t been tapped, do nothing
+      if (!tappedOnce) return;
+
+      const now  = new Date();
+      const diff = targetDate.getTime() - now.getTime();
+
+      // AUDIO (only schedule once)
+      if (!audioScheduled) {
+        if (diff > 61_000) {
+          // More than 1 min 1 sec remains → schedule unmute/play at (diff − 61 000) ms
+          setTimeout(() => {
+            audio.currentTime = 0;              // play from 0s so 61 s mark lines up with countdown=0
+            audio.play().catch((err) => {
+              console.warn("Audio play blocked:", err);
+            });
+          }, diff - 61_000);
+          audioScheduled = true;
+        }
+        else if (diff > 0) {
+          // Joined late (0 < diff ≤ 61 000): compute offset
+          const offsetSec = (61_000 - diff) / 1000;
+          const tryPlay = () => {
+            audio.currentTime = offsetSec;
+            audio.play().catch((err) => {
+              console.warn("Audio play blocked:", err);
+            });
+          };
+          if (audio.readyState >= 2) {
+            tryPlay();
+          } else {
+            audio.addEventListener("loadedmetadata", tryPlay, { once: true });
+          }
+          audioScheduled = true;
+        }
+        else {
+          // diff ≤ 0: countdown already over → start immediately at offset = 61 s
+          const tryPlay = () => {
+            audio.currentTime = 61;
+            audio.play().catch((err) => {
+              console.warn("Audio play blocked:", err);
+            });
+          };
+          if (audio.readyState >= 2) {
+            tryPlay();
+          } else {
+            audio.addEventListener("loadedmetadata", tryPlay, { once: true });
+          }
+          audioScheduled = true;
+        }
+      }
+
+      // “RECOMMENDED AUDIO” (only show once)
+      if (!recommendedShown) {
+        if (diff > 60_000) {
+          // More than 1 min remains → schedule display at (diff − 60 000) ms
+          setTimeout(() => {
+            recommendedDiv.style.display = "block";
+            recommendedShown = true;
+          }, diff - 60_000);
+        }
+        else if (diff > 0) {
+          // Joined late (0 < diff ≤ 60 000): show immediately
+          recommendedDiv.style.display = "block";
+          recommendedShown = true;
+        }
+        // If diff ≤ 0: countdown is over; do nothing
+      }
+    }
+
+    // 4.5. UPDATE FUNCTION: update numbers & toggle final message
+    function updateCountdown() {
+      const now = new Date();
+      let diff = targetDate.getTime() - now.getTime();
+
+      if (diff <= 0) {
+        // Countdown finished → hide countdown & recommended, show “Happy Summer Holiday”
+        clearInterval(timerID);
+        countdownDiv.style.display   = "none";
+        recommendedDiv.style.display = "none";
+        finishedDiv.style.display    = "flex";
+        // Also schedule audio (if page loaded after countdown)
+        scheduleAudioAndRecommendation();
+        return;
+      }
+
+      // Compute weeks, days, hours, minutes, seconds, milliseconds
+      const msInWeek   = 7 * 24 * 60 * 60 * 1000;
+      const weeks      = Math.floor(diff / msInWeek);
+      diff          -= weeks * msInWeek;
+
+      const msInDay    = 24 * 60 * 60 * 1000;
+      const days       = Math.floor(diff / msInDay);
+      diff          -= days * msInDay;
+
+      const msInHour   = 60 * 60 * 1000;
+      const hours      = Math.floor(diff / msInHour);
+      diff          -= hours * msInHour;
+
+      const msInMinute = 60 * 1000;
+      const minutes    = Math.floor(diff / msInMinute);
+      diff          -= minutes * msInMinute;
+
+      const msInSecond = 1000;
+      const seconds    = Math.floor(diff / msInSecond);
+      diff          -= seconds * msInSecond;
+
+      const milliseconds = diff; // remainder
+
+      document.getElementById("weeks").textContent        = weeks;
+      document.getElementById("days").textContent         = days;
+      document.getElementById("hours").textContent        = hours;
+      document.getElementById("minutes").textContent      = minutes;
+      document.getElementById("seconds").textContent      = seconds;
+      document.getElementById("milliseconds").textContent = milliseconds;
+
+      // Ensure scheduling is checked each tick (in case tap happened later)
+      scheduleAudioAndRecommendation();
+    }
+
+    // 4.6. START THE INTERVAL (runs every ms)
+    timerID = setInterval(updateCountdown, 1);
+    updateCountdown();
+  </script>
+</body>
+</html>
