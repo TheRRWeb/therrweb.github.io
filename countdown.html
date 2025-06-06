@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Countdown to June 27, 2025</title>
+  <title>RR Summer Countdown</title>
 
   <!-- =========================
        1. CUSTOM FONT + CSS
@@ -29,10 +29,11 @@
     }
     body {
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       background-color: #2a2a2a; /* black */
-      color: #dedede;            /* off-white */
+      color: #dedede;            /* off‑white */
       font-family: "TheRRs", sans-serif;
       font-size: 16px;
       line-height: 1.2;
@@ -45,43 +46,49 @@
       text-align: center;
     }
 
-    /* 1.4. Each “time‐segment” box */
+    /* 1.4. Each “time‑segment” box */
     .time-segment {
       display: flex;
       flex-direction: column;
       min-width: 4rem;
     }
     .time-segment .number {
-      /* 1.4.1. FIXED WIDTH to prevent jiggling: 
-         By giving each <span> a width in 'ch' (character) units, 
-         all numbers occupy the same space even as digits change. */
+      /* Fixed width so digits never shift: */
       display: inline-block;
-      width: 4ch;           /* adjust if you expect > 9999 in any field */
+      width: 4ch;               /* adjust if you expect > 9999 in any field */
       font-size: 3rem;
       line-height: 1;
-      color: #4193c9;        /* blue */
+      color: #4193c9;           /* blue */
       text-align: center;
-      font-variant-numeric: tabular‑nums; /* ensure digits are monospaced if font supports it */
+      font-variant-numeric: tabular‑nums; /* monospaced digits if font supports it */
     }
     .time-segment .label {
       margin-top: 0.25rem;
       font-size: 1rem;
-      color: #5cc93b;        /* green */
+      color: #5cc93b;           /* green */
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
 
-    /* 1.5. “Happy Summer Holiday” message (hidden until zero) */
+    /* 1.5. “Recommended Audio” text (hidden until ≤ 60 000 ms remain) */
+    #recommendedAudio {
+      margin-top: 1rem;
+      color: #dedede;           /* off‑white */
+      font-size: 1rem;
+      display: none;
+    }
+
+    /* 1.6. “Happy Summer Holiday” finished‑message (hidden until countdown ends) */
     .finished-message {
-      display: none;        /* will switch to flex when countdown ends */
+      display: none;
       text-align: center;
       font-size: 2rem;
       gap: 0.5rem;
       font-family: "TheRRs", sans-serif;
     }
-    .finished-message .word-happy  { color: #5cc93b; /* green */ }
-    .finished-message .word-summer { color: #4193c9; /* blue  */ }
-    .finished-message .word-holiday{ color: #dedede; /* off-white */ }
+    .finished-message .word-happy  { color: #5cc93b; /* green */  }
+    .finished-message .word-summer { color: #4193c9; /* blue  */  }
+    .finished-message .word-holiday{ color: #dedede; /* off‑white */ }
   </style>
 </head>
 
@@ -128,82 +135,146 @@
     </div>
   </div>
 
-  <!-- 2.2. Finished message (hidden until countdown hits zero) -->
+  <!-- 2.2. “Recommended Audio” note (shown when ≤ 60 000 ms remain) -->
+  <div id="recommendedAudio">Recommended Audio</div>
+
+  <!-- 2.3. Hidden finished‑message (shown when countdown hits zero) -->
   <div class="finished-message" id="finishedMessage">
     <span class="word-happy">Happy</span>
     <span class="word-summer">Summer</span>
     <span class="word-holiday">Holiday</span>
   </div>
 
+  <!-- 2.4. The audio element (preloaded, loops after finishing) -->
+  <audio
+    id="warningAudio"
+    preload="auto"
+    loop
+    src="/outromusic.mp3"
+  ></audio>
+  <!--
+    ▶ Replace "/outromusic.mp3" with the correct path if needed.
+    ▶ loop attribute ensures it restarts automatically after ending.
+  -->
+
   <!-- =========================
-       3. JAVASCRIPT COUNTDOWN
+       3. JAVASCRIPT COUNTDOWN + AUDIO LOGIC
        ========================= -->
   <script>
     // ───────────────────────────────────────────────────────────
-    // 3.1. TARGET DATE & TIME (edit here if you want a different target)
-    //      “2025‑06‑27 12:00:00 local time”:
+    // 3.1. TARGET DATE & TIME
+    //      “2025‑06‑27 12:00:00 PM” local time:
     const targetDate = new Date(2025, 5, 27, 12, 0, 0, 0);
-    //                ^^^^^^ month index 5 = June
+    //                ^^^^^^ monthIndex 5 = June
     // ───────────────────────────────────────────────────────────
 
-    // 3.2. Grab references to each <span> by ID:
-    const elWeeks      = document.getElementById("weeks");
-    const elDays       = document.getElementById("days");
-    const elHours      = document.getElementById("hours");
-    const elMinutes    = document.getElementById("minutes");
-    const elSeconds    = document.getElementById("seconds");
-    const elMs         = document.getElementById("milliseconds");
-    const countdownDiv = document.getElementById("countdownContainer");
-    const finishedDiv  = document.getElementById("finishedMessage");
+    // 3.2. GRAB REFERENCES
+    const elWeeks        = document.getElementById("weeks");
+    const elDays         = document.getElementById("days");
+    const elHours        = document.getElementById("hours");
+    const elMinutes      = document.getElementById("minutes");
+    const elSeconds      = document.getElementById("seconds");
+    const elMs           = document.getElementById("milliseconds");
+    const countdownDiv   = document.getElementById("countdownContainer");
+    const recommendedDiv = document.getElementById("recommendedAudio");
+    const finishedDiv    = document.getElementById("finishedMessage");
+    const audio          = document.getElementById("warningAudio");
 
-    let timerID; // (use let so clearInterval(timerID) won’t error if not assigned yet)
+    let timerID;
+    let audioStarted = false;
 
+    // ───────────────────────────────────────────────────────────
+    // 3.3. AUDIO SCHEDULING (start at 1 min 1 sec left → 61_000 ms)
+    const now = new Date();
+    let diff = targetDate.getTime() - now.getTime();
+
+    if (diff > 61_000) {
+      // More than 1 min 1 sec remains → schedule play at (diff - 61_000) ms from now:
+      setTimeout(() => {
+        if (!audioStarted) {
+          audioStarted = true;
+          // Start from beginning (0 seconds) so that at countdown=0, audio currentTime = 61s
+          audio.currentTime = 0;
+          audio.play().catch(() => {
+            // If autoplay is blocked, user interaction may be needed
+          });
+        }
+      }, diff - 61_000);
+    }
+    else if (diff > 0) {
+      // We joined after the 1 min 1 sec mark but before zero:
+      // Compute how many seconds into the audio we should be now:
+      const offsetSec = (61_000 - diff) / 1000;
+      // Wait for metadata, then set currentTime and play:
+      audio.addEventListener("loadedmetadata", () => {
+        if (!audioStarted) {
+          audioStarted = true;
+          audio.currentTime = offsetSec;
+          audio.play().catch(() => {});
+        }
+      });
+      // If metadata is already loaded, do it immediately:
+      if (audio.readyState >= 2 && !audioStarted) {
+        audioStarted = true;
+        audio.currentTime = offsetSec;
+        audio.play().catch(() => {});
+      }
+    }
+    // If diff ≤ 0, countdown is already over → do nothing with audio.
+
+    // ───────────────────────────────────────────────────────────
+    // 3.4. UPDATE FUNCTION (runs every ms to update numbers + recommended text)
     function updateCountdown() {
-      const now  = new Date();
-      let diff   = targetDate.getTime() - now.getTime();
+      const now2 = new Date();
+      let diff2 = targetDate.getTime() - now2.getTime();
 
-      if (diff <= 0) {
-        // Time is up → stop interval, hide countdown, show finished message
+      if (diff2 <= 0) {
+        // Countdown finished → hide everything except the finished message
         clearInterval(timerID);
-        countdownDiv.style.display = "none";
-        finishedDiv.style.display  = "flex";
+        countdownDiv.style.display   = "none";
+        recommendedDiv.style.display = "none";
+        finishedDiv.style.display    = "flex";
         return;
       }
 
-      // ───────────────────────────────────────────────────────────
-      // 3.3. Compute weeks, days, hours, minutes, seconds, ms:
+      // Compute weeks, days, hours, minutes, seconds, ms
       const msInWeek   = 7 * 24 * 60 * 60 * 1000;
-      const weeks      = Math.floor(diff / msInWeek);
-      diff           -= weeks * msInWeek;
+      const weeks      = Math.floor(diff2 / msInWeek);
+      diff2          -= weeks * msInWeek;
 
       const msInDay    = 24 * 60 * 60 * 1000;
-      const days       = Math.floor(diff / msInDay);
-      diff           -= days * msInDay;
+      const days       = Math.floor(diff2 / msInDay);
+      diff2          -= days * msInDay;
 
       const msInHour   = 60 * 60 * 1000;
-      const hours      = Math.floor(diff / msInHour);
-      diff           -= hours * msInHour;
+      const hours      = Math.floor(diff2 / msInHour);
+      diff2          -= hours * msInHour;
 
       const msInMinute = 60 * 1000;
-      const minutes    = Math.floor(diff / msInMinute);
-      diff           -= minutes * msInMinute;
+      const minutes    = Math.floor(diff2 / msInMinute);
+      diff2          -= minutes * msInMinute;
 
       const msInSecond = 1000;
-      const seconds    = Math.floor(diff / msInSecond);
-      diff           -= seconds * msInSecond;
+      const seconds    = Math.floor(diff2 / msInSecond);
+      diff2          -= seconds * msInSecond;
 
-      const milliseconds = diff; // remainder
+      const milliseconds = diff2; // remainder
 
-      // 3.4. Update the DOM
+      // Update each span
       elWeeks.textContent   = weeks;
       elDays.textContent    = days;
       elHours.textContent   = hours;
       elMinutes.textContent = minutes;
       elSeconds.textContent = seconds;
       elMs.textContent      = milliseconds;
+
+      // Show “Recommended Audio” once ≤ 60 000 ms remain
+      if (diff2 <= 60_000) {
+        recommendedDiv.style.display = "block";
+      }
     }
 
-    // 3.5. Start the interval, then immediately invoke once:
+    // 3.5. START THE INTERVAL
     timerID = setInterval(updateCountdown, 1);
     updateCountdown();
   </script>
