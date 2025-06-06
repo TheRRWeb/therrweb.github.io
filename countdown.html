@@ -71,7 +71,7 @@
       letter-spacing: 0.05em;
     }
 
-    /* 1.5. “Recommended Audio” (hidden until ≤ 60 000 ms remain OR if countdown over) */
+    /* 1.5. “Recommended Audio” (hidden until ≤ 60 000 ms remain or countdown over) */
     #recommendedAudio {
       margin-top: 1rem;
       color: #dedede;           /* off‑white */
@@ -79,19 +79,40 @@
       display: none;
     }
 
-    /* 1.6. “Happy Summer Holiday” (hidden until countdown ends OR shown immediately if over) */
+    /* 1.6. “Happy Summer Holiday” and extra text (hidden until countdown ends or shown immediately if over) */
     .finished-message {
       display: none;
+      flex-direction: column;
+      align-items: center;
       text-align: center;
-      font-size: 2rem;
-      gap: 0.5rem;
+      gap: 1rem;
       font-family: "TheRRs", sans-serif;
+      padding: 0 1rem;
+    }
+    /* 1.6.1. Make the “Happy Summer Holiday” title bigger */
+    .finished-message .finished-title {
+      display: flex;
+      gap: 0.5rem;
+      font-size: 3rem;
     }
     .finished-message .word-happy  { color: #5cc93b; /* green */  }
     .finished-message .word-summer { color: #4193c9; /* blue  */  }
     .finished-message .word-holiday{ color: #dedede; /* off‑white */ }
 
-    /* 1.7. Invisible fullscreen overlay that waits for first tap (Safari) */
+    /* 1.6.2. Small paragraphs */
+    .finished-message .small-text {
+      font-size: 0.875rem; /* smaller than base 1rem */
+      color: #dedede;
+      margin: 0.25rem 0;
+    }
+    /* 1.6.3. Medium “Special Thanks:” */
+    .finished-message .medium-text {
+      font-size: 1.25rem;
+      color: #4193c9;
+      margin: 0.5rem 0 0.25rem 0;
+    }
+
+    /* 1.7. Invisible fullscreen overlay waiting for the first tap */
     #firstTapOverlay {
       position: absolute;
       top: 0;
@@ -119,7 +140,7 @@
   <!-- =========================
        2. TAP OVERLAY (Safari Autoplay) 
        ========================= -->
-  <div id="firstTapOverlay">Tap to see and hear The RR Summmer Countdown - Audio Recommended at 1 min left</div>
+  <div id="firstTapOverlay">Tap anywhere to enable audio</div>
 
   <!-- =========================
        3. HTML STRUCTURE: COUNTDOWN + MESSAGES
@@ -153,16 +174,26 @@
   </div>
 
   <!-- 3.2. “Recommended Audio” note -->
-  <div id="recommendedAudio">Recommended Audio - Audio by TheFatRat: Xenogenesis</div>
+  <div id="recommendedAudio">Recommended Audio</div>
 
-  <!-- 3.3. “Happy Summer Holiday” message -->
+  <!-- 3.3. “Happy Summer Holiday” message + extra text -->
   <div class="finished-message" id="finishedMessage">
-    <span class="word-happy">Happy</span>
-    <span class="word-summer">Summer</span>
-    <span class="word-holiday">Holiday</span>
-    <p style="color:#5cc93b;">Thank you for a great RR Year! We are coming back next year! Have a happy summer holdiay and enjoy it to the fullest.</p>
-    <span style="color:#4193c9;">Special Thanks:</span>
-    <p style="color:#dedede;">Rutham Renish (me), Ruhaan Renish, Dhruv Mondal, Benn Cern Tang, Murdoch Mackenzie, Jenson Cooper, Xihao 'Hani' Shen, Alex Stankov, Ali Heiba, Ronan Bingham, Pranav Mummalaneneni, Adhrit Nirupam and YOU ALL!</p>
+    <!-- 3.3.1. Title, enlarged -->
+    <div class="finished-title">
+      <span class="word-happy">Happy</span>
+      <span class="word-summer">Summer</span>
+      <span class="word-holiday">Holiday</span>
+    </div>
+    <!-- 3.3.2. First small paragraph, green text -->
+    <p class="small-text" style="color: #5cc93b;">
+      Thank you for a great RR Year! We are coming back next year! Have a happy summer holiday and enjoy it to the fullest.
+    </p>
+    <!-- 3.3.3. “Special Thanks:” medium sized -->
+    <div class="medium-text">Special Thanks:</div>
+    <!-- 3.3.4. Second small paragraph, off‑white text -->
+    <p class="small-text">
+      Rutham Renish (me), Ruhaan Renish, Dhruv Mondal, Benn Cern Tang, Pranav Mummalaneneni, Adhrit Nirupam, Murdoch Mackenzie, Jenson Cooper, Xihao 'Hani' Shen, Alex Stankov, Ali Heiba, Ronan Bingham and YOU ALL!
+    </p>
   </div>
 
   <!-- 3.4. Audio element (preload & loop; initially muted) -->
@@ -179,7 +210,7 @@
        ========================= -->
   <script>
     // 4.1. TARGET DATE & TIME (“June 27, 2025 @ 12:00:00 PM” local)
-    const targetDate = new Date(2025, 5, 6, 12, 19, 0, 0);
+    const targetDate = new Date(2025, 5, 6, 12, 32, 0, 0);
 
     // 4.2. REFERENCES
     const overlayDiv     = document.getElementById("firstTapOverlay");
@@ -213,7 +244,7 @@
       // AUDIO (only schedule once)
       if (!audioScheduled) {
         if (diff > 61_000) {
-          // More than 1 min 1 sec remains: schedule unmute/play at (diff − 61 000) ms
+          // More than 1 min 1 sec remains → schedule unmute/play at (diff − 61 000) ms
           setTimeout(() => {
             audio.currentTime = 0;              // play from 0s so 61 s mark lines up with countdown=0
             audio.play().catch((err) => {
@@ -239,9 +270,9 @@
           audioScheduled = true;
         }
         else {
-          // diff ≤ 0: countdown is already over → start immediately at offset=61 s
+          // diff ≤ 0: countdown already over → start immediately at offset = 61 s
           const tryPlay = () => {
-            audio.currentTime = 61; // jump to 61 s mark
+            audio.currentTime = 61;
             audio.play().catch((err) => {
               console.warn("Audio play blocked:", err);
             });
@@ -258,7 +289,7 @@
       // “RECOMMENDED AUDIO” (only show once)
       if (!recommendedShown) {
         if (diff > 60_000) {
-          // More than 1 min remains: schedule show at (diff − 60 000) ms
+          // More than 1 min remains → schedule display at (diff − 60 000) ms
           setTimeout(() => {
             recommendedDiv.style.display = "block";
             recommendedShown = true;
@@ -269,11 +300,11 @@
           recommendedDiv.style.display = "block";
           recommendedShown = true;
         }
-        // If diff ≤ 0: countdown is over → do not show “Recommended Audio”
+        // If diff ≤ 0: countdown is over; do nothing
       }
     }
 
-    // 4.5. UPDATE FUNCTION: updates numbers & toggles final message
+    // 4.5. UPDATE FUNCTION: update numbers & toggle final message
     function updateCountdown() {
       const now = new Date();
       let diff = targetDate.getTime() - now.getTime();
@@ -284,7 +315,7 @@
         countdownDiv.style.display   = "none";
         recommendedDiv.style.display = "none";
         finishedDiv.style.display    = "flex";
-        // Also schedule audio (in case page was just loaded after countdown)
+        // Also schedule audio (if page loaded after countdown)
         scheduleAudioAndRecommendation();
         return;
       }
@@ -319,7 +350,7 @@
       document.getElementById("seconds").textContent      = seconds;
       document.getElementById("milliseconds").textContent = milliseconds;
 
-      // In case user tapped after load, ensure scheduling is checked each tick
+      // Ensure scheduling is checked each tick (in case tap happened later)
       scheduleAudioAndRecommendation();
     }
 
