@@ -102,7 +102,7 @@
 
 // 1. Set the exact date/time when effects should start:
 //    June 27, 2025 at 12:00:00 PM (local time)
-const targetDate = new Date(2025, 5, 6, 17, 42, 0, 0); // month is zero-based (5 = June)
+const targetDate = new Date(2025, 5, 6, 17, 48, 0, 0); // month is zero-based (5 = June)
 
 (function() {
   // 2. Wait until the page’s DOM is fully loaded
@@ -121,7 +121,7 @@ const targetDate = new Date(2025, 5, 6, 17, 42, 0, 0); // month is zero-based (5
     }
   }
 
-  // 3. This function injects all CSS/HTML/JS needed for enhanced confetti, spotlights, etc.
+  // 3. This function injects all CSS/HTML/JS needed for confetti, spotlights, etc.
   function startEffects() {
     // --- A. Inject CSS for animations and styling ---
     const style = document.createElement('style');
@@ -179,27 +179,6 @@ const targetDate = new Date(2025, 5, 6, 17, 42, 0, 0); // month is zero-based (5
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.08s ease-in-out;
-      }
-
-      /* === THEME LASERS === */
-      .laser {
-        position: absolute;
-        width: 2px;
-        height: 120vh;
-        background: #5cc93b;
-        opacity: 0.6;
-        transform: rotate(45deg);
-        animation: moveLaser 3s infinite ease-in-out;
-      }
-      .laser.blue {
-        background: #4193c9;
-        transform: rotate(-45deg);
-        animation-delay: 1s;
-      }
-      @keyframes moveLaser {
-        0%   { transform: translate(-50vw, -50vh) rotate(45deg); }
-        50%  { transform: translate(60vw, 60vh) rotate(45deg); }
-        100% { transform: translate(-50vw, -50vh) rotate(45deg); }
       }
 
       /* === MOVING LOGOS: FLOATING === */
@@ -290,22 +269,7 @@ const targetDate = new Date(2025, 5, 6, 17, 42, 0, 0); // month is zero-based (5
       setTimeout(() => { flashEl.style.opacity = '0'; }, 80);
     }, 1500);
 
-    // --- E. ADD THEME LASERS ---
-    // Create multiple lasers to cross the screen
-    for (let i = 0; i < 3; i++) {
-      const laser = document.createElement('div');
-      laser.className = 'laser';
-      laser.style.animationDelay = (i * 1) + 's';
-      container.appendChild(laser);
-    }
-    for (let i = 0; i < 3; i++) {
-      const laserBlue = document.createElement('div');
-      laserBlue.className = 'laser blue';
-      laserBlue.style.animationDelay = (i * 1 + 0.5) + 's';
-      container.appendChild(laserBlue);
-    }
-
-    // --- F. ADD MOVING LOGOS: FLOATING ===
+    // --- E. ADD MOVING LOGOS: FLOATING ===
     const floatingCount = 3;
     for (let i = 0; i < floatingCount; i++) {
       const logoF = document.createElement('img');
@@ -316,7 +280,7 @@ const targetDate = new Date(2025, 5, 6, 17, 42, 0, 0); // month is zero-based (5
       container.appendChild(logoF);
     }
 
-    // --- G. ADD MOVING LOGOS: DVD-STYLE BOUNCE ===
+    // --- F. ADD MOVING LOGOS: DVD-STYLE BOUNCE ===
     const dvdLogos = [];
     const dvdCount = 4;
     for (let i = 0; i < dvdCount; i++) {
@@ -372,7 +336,7 @@ const targetDate = new Date(2025, 5, 6, 17, 42, 0, 0); // month is zero-based (5
     }
     requestAnimationFrame(bounceDVD);
 
-    // --- H. ADD TWINKLING STARS ===
+    // --- G. ADD TWINKLING STARS ===
     const starCount = 40;
     for (let i = 0; i < starCount; i++) {
       const star = document.createElement('div');
@@ -386,7 +350,7 @@ const targetDate = new Date(2025, 5, 6, 17, 42, 0, 0); // month is zero-based (5
       container.appendChild(star);
     }
 
-    // --- I. LOAD CANVAS-CONFETTI LIBRARY AND START CONFETTI + FALLING LOGOS ---
+    // --- H. LOAD CANVAS-CONFETTI LIBRARY AND START CONFETTI + FALLING LOGOS ---
     const confettiScript = document.createElement('script');
     confettiScript.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js';
     confettiScript.onload = () => {
