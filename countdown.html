@@ -9,7 +9,7 @@
        1. CUSTOM FONT + CSS
        ========================= -->
   <style>
-    /* 1.1. Load your custom font from /the-rrs.ttf and name it “TheRRs” */
+    /* 1.1. Load custom font from /the-rrs.ttf and name it “TheRRs” */
     @font-face {
       font-family: "TheRRs";
       src: url("/the-rrs.ttf") format("truetype");
@@ -164,7 +164,7 @@
     // ───────────────────────────────────────────────────────────
     // 3.1. TARGET DATE & TIME
     //      “2025‑06‑27 12:00:00 PM” local time:
-    const targetDate = new Date(2025, 5, 6, 11, 31, 0, 0);
+    const targetDate = new Date(2025, 5, 6, 11, 36, 0, 0);
     //                ^^^^^^ monthIndex 5 = June
     // ───────────────────────────────────────────────────────────
 
@@ -181,63 +181,75 @@
     const audio          = document.getElementById("warningAudio");
 
     let timerID;
-    let recommendedShown = false;
-    let audioStarted = false;
 
     // ───────────────────────────────────────────────────────────
-    // 3.3. INITIAL DIFFERENCE (ms) AND AUDIO SCHEDULING
-    const now = new Date();
-    let diff = targetDate.getTime() - now.getTime();
+    // 3.3. AUDIO SCHEDULING & “RECOMMENDED AUDIO” TIMING
+    //
+    // We want the audio’s “beat” at 1:01 left (61 000 ms) to land exactly at countdown=0.
+    // → Start playing at countdown=61 000 (so at target time minus 61 000).
+    // → If user joins late (0 < diff ≤ 61 000), start audio at offset = (61 000 − diff)/1000 seconds.
+    // → If diff ≤ 0, countdown is already over (audio could already be playing or not).
+    //
+    // For “Recommended Audio,” show it when countdown ≤ 60 000 ms remain.
 
-    // We want the audio’s “beat” at 1:01 left to hit exactly zero on the countdown.
-    // That means: Start playing at (countdown = 61 000 ms) remaining.
-    // If diff > 61 000 → schedule a timeout for (diff - 61 000).
-    // If 0 < diff ≤ 61 000 → join late, so start audio at offset = (61 000 - diff)/1000 seconds.
-    // If diff ≤ 0 → countdown is over, do nothing special with audio (it may loop if already playing).
+    function scheduleAudioAndRecommendation() {
+      const now = new Date();
+      const diff = targetDate.getTime() - now.getTime();
 
-    if (diff > 61_000) {
-      // More than 1 min 1 sec remains → schedule play at (diff - 61 000) ms from now
-      setTimeout(() => {
-        if (!audioStarted) {
-          audioStarted = true;
-          // Begin from 0s in the track: after 61 000 ms of countdown, audio.currentTime=0 
-          audio.currentTime = 0;
-          audio.play().catch((err) => {
-            console.warn("Audio play was blocked or failed:", err);
-          });
-        }
-      }, diff - 61_000);
-    }
-    else if (diff > 0) {
-      // We joined after the 1 min 1 sec mark but before zero:
-      // Compute how many seconds into the audio we need to start:
-      const offsetSec = (61_000 - diff) / 1000;
-      const tryPlay = () => {
-        if (!audioStarted) {
-          audioStarted = true;
-          audio.currentTime = offsetSec;
-          audio.play().catch((err) => {
-            console.warn("Audio play was blocked or failed:", err);
-          });
-        }
-      };
-      // If metadata is already loaded, play immediately at offset:
-      if (audio.readyState >= 2) {
-        tryPlay();
-      } else {
-        // Otherwise wait for metadata to load:
-        audio.addEventListener("loadedmetadata", tryPlay);
+      // AUDIO
+      if (diff > 61_000) {
+        // More than 1 min 1 sec remains → schedule audio play at (diff − 61 000) ms from now
+        setTimeout(() => {
+          startAudioAtOffset(0);
+        }, diff - 61_000);
       }
+      else if (diff > 0) {
+        // Joined late, with 0 < diff ≤ 61 000:
+        // Compute offset in seconds where the audio should be:
+        const offsetSec = (61_000 - diff) / 1000;
+        // Once metadata is loaded, seek and play:
+        if (audio.readyState >= 2) {
+          startAudioAtOffset(offsetSec);
+        } else {
+          audio.addEventListener("loadedmetadata", () => {
+            startAudioAtOffset(offsetSec);
+          });
+        }
+      }
+      // If diff ≤ 0, countdown is over → do not schedule audio here.
+
+      // RECOMMENDED AUDIO
+      if (diff > 60_000) {
+        // More than 1 min remains → schedule showing at (diff − 60 000) ms from now
+        setTimeout(() => {
+          recommendedDiv.style.display = "block";
+        }, diff - 60_000);
+      }
+      else if (diff > 0) {
+        // 0 < diff ≤ 60 000 → show it immediately
+        recommendedDiv.style.display = "block";
+      }
+      // If diff ≤ 0, countdown is over → do not show “Recommended Audio.”
     }
-    // Else diff ≤ 0: Countdown already passed → no need to start audio here.
+
+    // Helper to start audio at the given offset (in seconds) and play:
+    function startAudioAtOffset(offsetSeconds) {
+      audio.currentTime = offsetSeconds;
+      audio.play().catch((err) => {
+        console.warn("Audio play blocked or failed:", err);
+      });
+    }
+
+    // Schedule audio & recommended text once on load:
+    scheduleAudioAndRecommendation();
 
     // ───────────────────────────────────────────────────────────
-    // 3.4. UPDATE FUNCTION (runs every ms to update numbers + recommended text)
+    // 3.4. UPDATE FUNCTION (runs every millisecond to update numbers + hide/show final message)
     function updateCountdown() {
-      const now2 = new Date();
-      let diff2 = targetDate.getTime() - now2.getTime();
+      const now = new Date();
+      let diff = targetDate.getTime() - now.getTime();
 
-      if (diff2 <= 0) {
+      if (diff <= 0) {
         // Countdown finished → hide timer + recommendedAudio, show “Happy Summer Holiday”
         clearInterval(timerID);
         countdownDiv.style.display   = "none";
@@ -246,42 +258,36 @@
         return;
       }
 
-      // Compute weeks, days, hours, minutes, seconds, ms
+      // Compute weeks, days, hours, minutes, seconds, ms:
       const msInWeek   = 7 * 24 * 60 * 60 * 1000;
-      const weeks      = Math.floor(diff2 / msInWeek);
-      diff2          -= weeks * msInWeek;
+      const weeks      = Math.floor(diff / msInWeek);
+      diff          -= weeks * msInWeek;
 
       const msInDay    = 24 * 60 * 60 * 1000;
-      const days       = Math.floor(diff2 / msInDay);
-      diff2          -= days * msInDay;
+      const days       = Math.floor(diff / msInDay);
+      diff          -= days * msInDay;
 
       const msInHour   = 60 * 60 * 1000;
-      const hours      = Math.floor(diff2 / msInHour);
-      diff2          -= hours * msInHour;
+      const hours      = Math.floor(diff / msInHour);
+      diff          -= hours * msInHour;
 
       const msInMinute = 60 * 1000;
-      const minutes    = Math.floor(diff2 / msInMinute);
-      diff2          -= minutes * msInMinute;
+      const minutes    = Math.floor(diff / msInMinute);
+      diff          -= minutes * msInMinute;
 
       const msInSecond = 1000;
-      const seconds    = Math.floor(diff2 / msInSecond);
-      diff2          -= seconds * msInSecond;
+      const seconds    = Math.floor(diff / msInSecond);
+      diff          -= seconds * msInSecond;
 
-      const milliseconds = diff2; // remainder
+      const milliseconds = diff; // remainder
 
       // Update each span
-      elWeeks.textContent   = weeks;
-      elDays.textContent    = days;
-      elHours.textContent   = hours;
-      elMinutes.textContent = minutes;
-      elSeconds.textContent = seconds;
-      elMs.textContent      = milliseconds;
-
-      // Only show “Recommended Audio” once when diff2 ≤ 60 000 (1 min) but not before
-      if (!recommendedShown && diff2 <= 60_000) {
-        recommendedDiv.style.display = "block";
-        recommendedShown = true;
-      }
+      document.getElementById("weeks").textContent        = weeks;
+      document.getElementById("days").textContent         = days;
+      document.getElementById("hours").textContent        = hours;
+      document.getElementById("minutes").textContent      = minutes;
+      document.getElementById("seconds").textContent      = seconds;
+      document.getElementById("milliseconds").textContent = milliseconds;
     }
 
     // 3.5. START THE INTERVAL
