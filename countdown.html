@@ -1,9 +1,9 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Countdown to June 27, 2025</title>
+  <title>Countdown to June 27, 2025</title>
 
   <!-- =========================
        1. CUSTOM FONT + CSS
@@ -37,6 +37,8 @@
       font-family: "TheRRs", sans-serif;
       font-size: 16px;
       line-height: 1.2;
+      position: relative;
+      overflow: hidden;
     }
 
     /* 1.3. Countdown container (visible until zero) */
@@ -89,87 +91,95 @@
     .finished-message .word-happy  { color: #5cc93b; /* green */  }
     .finished-message .word-summer { color: #4193c9; /* blue  */  }
     .finished-message .word-holiday{ color: #dedede; /* off‑white */ }
+
+    /* 1.7. Fullscreen overlay prompting user tap (for Safari autoplay) */
+    #audioOverlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(42, 42, 42, 0.95); /* nearly black */, 
+      color: #dedede;
+      font-family: "TheRRs", sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      z-index: 9999;
+    }
   </style>
 </head>
 
 <body>
   <!-- =========================
-       2. HTML STRUCTURE
+       2. OVERLAY FOR SAFARI AUTOPLAY
        ========================= -->
-  <!-- 2.1. Countdown container (shown while time > 0) -->
+  <div id="audioOverlay">Tap to Enable Audio</div>
+
+  <!-- =========================
+       3. HTML STRUCTURE: COUNTDOWN + MESSAGES
+       ========================= -->
+  <!-- 3.1. Countdown container (shown while time > 0) -->
   <div class="countdown" id="countdownContainer">
-    <!-- Weeks -->
     <div class="time-segment">
       <span class="number" id="weeks">0</span>
       <span class="label">Weeks</span>
     </div>
-
-    <!-- Days -->
     <div class="time-segment">
       <span class="number" id="days">0</span>
       <span class="label">Days</span>
     </div>
-
-    <!-- Hours -->
     <div class="time-segment">
       <span class="number" id="hours">0</span>
       <span class="label">Hours</span>
     </div>
-
-    <!-- Minutes -->
     <div class="time-segment">
       <span class="number" id="minutes">0</span>
       <span class="label">Minutes</span>
     </div>
-
-    <!-- Seconds -->
     <div class="time-segment">
       <span class="number" id="seconds">0</span>
       <span class="label">Seconds</span>
     </div>
-
-    <!-- Milliseconds -->
     <div class="time-segment">
       <span class="number" id="milliseconds">0</span>
       <span class="label">Ms</span>
     </div>
   </div>
 
-  <!-- 2.2. “Recommended Audio” note (shown when 60 000 ms remain) -->
+  <!-- 3.2. “Recommended Audio” note -->
   <div id="recommendedAudio">Recommended Audio</div>
 
-  <!-- 2.3. Hidden finished‑message (shown when countdown hits zero) -->
+  <!-- 3.3. “Happy Summer Holiday” message -->
   <div class="finished-message" id="finishedMessage">
     <span class="word-happy">Happy</span>
     <span class="word-summer">Summer</span>
     <span class="word-holiday">Holiday</span>
   </div>
 
-  <!-- 2.4. The audio element (preloaded, set to autoplay, loops after finishing) -->
-  <!--
-    ▶ Added autoplay attribute. In many browsers, autoplay inside an iframe
-      requires the parent iframe tag to have allow="autoplay" or user interaction.
-  -->
+  <!-- 3.4. Audio element (muted initially, loops) -->
   <audio
     id="warningAudio"
     preload="auto"
-    autoplay
     loop
+    muted
     src="/outromusic.mp3"
   ></audio>
+  <!-- Make sure /outromusic.mp3 is valid. -->
 
   <!-- =========================
-       3. JAVASCRIPT COUNTDOWN + AUDIO LOGIC
+       4. JAVASCRIPT COUNTDOWN + AUDIO LOGIC
        ========================= -->
   <script>
-    // ───────────────────────────────────────────────────────────
-    // 3.1. TARGET DATE & TIME
-    //      “2025‑06‑27 12:00:00 PM” local time:
-    const targetDate = new Date(2025, 5, 6, 11, 43, 0, 0);
-    //                ^^^^^^ monthIndex 5 = June
-    // ───────────────────────────────────────────────────────────
+    // 4.1. TARGET DATE & TIME (“June 27, 2025 @ 12:00:00 PM” local time)
+    const targetDate = new Date(2025, 5, 6, 11, 50, 0, 0);
+    //                 ^^^^^^ monthIndex 5 = June
 
-    // 3.2. GRAB REFERENCES
+    // 4.2. REFERENCES
+    const overlayDiv     = document.getElementById("audioOverlay");
     const countdownDiv   = document.getElementById("countdownContainer");
     const recommendedDiv = document.getElementById("recommendedAudio");
     const finishedDiv    = document.getElementById("finishedMessage");
@@ -177,75 +187,81 @@
 
     let timerID;
     let recommendedShown = false;
-    let audioScheduled   = false; // ensure we only schedule once
+    let audioScheduled   = false;
 
-    // 3.3. Ensure audio starts loading immediately
-    audio.load();
+    // 4.3. ONCE USER TAPS OVERLAY → UNMUTE AUDIO & REMOVE OVERLAY
+    overlayDiv.addEventListener("click", () => {
+      audio.muted = false;
+      overlayDiv.style.display = "none";
+      // Now that the user has interacted, we can schedule playback
+      scheduleAudioAndRecommendation();
+    });
 
-    // 3.4. FUNCTION TO SCHEDULE AUDIO & “RECOMMENDED AUDIO”
+    // 4.4. FUNCTION TO SCHEDULE AUDIO & “RECOMMENDED AUDIO”
     function scheduleAudioAndRecommendation() {
-      const now = new Date();
+      const now  = new Date();
       const diff = targetDate.getTime() - now.getTime();
 
-      // AUDIO
+      // AUDIO (only schedule once)
       if (!audioScheduled) {
         if (diff > 61_000) {
-          // More than 1 min 1 sec remains → schedule at (diff − 61 000) ms
+          // >1 min 1 sec remains → schedule at (diff − 61 000) ms
           setTimeout(() => {
-            // Attempt to play from 0s when countdown = 61 000 ms
-            audio.currentTime = 0;
-            audio.play().catch((err) => {
-              console.warn("Audio play blocked or failed:", err);
-            });
+            // Start from 0s so that 61 s beat lines up with countdown=0
+            startAudioAtOffset(0);
           }, diff - 61_000);
           audioScheduled = true;
-        } else if (diff > 0) {
-          // Joined late, with 0 < diff ≤ 61 000:
-          // Compute offset: how many seconds into audio when countdown is zero
+        }
+        else if (diff > 0) {
+          // Joined late (0 < diff ≤ 61 000)
           const offsetSec = (61_000 - diff) / 1000;
-          const tryPlay = () => {
-            audio.currentTime = offsetSec;
-            audio.play().catch((err) => {
-              console.warn("Audio play blocked or failed:", err);
-            });
-          };
           if (audio.readyState >= 2) {
-            tryPlay();
+            startAudioAtOffset(offsetSec);
           } else {
-            audio.addEventListener("loadedmetadata", tryPlay);
+            audio.addEventListener("loadedmetadata", () => {
+              startAudioAtOffset(offsetSec);
+            }, { once: true });
           }
           audioScheduled = true;
         }
-        // If diff ≤ 0: countdown is already over; do not schedule audio.
+        // If diff ≤ 0, countdown is over; do nothing
       }
 
-      // “RECOMMENDED AUDIO”
+      // RECOMMENDED AUDIO (only show once)
       if (!recommendedShown) {
         if (diff > 60_000) {
-          // More than 1 min remains → schedule showing at (diff − 60 000) ms
+          // >1 min remains → schedule display at (diff − 60 000) ms
           setTimeout(() => {
             recommendedDiv.style.display = "block";
             recommendedShown = true;
           }, diff - 60_000);
-        } else if (diff > 0) {
-          // Joined late with 0 < diff ≤ 60 000 → show immediately
+        }
+        else if (diff > 0) {
+          // Joined late (0 < diff ≤ 60 000)
           recommendedDiv.style.display = "block";
           recommendedShown = true;
         }
-        // If diff ≤ 0: countdown is over; do not show “Recommended Audio.”
+        // If diff ≤ 0, do nothing
       }
     }
 
-    // Call once on load
-    scheduleAudioAndRecommendation();
+    // Helper to start audio at a specific offset (seconds) and play
+    function startAudioAtOffset(offsetSeconds) {
+      audio.currentTime = offsetSeconds;
+      audio.play().then(() => {
+        console.log("Audio started at", offsetSeconds, "seconds.");
+      }).catch((err) => {
+        console.warn("Audio play blocked or failed:", err);
+      });
+    }
 
-    // 3.5. UPDATE FUNCTION (runs every millisecond to update numbers + final swap)
+    // 4.5. UPDATE FUNCTION: update numbers & final swap
     function updateCountdown() {
-      const now = new Date();
-      let diff = targetDate.getTime() - now.getTime();
+      const now  = new Date();
+      let diff   = targetDate.getTime() - now.getTime();
 
       if (diff <= 0) {
-        // Countdown finished → hide timer + recommendedAudio, show “Happy Summer Holiday”
+        // Countdown finished → hide timer & recommended, show “Happy Summer Holiday”
         clearInterval(timerID);
         countdownDiv.style.display   = "none";
         recommendedDiv.style.display = "none";
@@ -253,7 +269,7 @@
         return;
       }
 
-      // Compute weeks, days, hours, minutes, seconds, ms:
+      // Compute weeks, days, hours, minutes, seconds, milliseconds
       const msInWeek   = 7 * 24 * 60 * 60 * 1000;
       const weeks      = Math.floor(diff / msInWeek);
       diff          -= weeks * msInWeek;
@@ -284,7 +300,7 @@
       document.getElementById("milliseconds").textContent = milliseconds;
     }
 
-    // 3.6. START THE INTERVAL
+    // 4.6. START THE INTERVAL (runs every ms to update countdown)
     timerID = setInterval(updateCountdown, 1);
     updateCountdown();
   </script>
