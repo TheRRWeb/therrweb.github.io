@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -145,17 +145,18 @@
     <span class="word-holiday">Holiday</span>
   </div>
 
-  <!-- 2.4. The audio element (preloaded, loops after finishing) -->
+  <!-- 2.4. The audio element (preloaded, set to autoplay, loops after finishing) -->
+  <!--
+    ▶ Added autoplay attribute. In many browsers, autoplay inside an iframe
+      requires the parent iframe tag to have allow="autoplay" or user interaction.
+  -->
   <audio
     id="warningAudio"
     preload="auto"
+    autoplay
     loop
     src="/outromusic.mp3"
   ></audio>
-  <!--
-    ▶ Make sure /outromusic.mp3 is the correct path to your audio file.
-    ▶ The loop attribute causes it to restart automatically after ending.
-  -->
 
   <!-- =========================
        3. JAVASCRIPT COUNTDOWN + AUDIO LOGIC
@@ -164,87 +165,81 @@
     // ───────────────────────────────────────────────────────────
     // 3.1. TARGET DATE & TIME
     //      “2025‑06‑27 12:00:00 PM” local time:
-    const targetDate = new Date(2025, 5, 6, 11, 36, 0, 0);
+    const targetDate = new Date(2025, 5, 6, 11, 43, 0, 0);
     //                ^^^^^^ monthIndex 5 = June
     // ───────────────────────────────────────────────────────────
 
     // 3.2. GRAB REFERENCES
-    const elWeeks        = document.getElementById("weeks");
-    const elDays         = document.getElementById("days");
-    const elHours        = document.getElementById("hours");
-    const elMinutes      = document.getElementById("minutes");
-    const elSeconds      = document.getElementById("seconds");
-    const elMs           = document.getElementById("milliseconds");
     const countdownDiv   = document.getElementById("countdownContainer");
     const recommendedDiv = document.getElementById("recommendedAudio");
     const finishedDiv    = document.getElementById("finishedMessage");
     const audio          = document.getElementById("warningAudio");
 
     let timerID;
+    let recommendedShown = false;
+    let audioScheduled   = false; // ensure we only schedule once
 
-    // ───────────────────────────────────────────────────────────
-    // 3.3. AUDIO SCHEDULING & “RECOMMENDED AUDIO” TIMING
-    //
-    // We want the audio’s “beat” at 1:01 left (61 000 ms) to land exactly at countdown=0.
-    // → Start playing at countdown=61 000 (so at target time minus 61 000).
-    // → If user joins late (0 < diff ≤ 61 000), start audio at offset = (61 000 − diff)/1000 seconds.
-    // → If diff ≤ 0, countdown is already over (audio could already be playing or not).
-    //
-    // For “Recommended Audio,” show it when countdown ≤ 60 000 ms remain.
+    // 3.3. Ensure audio starts loading immediately
+    audio.load();
 
+    // 3.4. FUNCTION TO SCHEDULE AUDIO & “RECOMMENDED AUDIO”
     function scheduleAudioAndRecommendation() {
       const now = new Date();
       const diff = targetDate.getTime() - now.getTime();
 
       // AUDIO
-      if (diff > 61_000) {
-        // More than 1 min 1 sec remains → schedule audio play at (diff − 61 000) ms from now
-        setTimeout(() => {
-          startAudioAtOffset(0);
-        }, diff - 61_000);
-      }
-      else if (diff > 0) {
-        // Joined late, with 0 < diff ≤ 61 000:
-        // Compute offset in seconds where the audio should be:
-        const offsetSec = (61_000 - diff) / 1000;
-        // Once metadata is loaded, seek and play:
-        if (audio.readyState >= 2) {
-          startAudioAtOffset(offsetSec);
-        } else {
-          audio.addEventListener("loadedmetadata", () => {
-            startAudioAtOffset(offsetSec);
-          });
+      if (!audioScheduled) {
+        if (diff > 61_000) {
+          // More than 1 min 1 sec remains → schedule at (diff − 61 000) ms
+          setTimeout(() => {
+            // Attempt to play from 0s when countdown = 61 000 ms
+            audio.currentTime = 0;
+            audio.play().catch((err) => {
+              console.warn("Audio play blocked or failed:", err);
+            });
+          }, diff - 61_000);
+          audioScheduled = true;
+        } else if (diff > 0) {
+          // Joined late, with 0 < diff ≤ 61 000:
+          // Compute offset: how many seconds into audio when countdown is zero
+          const offsetSec = (61_000 - diff) / 1000;
+          const tryPlay = () => {
+            audio.currentTime = offsetSec;
+            audio.play().catch((err) => {
+              console.warn("Audio play blocked or failed:", err);
+            });
+          };
+          if (audio.readyState >= 2) {
+            tryPlay();
+          } else {
+            audio.addEventListener("loadedmetadata", tryPlay);
+          }
+          audioScheduled = true;
         }
+        // If diff ≤ 0: countdown is already over; do not schedule audio.
       }
-      // If diff ≤ 0, countdown is over → do not schedule audio here.
 
-      // RECOMMENDED AUDIO
-      if (diff > 60_000) {
-        // More than 1 min remains → schedule showing at (diff − 60 000) ms from now
-        setTimeout(() => {
+      // “RECOMMENDED AUDIO”
+      if (!recommendedShown) {
+        if (diff > 60_000) {
+          // More than 1 min remains → schedule showing at (diff − 60 000) ms
+          setTimeout(() => {
+            recommendedDiv.style.display = "block";
+            recommendedShown = true;
+          }, diff - 60_000);
+        } else if (diff > 0) {
+          // Joined late with 0 < diff ≤ 60 000 → show immediately
           recommendedDiv.style.display = "block";
-        }, diff - 60_000);
+          recommendedShown = true;
+        }
+        // If diff ≤ 0: countdown is over; do not show “Recommended Audio.”
       }
-      else if (diff > 0) {
-        // 0 < diff ≤ 60 000 → show it immediately
-        recommendedDiv.style.display = "block";
-      }
-      // If diff ≤ 0, countdown is over → do not show “Recommended Audio.”
     }
 
-    // Helper to start audio at the given offset (in seconds) and play:
-    function startAudioAtOffset(offsetSeconds) {
-      audio.currentTime = offsetSeconds;
-      audio.play().catch((err) => {
-        console.warn("Audio play blocked or failed:", err);
-      });
-    }
-
-    // Schedule audio & recommended text once on load:
+    // Call once on load
     scheduleAudioAndRecommendation();
 
-    // ───────────────────────────────────────────────────────────
-    // 3.4. UPDATE FUNCTION (runs every millisecond to update numbers + hide/show final message)
+    // 3.5. UPDATE FUNCTION (runs every millisecond to update numbers + final swap)
     function updateCountdown() {
       const now = new Date();
       let diff = targetDate.getTime() - now.getTime();
@@ -281,7 +276,6 @@
 
       const milliseconds = diff; // remainder
 
-      // Update each span
       document.getElementById("weeks").textContent        = weeks;
       document.getElementById("days").textContent         = days;
       document.getElementById("hours").textContent        = hours;
@@ -290,7 +284,7 @@
       document.getElementById("milliseconds").textContent = milliseconds;
     }
 
-    // 3.5. START THE INTERVAL
+    // 3.6. START THE INTERVAL
     timerID = setInterval(updateCountdown, 1);
     updateCountdown();
   </script>
