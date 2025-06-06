@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>RR Summer Countdown</title>
+  <title>Countdown to June 27, 2025</title>
 
   <!-- =========================
        1. CUSTOM FONT + CSS
@@ -70,7 +70,7 @@
       letter-spacing: 0.05em;
     }
 
-    /* 1.5. “Recommended Audio” text (hidden until ≤ 60 000 ms remain) */
+    /* 1.5. “Recommended Audio” text (hidden until 60 000 ms remain) */
     #recommendedAudio {
       margin-top: 1rem;
       color: #dedede;           /* off‑white */
@@ -135,7 +135,7 @@
     </div>
   </div>
 
-  <!-- 2.2. “Recommended Audio” note (shown when ≤ 60 000 ms remain) -->
+  <!-- 2.2. “Recommended Audio” note (shown when 60 000 ms remain) -->
   <div id="recommendedAudio">Recommended Audio</div>
 
   <!-- 2.3. Hidden finished‑message (shown when countdown hits zero) -->
@@ -153,8 +153,8 @@
     src="/outromusic.mp3"
   ></audio>
   <!--
-    ▶ Replace "/outromusic.mp3" with the correct path if needed.
-    ▶ loop attribute ensures it restarts automatically after ending.
+    ▶ Make sure /outromusic.mp3 is the correct path to your audio file.
+    ▶ The loop attribute causes it to restart automatically after ending.
   -->
 
   <!-- =========================
@@ -164,7 +164,7 @@
     // ───────────────────────────────────────────────────────────
     // 3.1. TARGET DATE & TIME
     //      “2025‑06‑27 12:00:00 PM” local time:
-    const targetDate = new Date(2025, 5, 6, 11, 24, 0, 0);
+    const targetDate = new Date(2025, 5, 6, 11, 31, 0, 0);
     //                ^^^^^^ monthIndex 5 = June
     // ───────────────────────────────────────────────────────────
 
@@ -181,46 +181,55 @@
     const audio          = document.getElementById("warningAudio");
 
     let timerID;
+    let recommendedShown = false;
     let audioStarted = false;
 
     // ───────────────────────────────────────────────────────────
-    // 3.3. AUDIO SCHEDULING (start at 1 min 1 sec left → 61_000 ms)
+    // 3.3. INITIAL DIFFERENCE (ms) AND AUDIO SCHEDULING
     const now = new Date();
     let diff = targetDate.getTime() - now.getTime();
 
+    // We want the audio’s “beat” at 1:01 left to hit exactly zero on the countdown.
+    // That means: Start playing at (countdown = 61 000 ms) remaining.
+    // If diff > 61 000 → schedule a timeout for (diff - 61 000).
+    // If 0 < diff ≤ 61 000 → join late, so start audio at offset = (61 000 - diff)/1000 seconds.
+    // If diff ≤ 0 → countdown is over, do nothing special with audio (it may loop if already playing).
+
     if (diff > 61_000) {
-      // More than 1 min 1 sec remains → schedule play at (diff - 61_000) ms from now:
+      // More than 1 min 1 sec remains → schedule play at (diff - 61 000) ms from now
       setTimeout(() => {
         if (!audioStarted) {
           audioStarted = true;
-          // Start from beginning (0 seconds) so that at countdown=0, audio currentTime = 61s
+          // Begin from 0s in the track: after 61 000 ms of countdown, audio.currentTime=0 
           audio.currentTime = 0;
-          audio.play().catch(() => {
-            // If autoplay is blocked, user interaction may be needed
+          audio.play().catch((err) => {
+            console.warn("Audio play was blocked or failed:", err);
           });
         }
       }, diff - 61_000);
     }
     else if (diff > 0) {
       // We joined after the 1 min 1 sec mark but before zero:
-      // Compute how many seconds into the audio we should be now:
+      // Compute how many seconds into the audio we need to start:
       const offsetSec = (61_000 - diff) / 1000;
-      // Wait for metadata, then set currentTime and play:
-      audio.addEventListener("loadedmetadata", () => {
+      const tryPlay = () => {
         if (!audioStarted) {
           audioStarted = true;
           audio.currentTime = offsetSec;
-          audio.play().catch(() => {});
+          audio.play().catch((err) => {
+            console.warn("Audio play was blocked or failed:", err);
+          });
         }
-      });
-      // If metadata is already loaded, do it immediately:
-      if (audio.readyState >= 2 && !audioStarted) {
-        audioStarted = true;
-        audio.currentTime = offsetSec;
-        audio.play().catch(() => {});
+      };
+      // If metadata is already loaded, play immediately at offset:
+      if (audio.readyState >= 2) {
+        tryPlay();
+      } else {
+        // Otherwise wait for metadata to load:
+        audio.addEventListener("loadedmetadata", tryPlay);
       }
     }
-    // If diff ≤ 0, countdown is already over → do nothing with audio.
+    // Else diff ≤ 0: Countdown already passed → no need to start audio here.
 
     // ───────────────────────────────────────────────────────────
     // 3.4. UPDATE FUNCTION (runs every ms to update numbers + recommended text)
@@ -229,7 +238,7 @@
       let diff2 = targetDate.getTime() - now2.getTime();
 
       if (diff2 <= 0) {
-        // Countdown finished → hide everything except the finished message
+        // Countdown finished → hide timer + recommendedAudio, show “Happy Summer Holiday”
         clearInterval(timerID);
         countdownDiv.style.display   = "none";
         recommendedDiv.style.display = "none";
@@ -268,9 +277,10 @@
       elSeconds.textContent = seconds;
       elMs.textContent      = milliseconds;
 
-      // Show “Recommended Audio” once ≤ 60 000 ms remain
-      if (diff2 <= 60_000) {
+      // Only show “Recommended Audio” once when diff2 ≤ 60 000 (1 min) but not before
+      if (!recommendedShown && diff2 <= 60_000) {
         recommendedDiv.style.display = "block";
+        recommendedShown = true;
       }
     }
 
