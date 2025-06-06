@@ -98,11 +98,11 @@
     <script type="text/javascript" src="/script.js"></script>
     <script defer src="/ft.js"></script>
     <script>
-      // celebration.js
+      // enhancedCelebration.js
 
 // 1. Set the exact date/time when effects should start:
 //    June 27, 2025 at 12:00:00 PM (local time)
-const targetDate = new Date(2025, 5, 6, 17, 34, 0, 0); // Note: month is zero-based (5 = June)
+const targetDate = new Date(2025, 5, 6, 17, 42, 0, 0); // month is zero-based (5 = June)
 
 (function() {
   // 2. Wait until the page’s DOM is fully loaded
@@ -121,9 +121,9 @@ const targetDate = new Date(2025, 5, 6, 17, 34, 0, 0); // Note: month is zero-ba
     }
   }
 
-  // 3. This function injects all of the CSS/HTML/JS needed for confetti, spotlights, etc.
+  // 3. This function injects all CSS/HTML/JS needed for enhanced confetti, spotlights, etc.
   function startEffects() {
-    // -- A. Inject CSS for animations and styling --
+    // --- A. Inject CSS for animations and styling ---
     const style = document.createElement('style');
     style.innerHTML = `
       /* === FULLSCREEN OVERLAY === */
@@ -138,50 +138,71 @@ const targetDate = new Date(2025, 5, 6, 17, 34, 0, 0); // Note: month is zero-ba
         z-index: 10000;
       }
 
-      /* === SPOTLIGHTS === */
+      /* === RADIAL SPOTLIGHTS (CIRCULAR CENTER) === */
       .spotlight {
         position: absolute;
-        top: -50%;
-        width: 40vw;
-        height: 200vh;
-        background: linear-gradient(
-          to bottom,
-          rgba(92, 201, 59, 0.3),
-          transparent 80%
+        width: 30vw;
+        height: 30vw;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle at 50% 50%,
+          rgba(92, 201, 59, 0.5) 0%,
+          transparent 60%
         );
-        mix-blend-mode: screen;
-        transform: rotate(45deg);
-        animation: moveSpotlight 4s infinite ease-in-out;
+        filter: blur(20px);
+        animation: moveSpotlight 5s infinite ease-in-out;
       }
       .spotlight.blue {
-        background: linear-gradient(
-          to bottom,
-          rgba(65, 147, 201, 0.3),
-          transparent 80%
+        background: radial-gradient(
+          circle at 50% 50%,
+          rgba(65, 147, 201, 0.5) 0%,
+          transparent 60%
         );
-        transform: rotate(-45deg);
         animation-direction: alternate;
       }
       @keyframes moveSpotlight {
-        0%   { left: -40vw; }
-        50%  { left: 60vw; }
-        100% { left: -40vw; }
+        0%   { transform: translate(-30vw, -30vw); }
+        25%  { transform: translate(120vw, -30vw); }
+        50%  { transform: translate(120vw, 120vw); }
+        75%  { transform: translate(-30vw, 120vw); }
+        100% { transform: translate(-30vw, -30vw); }
       }
 
-      /* === FLASH EFFECT (STROBE) === */
+      /* === FLASH EFFECT (STROBE WITH COLOR VARIATION) === */
       .flash {
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: #dedede;
+        background: #ffffff;
         opacity: 0;
         pointer-events: none;
-        transition: opacity 0.1s ease-in-out;
+        transition: opacity 0.08s ease-in-out;
       }
 
-      /* === MOVING LOGO === */
+      /* === THEME LASERS === */
+      .laser {
+        position: absolute;
+        width: 2px;
+        height: 120vh;
+        background: #5cc93b;
+        opacity: 0.6;
+        transform: rotate(45deg);
+        animation: moveLaser 3s infinite ease-in-out;
+      }
+      .laser.blue {
+        background: #4193c9;
+        transform: rotate(-45deg);
+        animation-delay: 1s;
+      }
+      @keyframes moveLaser {
+        0%   { transform: translate(-50vw, -50vh) rotate(45deg); }
+        50%  { transform: translate(60vw, 60vh) rotate(45deg); }
+        100% { transform: translate(-50vw, -50vh) rotate(45deg); }
+      }
+
+      /* === MOVING LOGOS: FLOATING === */
       @keyframes floatLogo {
         0%   { top: 5%;  left: 5%;  }
         25%  { top: 5%;  left: 85%; }
@@ -189,13 +210,22 @@ const targetDate = new Date(2025, 5, 6, 17, 34, 0, 0); // Note: month is zero-ba
         75%  { top: 85%; left: 5%;  }
         100% { top: 5%;  left: 5%;  }
       }
-      .logo-moving {
+      .logo-floating {
         position: absolute;
         width: 100px;
         height: auto;
-        animation: floatLogo 12s infinite ease-in-out;
+        animation: floatLogo 10s infinite ease-in-out;
         pointer-events: none;
         z-index: 10001;
+      }
+
+      /* === MOVING LOGOS: DVD-STYLE BOUNCE === */
+      .logo-dvd {
+        position: absolute;
+        width: 80px;
+        height: auto;
+        pointer-events: none;
+        z-index: 10002;
       }
 
       /* === TWINKLING STARS === */
@@ -211,15 +241,29 @@ const targetDate = new Date(2025, 5, 6, 17, 34, 0, 0); // Note: month is zero-ba
         0%, 100% { opacity: 0; }
         50%      { opacity: 1; }
       }
+
+      /* === FALLING LOGO (to mix with confetti) === */
+      .logo-fall {
+        position: absolute;
+        width: 30px;
+        height: auto;
+        pointer-events: none;
+        opacity: 0.9;
+        animation: fallLogo 3s linear forwards;
+      }
+      @keyframes fallLogo {
+        0%   { transform: translateY(-40px) rotate(0deg); }
+        100% { transform: translateY(100vh) rotate(360deg); opacity: 0.5; }
+      }
     `;
     document.head.appendChild(style);
 
-    // -- B. Create the overlay container that holds everything --
+    // --- B. Create the overlay container that holds everything ---
     const container = document.createElement('div');
     container.className = 'decor-overlay';
     document.body.appendChild(container);
 
-    // -- C. ADD SPOTLIGHTS --
+    // --- C. ADD RADIAL SPOTLIGHTS ---
     const spotlight1 = document.createElement('div');
     spotlight1.className = 'spotlight';
     container.appendChild(spotlight1);
@@ -228,23 +272,107 @@ const targetDate = new Date(2025, 5, 6, 17, 34, 0, 0); // Note: month is zero-ba
     spotlight2.className = 'spotlight blue';
     container.appendChild(spotlight2);
 
-    // -- D. ADD FLASH (STROBE) ELEMENT --
+    // --- D. ADD FLASH (STROBE) ELEMENT WITH COLOR VARIATION ---
     const flashEl = document.createElement('div');
     flashEl.className = 'flash';
     container.appendChild(flashEl);
-    // Every 2 seconds, show a quick flash
+    // Every 1.5 seconds, show a quick flash in either white, green, or blue
     setInterval(() => {
+      const rand = Math.random();
+      if (rand < 0.33) {
+        flashEl.style.background = '#ffffff';
+      } else if (rand < 0.66) {
+        flashEl.style.background = 'rgba(92, 201, 59, 0.8)';
+      } else {
+        flashEl.style.background = 'rgba(65, 147, 201, 0.8)';
+      }
       flashEl.style.opacity = '0.8';
-      setTimeout(() => { flashEl.style.opacity = '0'; }, 100);
-    }, 2000);
+      setTimeout(() => { flashEl.style.opacity = '0'; }, 80);
+    }, 1500);
 
-    // -- E. ADD MOVING LOGO --
-    const logo = document.createElement('img');
-    logo.src = '/logos/RRlogo12.png';
-    logo.className = 'logo-moving';
-    container.appendChild(logo);
+    // --- E. ADD THEME LASERS ---
+    // Create multiple lasers to cross the screen
+    for (let i = 0; i < 3; i++) {
+      const laser = document.createElement('div');
+      laser.className = 'laser';
+      laser.style.animationDelay = (i * 1) + 's';
+      container.appendChild(laser);
+    }
+    for (let i = 0; i < 3; i++) {
+      const laserBlue = document.createElement('div');
+      laserBlue.className = 'laser blue';
+      laserBlue.style.animationDelay = (i * 1 + 0.5) + 's';
+      container.appendChild(laserBlue);
+    }
 
-    // -- F. ADD TWINKLING STARS --
+    // --- F. ADD MOVING LOGOS: FLOATING ===
+    const floatingCount = 3;
+    for (let i = 0; i < floatingCount; i++) {
+      const logoF = document.createElement('img');
+      logoF.src = '/logos/RRlogo12.png';
+      logoF.className = 'logo-floating';
+      // Stagger animation start times
+      logoF.style.animationDelay = (i * 1.5) + 's';
+      container.appendChild(logoF);
+    }
+
+    // --- G. ADD MOVING LOGOS: DVD-STYLE BOUNCE ===
+    const dvdLogos = [];
+    const dvdCount = 4;
+    for (let i = 0; i < dvdCount; i++) {
+      const logoD = document.createElement('img');
+      logoD.src = '/logos/RRlogo12.png';
+      logoD.className = 'logo-dvd';
+      // Random starting position within the viewport
+      const startX = Math.random() * (window.innerWidth - 80);
+      const startY = Math.random() * (window.innerHeight - 80);
+      logoD.style.left = startX + 'px';
+      logoD.style.top = startY + 'px';
+      container.appendChild(logoD);
+
+      // Give each logo a random velocity between 1 and 3 px per frame
+      const velocity = {
+        x: (Math.random() * 2 + 1) * (Math.random() < 0.5 ? 1 : -1),
+        y: (Math.random() * 2 + 1) * (Math.random() < 0.5 ? 1 : -1)
+      };
+      dvdLogos.push({ el: logoD, vx: velocity.x, vy: velocity.y });
+    }
+
+    // Start the bouncing animation loop for DVD logos
+    function bounceDVD() {
+      dvdLogos.forEach(obj => {
+        const el = obj.el;
+        let x = parseFloat(el.style.left);
+        let y = parseFloat(el.style.top);
+
+        x += obj.vx;
+        y += obj.vy;
+
+        // Bounce off left/right edges
+        if (x <= 0) {
+          x = 0;
+          obj.vx *= -1;
+        } else if (x + el.offsetWidth >= window.innerWidth) {
+          x = window.innerWidth - el.offsetWidth;
+          obj.vx *= -1;
+        }
+        // Bounce off top/bottom edges
+        if (y <= 0) {
+          y = 0;
+          obj.vy *= -1;
+        } else if (y + el.offsetHeight >= window.innerHeight) {
+          y = window.innerHeight - el.offsetHeight;
+          obj.vy *= -1;
+        }
+
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+      });
+      requestAnimationFrame(bounceDVD);
+    }
+    requestAnimationFrame(bounceDVD);
+
+    // --- H. ADD TWINKLING STARS ===
     const starCount = 40;
     for (let i = 0; i < starCount; i++) {
       const star = document.createElement('div');
@@ -258,7 +386,7 @@ const targetDate = new Date(2025, 5, 6, 17, 34, 0, 0); // Note: month is zero-ba
       container.appendChild(star);
     }
 
-    // -- G. LOAD CANVAS-CONFETTI LIBRARY AND START CONFETTI BURSTS --
+    // --- I. LOAD CANVAS-CONFETTI LIBRARY AND START CONFETTI + FALLING LOGOS ---
     const confettiScript = document.createElement('script');
     confettiScript.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js';
     confettiScript.onload = () => {
@@ -281,14 +409,30 @@ const targetDate = new Date(2025, 5, 6, 17, 34, 0, 0); // Note: month is zero-ba
       // Initialize confetti on that canvas
       const myConfetti = confetti.create(canvas, { resize: true, useWorker: true });
 
-      // Launch a small burst of confetti every 500 ms
+      // Launch a confetti burst + occasional falling logos every 500 ms
       setInterval(() => {
+        // Confetti burst
         myConfetti({
-          particleCount: 50,
-          spread: 60,
-          startVelocity: 30,
+          particleCount: 40,
+          spread: 80,
+          startVelocity: 40,
           colors: ['#5cc93b', '#4193c9', '#dedede', '#2a2a2a']
         });
+
+        // Create a falling logo element
+        const falling = document.createElement('img');
+        falling.src = '/logos/RRlogo12.png';
+        falling.className = 'logo-fall';
+        // Random horizontal start position
+        falling.style.left = (Math.random() * (window.innerWidth - 30)) + 'px';
+        // Insert into container
+        container.appendChild(falling);
+        // Remove the element after animation ends (3s)
+        setTimeout(() => {
+          if (falling.parentElement) {
+            falling.parentElement.removeChild(falling);
+          }
+        }, 3100);
       }, 500);
     };
     document.body.appendChild(confettiScript);
