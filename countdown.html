@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Countdown to June 27, 2025</title>
+  <title>The RR Summer Countdown</title>
 
   <!-- =========================
-       1. CUSTOM FONT + CSS
+       1. CUSTOM FONT & CSS
        ========================= -->
   <style>
-    /* 1.1. Load custom font from /the-rrs.ttf and name it “TheRRs” */
+    /* 1.1. Load custom font from /the-rrs.ttf as “TheRRs” */
     @font-face {
       font-family: "TheRRs";
       src: url("/the-rrs.ttf") format("truetype");
@@ -41,7 +41,7 @@
       overflow: hidden;
     }
 
-    /* 1.3. Countdown container (visible until zero) */
+    /* 1.3. Countdown container (hidden if in “finished” state) */
     .countdown {
       display: flex;
       gap: 1.5rem;
@@ -56,7 +56,7 @@
     }
     .time-segment .number {
       display: inline-block;
-      width: 4ch;               
+      width: 4ch;               /* fixed width so digits never shift */
       font-size: 3rem;
       line-height: 1;
       color: #4193c9;           /* blue */
@@ -71,7 +71,7 @@
       letter-spacing: 0.05em;
     }
 
-    /* 1.5. “Recommended Audio” text (hidden until 60 000 ms remain) */
+    /* 1.5. “Recommended Audio” (hidden until ≤ 60 000 ms remain OR if countdown over) */
     #recommendedAudio {
       margin-top: 1rem;
       color: #dedede;           /* off‑white */
@@ -79,7 +79,7 @@
       display: none;
     }
 
-    /* 1.6. “Happy Summer Holiday” finished‑message (hidden until countdown ends) */
+    /* 1.6. “Happy Summer Holiday” (hidden until countdown ends OR shown immediately if over) */
     .finished-message {
       display: none;
       text-align: center;
@@ -91,7 +91,7 @@
     .finished-message .word-summer { color: #4193c9; /* blue  */  }
     .finished-message .word-holiday{ color: #dedede; /* off‑white */ }
 
-    /* 1.7. Invisible fullscreen overlay waiting for the first real tap */
+    /* 1.7. Invisible fullscreen overlay that waits for first tap (Safari) */
     #firstTapOverlay {
       position: absolute;
       top: 0;
@@ -109,7 +109,6 @@
       cursor: pointer;
       z-index: 9999;
     }
-    /* Hide the overlay as soon as the page loads; user tap still required */
     #firstTapOverlay.hidden {
       display: none;
     }
@@ -118,14 +117,14 @@
 
 <body>
   <!-- =========================
-       2. OVERLAY FOR SAFARI AUTOPLAY (HIDDEN AFTER FIRST TAP)
+       2. TAP OVERLAY (Safari Autoplay) 
        ========================= -->
-  <div id="firstTapOverlay">Tap anywhere to enable audio</div>
+  <div id="firstTapOverlay">Tap to see and hear The RR Summmer Countdown - Audio Recommended at 1 min left</div>
 
   <!-- =========================
        3. HTML STRUCTURE: COUNTDOWN + MESSAGES
        ========================= -->
-  <!-- 3.1. Countdown container (shown while time > 0) -->
+  <!-- 3.1. Countdown container -->
   <div class="countdown" id="countdownContainer">
     <div class="time-segment">
       <span class="number" id="weeks">0</span>
@@ -163,7 +162,7 @@
     <span class="word-holiday">Holiday</span>
   </div>
 
-  <!-- 3.4. Audio element (preloaded, loops) -->
+  <!-- 3.4. Audio element (preload & loop; initially muted) -->
   <audio
     id="warningAudio"
     preload="auto"
@@ -176,9 +175,8 @@
        4. JAVASCRIPT COUNTDOWN + AUDIO LOGIC
        ========================= -->
   <script>
-    // 4.1. TARGET DATE & TIME (“June 27, 2025 @ 12:00:00 PM” local time)
-    const targetDate = new Date(2025, 5, 6, 12, 2, 0, 0);
-    //                 ^^^^^^ monthIndex 5 = June
+    // 4.1. TARGET DATE & TIME (“June 27, 2025 @ 12:00:00 PM” local)
+    const targetDate = new Date(2025, 5, 6, 12, 8, 0, 0);
 
     // 4.2. REFERENCES
     const overlayDiv     = document.getElementById("firstTapOverlay");
@@ -197,13 +195,13 @@
       audio.muted = false;
       overlayDiv.classList.add("hidden");
       tappedOnce = true;
-      // Now that a real user gesture happened, we can schedule unmute-play
+      // After this single tap, schedule playback logic immediately
       scheduleAudioAndRecommendation();
     });
 
-    // 4.4. FUNCTION TO SCHEDULE AUDIO & “RECOMMENDED AUDIO”
+    // 4.4. SCHEDULE AUDIO & “RECOMMENDED AUDIO”
     function scheduleAudioAndRecommendation() {
-      // If user hasn’t tapped yet, do not schedule anything
+      // If Safari hasn’t been tapped, do nothing
       if (!tappedOnce) return;
 
       const now  = new Date();
@@ -212,22 +210,22 @@
       // AUDIO (only schedule once)
       if (!audioScheduled) {
         if (diff > 61_000) {
-          // >1 min 1 sec remains → schedule unmute/play at (diff − 61 000) ms
+          // More than 1 min 1 sec remains: schedule unmute/play at (diff − 61 000) ms
           setTimeout(() => {
-            audio.currentTime = 0;
+            audio.currentTime = 0;              // play from 0s so 61 s mark lines up with countdown=0
             audio.play().catch((err) => {
-              console.warn("Audio play blocked or failed:", err);
+              console.warn("Audio play blocked:", err);
             });
           }, diff - 61_000);
           audioScheduled = true;
         }
         else if (diff > 0) {
-          // Joined late (0 < diff ≤ 61 000)
+          // Joined late (0 < diff ≤ 61 000): compute offset
           const offsetSec = (61_000 - diff) / 1000;
           const tryPlay = () => {
             audio.currentTime = offsetSec;
             audio.play().catch((err) => {
-              console.warn("Audio play blocked or failed:", err);
+              console.warn("Audio play blocked:", err);
             });
           };
           if (audio.readyState >= 2) {
@@ -237,13 +235,27 @@
           }
           audioScheduled = true;
         }
-        // Else diff ≤ 0: countdown is over; do nothing
+        else {
+          // diff ≤ 0: countdown is already over → start immediately at offset=61 s
+          const tryPlay = () => {
+            audio.currentTime = 61; // jump to 61 s mark
+            audio.play().catch((err) => {
+              console.warn("Audio play blocked:", err);
+            });
+          };
+          if (audio.readyState >= 2) {
+            tryPlay();
+          } else {
+            audio.addEventListener("loadedmetadata", tryPlay, { once: true });
+          }
+          audioScheduled = true;
+        }
       }
 
       // “RECOMMENDED AUDIO” (only show once)
       if (!recommendedShown) {
         if (diff > 60_000) {
-          // >1 min remains → schedule display at (diff − 60 000) ms
+          // More than 1 min remains: schedule show at (diff − 60 000) ms
           setTimeout(() => {
             recommendedDiv.style.display = "block";
             recommendedShown = true;
@@ -254,20 +266,23 @@
           recommendedDiv.style.display = "block";
           recommendedShown = true;
         }
+        // If diff ≤ 0: countdown is over → do not show “Recommended Audio”
       }
     }
 
-    // 4.5. UPDATE FUNCTION: update numbers & final swap
+    // 4.5. UPDATE FUNCTION: updates numbers & toggles final message
     function updateCountdown() {
       const now = new Date();
       let diff = targetDate.getTime() - now.getTime();
 
       if (diff <= 0) {
-        // Countdown finished → hide timer & recommended, show final message
+        // Countdown finished → hide countdown & recommended, show “Happy Summer Holiday”
         clearInterval(timerID);
         countdownDiv.style.display   = "none";
         recommendedDiv.style.display = "none";
         finishedDiv.style.display    = "flex";
+        // Also schedule audio (in case page was just loaded after countdown)
+        scheduleAudioAndRecommendation();
         return;
       }
 
@@ -301,11 +316,11 @@
       document.getElementById("seconds").textContent      = seconds;
       document.getElementById("milliseconds").textContent = milliseconds;
 
-      // Also call schedule in case the user tapped after page load
+      // In case user tapped after load, ensure scheduling is checked each tick
       scheduleAudioAndRecommendation();
     }
 
-    // 4.6. START THE INTERVAL
+    // 4.6. START THE INTERVAL (runs every ms)
     timerID = setInterval(updateCountdown, 1);
     updateCountdown();
   </script>
