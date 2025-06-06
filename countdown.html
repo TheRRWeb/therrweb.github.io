@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>The RR Summer Countdown</title>
+  <title>Countdown to June 27, 2025</title>
 
   <!-- =========================
        1. CUSTOM FONT + CSS
@@ -37,8 +37,6 @@
       font-family: "TheRRs", sans-serif;
       font-size: 16px;
       line-height: 1.2;
-      position: relative;
-      overflow: hidden;
     }
 
     /* 1.3. Countdown container (visible until zero) */
@@ -142,10 +140,12 @@
     <span class="word-holiday">Holiday</span>
   </div>
 
-  <!-- 2.4. Audio element (preloaded, loops) -->
+  <!-- 2.4. Audio element (autoplays muted, loops) -->
   <audio
     id="warningAudio"
     preload="auto"
+    autoplay
+    muted
     loop
     src="/outromusic.mp3"
   ></audio>
@@ -155,7 +155,7 @@
        ========================= -->
   <script>
     // 3.1. TARGET DATE & TIME (“June 27, 2025 @ 12:00:00 PM” local time)
-    const targetDate = new Date(2025, 5, 6, 11, 55, 0, 0);
+    const targetDate = new Date(2025, 5, 6, 11, 58, 0, 0);
     //                 ^^^^^^ monthIndex 5 = June
 
     // 3.2. REFERENCES
@@ -168,7 +168,7 @@
     let recommendedShown = false;
     let audioScheduled   = false;
 
-    // 3.3. Immediately preload audio
+    // 3.3. Immediately preload audio (it auto-plays muted)
     audio.load();
 
     // 3.4. FUNCTION TO SCHEDULE AUDIO & “RECOMMENDED AUDIO”
@@ -179,52 +179,50 @@
       // AUDIO (only schedule once)
       if (!audioScheduled) {
         if (diff > 61_000) {
-          // If more than 1 min 1 sec remains, schedule audio at (diff − 61 000) ms
+          // More than 1 min 1 sec remains → schedule unmute/play at (diff − 61 000) ms
           setTimeout(() => {
-            // Start from 0s so that the 61 s mark lines up with countdown=0
-            startAudioAtOffset(0);
+            audio.muted = false;
+            audio.currentTime = 0;
+            audio.play().catch((err) => {
+              console.warn("Audio play blocked or failed:", err);
+            });
           }, diff - 61_000);
           audioScheduled = true;
-        }
-        else if (diff > 0) {
-          // Joined late (0 < diff ≤ 61 000)
+        } else if (diff > 0) {
+          // Joined late (0 < diff ≤ 61 000): compute offset
           const offsetSec = (61_000 - diff) / 1000;
+          const tryPlay = () => {
+            audio.muted = false;
+            audio.currentTime = offsetSec;
+            audio.play().catch((err) => {
+              console.warn("Audio play blocked or failed:", err);
+            });
+          };
           if (audio.readyState >= 2) {
-            startAudioAtOffset(offsetSec);
+            tryPlay();
           } else {
-            audio.addEventListener("loadedmetadata", () => {
-              startAudioAtOffset(offsetSec);
-            }, { once: true });
+            audio.addEventListener("loadedmetadata", tryPlay, { once: true });
           }
           audioScheduled = true;
         }
-        // If diff ≤ 0, countdown is already over; do nothing
+        // If diff ≤ 0, countdown already over → do nothing
       }
 
       // “RECOMMENDED AUDIO” (only show once)
       if (!recommendedShown) {
         if (diff > 60_000) {
-          // If more than 1 min remains, schedule display at (diff − 60 000) ms
+          // More than 1 min remains → schedule display at (diff − 60 000) ms
           setTimeout(() => {
             recommendedDiv.style.display = "block";
             recommendedShown = true;
           }, diff - 60_000);
-        }
-        else if (diff > 0) {
-          // Joined late (0 < diff ≤ 60 000), show immediately
+        } else if (diff > 0) {
+          // Joined late (0 < diff ≤ 60 000): show immediately
           recommendedDiv.style.display = "block";
           recommendedShown = true;
         }
-        // If diff ≤ 0, countdown is over; do nothing
+        // If diff ≤ 0, do nothing
       }
-    }
-
-    // Helper to start audio at a specific offset (seconds)
-    function startAudioAtOffset(offsetSeconds) {
-      audio.currentTime = offsetSeconds;
-      audio.play().catch((err) => {
-        console.warn("Audio play blocked or failed:", err);
-      });
     }
 
     // Run scheduling immediately on load
@@ -232,11 +230,11 @@
 
     // 3.5. UPDATE FUNCTION: update numbers & final swap
     function updateCountdown() {
-      const now  = new Date();
-      let diff   = targetDate.getTime() - now.getTime();
+      const now = new Date();
+      let diff = targetDate.getTime() - now.getTime();
 
       if (diff <= 0) {
-        // Countdown finished → hide countdown & recommended, show final message
+        // Countdown finished → hide timer & recommended, show final message
         clearInterval(timerID);
         countdownDiv.style.display   = "none";
         recommendedDiv.style.display = "none";
