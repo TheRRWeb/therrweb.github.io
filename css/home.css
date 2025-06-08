@@ -24,6 +24,7 @@ body, html {
 }
 
 #quote-display {
+  font-family: monospace;
   margin-top: 20px;
   padding: 10px;
   font-size: 1.2rem;
@@ -47,12 +48,14 @@ body, html {
 
 /* Styling for all quotes list */
 #all-quotes {
+  font-family: monospace;
   display: none;
   margin-top: 20px;
   padding: 10px;
 }
 
 #all-quotes p {
+  font-family: monospace;
   margin-top: 20px;
   padding: 10px;
   font-size: 1.2rem;
