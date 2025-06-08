@@ -40,12 +40,12 @@ const quotes = [
     `"I pray on their success" - Abdulaziz Alayaseh`,
     `"Lebroooooooooon" - Alexander Akidil`
 ];
-
 // —————— CONFIG ——————
-const characters      = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()_+';
-const speed           = 40;  // ms between frames
-const lettersPerTick  = 1;   // how many letters to add/reveal each frame
-const extraScrambleFrames = 3; // extra full‑length scramble frames
+const characters         = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()_+';
+const speed              = 40;  // ms between frames
+const lettersPerTick     = 1;   // letters revealed per frame
+const scramblePhase1     = 5;   // frames of “old‐length” scramble
+const scramblePhase2Extra = 3;  // extra frames during grow/shrink scramble
 
 let currentQuoteIndex = Math.floor(Math.random() * quotes.length);
 
@@ -57,75 +57,98 @@ const collapseButton = document.getElementById('collapse-button');
 
 // —————— TRANSITION FUNCTION ——————
 /**
- * Smoothly encrypts away the old text (growing or shrinking to
- * match the new length), then decrypts into the newText.
- *
- * @param {HTMLElement} el
- * @param {string}       newText
+ * 1) Decrypt old text fully (if not already)
+ * 2) Phase 1: scramble old‐length into ascii
+ * 3) Phase 2: scramble & adjust to new length
+ * 4) Phase 3: decrypt into newText
  */
 async function transitionQuote(el, newText) {
   const oldText = el.innerText;
-  const maxLen  = Math.max(oldText.length, newText.length);
+  const oldLen  = oldText.length;
+  const newLen  = newText.length;
+  const maxLen  = Math.max(oldLen, newLen);
 
-  // — Encrypt (scramble & adjust length) —
+  // 0) Ensure we start fully decrypted
+  el.innerText = oldText;
+
+  // 1) Phase 1: scramble at old length
   await new Promise(res => {
-    let frameCount = 0;
-    const growFrames = Math.ceil((maxLen - oldText.length) / lettersPerTick);
-    const totalFrames = growFrames + extraScrambleFrames;
-
-    function scrambleFrame() {
-      frameCount++;
-      // determine current length: start at oldText.length, grow up to maxLen
-      const grown = Math.min(frameCount, growFrames) * lettersPerTick;
-      const currLen = Math.min(oldText.length + grown, maxLen);
-
-      // build a fully scrambled string of currLen random chars
-      let out = '';
-      for (let i = 0; i < currLen; i++) {
-        out += characters[Math.floor(Math.random() * characters.length)];
+    let frame = 0;
+    function step1() {
+      let s = '';
+      for (let i = 0; i < oldLen; i++) {
+        s += characters[Math.floor(Math.random() * characters.length)];
       }
-      el.innerText = out;
-
-      if (frameCount < totalFrames) {
-        setTimeout(scrambleFrame, speed);
+      el.innerText = s;
+      if (++frame < scramblePhase1) {
+        setTimeout(step1, speed);
       } else {
-        el.innerText = ''; // clear before decrypt
         res();
       }
     }
-
-    scrambleFrame();
+    step1();
   });
 
-  // — Decrypt (reveal into newText) —
+  // 2) Phase 2: scramble & grow/shrink to maxLen
+  await new Promise(res => {
+    let frame = 0;
+    const growFrames = Math.ceil(Math.abs(maxLen - oldLen) / lettersPerTick);
+    const total = growFrames + scramblePhase2Extra;
+
+    function step2() {
+      frame++;
+      // compute current length: if new longer, grow; if shorter, shrink after scramblePhase2Extra
+      let currLen;
+      if (maxLen > oldLen) {
+        // growing up to maxLen
+        const grown = Math.min(frame, growFrames) * lettersPerTick;
+        currLen = Math.min(oldLen + grown, maxLen);
+      } else {
+        // new shorter or equal: keep full oldLen until extra frames expire
+        currLen = oldLen;
+      }
+
+      let s = '';
+      for (let i = 0; i < currLen; i++) {
+        s += characters[Math.floor(Math.random() * characters.length)];
+      }
+      el.innerText = s;
+
+      if (frame < total) {
+        setTimeout(step2, speed);
+      } else {
+        // clear to prepare decrypt
+        el.innerText = '';
+        res();
+      }
+    }
+    step2();
+  });
+
+  // 3) Phase 3: decrypt into newText
   await new Promise(res => {
     let revealed = 0;
-
-    function decryptFrame() {
+    function step3() {
       let out = '';
       for (let i = 0; i < maxLen; i++) {
         if (i < revealed) {
-          // reveal real character (or blank if newText shorter)
           out += newText[i] || '';
         } else if ((newText[i] || '') === ' ') {
           out += ' ';
         } else {
-          // random placeholder
           out += characters[Math.floor(Math.random() * characters.length)];
         }
       }
       el.innerText = out;
-
       revealed += lettersPerTick;
       if (revealed <= maxLen) {
-        setTimeout(decryptFrame, speed);
+        setTimeout(step3, speed);
       } else {
         el.innerText = newText; // clamp exactly
         res();
       }
     }
-
-    decryptFrame();
+    step3();
   });
 }
 
@@ -135,10 +158,10 @@ async function startQuoteLoop() {
   // clear initially
   quoteDisplay.innerText = '';
   while (true) {
-    // animate in the current quote
+    // transition old → new
     await transitionQuote(quoteDisplay, quotes[currentQuoteIndex]);
 
-    // pause 3 seconds
+    // wait 3s
     await new Promise(r => setTimeout(r, 3000));
 
     // advance index
@@ -159,7 +182,7 @@ async function showAllQuotes() {
   const ps = Array.from(allQuotesDiv.children);
   ps.forEach((p, i) => {
     p.innerText = '';
-    // stagger them slightly if you like
+    // stagger starts if desired
     setTimeout(() => transitionQuote(p, quotes[i]), i * 80);
   });
 }
@@ -170,12 +193,11 @@ async function collapseQuotes() {
   collapseButton.style.display = 'none';
   quoteDisplay.style.display   = 'block';
 
-  // re‑animate current main quote
   await transitionQuote(quoteDisplay, quotes[currentQuoteIndex]);
 }
 
 
-// —————— EVENT HOOKUP & INIT ——————
+// —————— INIT & EVENTS ——————
 expandButton.addEventListener('click', showAllQuotes);
 collapseButton.addEventListener('click', collapseQuotes);
 
