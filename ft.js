@@ -49,96 +49,111 @@ const allQuotesDiv   = document.getElementById('all-quotes');
 const expandButton   = document.getElementById('expand-button');
 const collapseButton = document.getElementById('collapse-button');
 
-const speed = 40;  // ms between frames
-// How many letters to reveal per tick (1 = slowest; up to, say, 3 for faster)
-const lettersPerTick = 1;
+const speed = 40;        // ms per frame
+const lettersPerTick = 1; // how many new letters to reveal each frame
 
 /**
- * Smoothly transition from whatever is currently in `quoteDisplay`
- * to `newText`, revealing `lettersPerTick` new chars per frame,
- * and filling the rest with random characters.
+ * Animate encryption → clearing, then decryption → finalText,
+ * on element `el`, smoothly handling length changes.
  */
-function transitionQuote(newText) {
-  return new Promise(resolve => {
-    const oldText = quoteDisplay.innerText;
-    const maxLen  = Math.max(oldText.length, newText.length);
-    let revealedCount = 0;
+async function transitionQuote(el, newText) {
+  const oldText = el.innerText;
+  const maxLen  = Math.max(oldText.length, newText.length);
+  
+  // --- ENCRYPT PHASE ---
+  // Quickly scramble everything, then clear
+  await new Promise(res => {
+    let iter = 0;
+    const scrambleInterval = setInterval(() => {
+      let scrambled = '';
+      for (let i = 0; i < maxLen; i++) {
+        scrambled += (newText[i] === ' ')
+          ? ' '
+          : characters[Math.floor(Math.random() * characters.length)];
+      }
+      el.innerText = scrambled;
+      if (++iter >= 5) {          // only 5 frames of scramble
+        clearInterval(scrambleInterval);
+        el.innerText = '';
+        res();
+      }
+    }, speed);
+  });
 
-    const frame = () => {
+  // --- DECRYPT PHASE ---
+  await new Promise(res => {
+    let revealed = 0;
+    function frame() {
       let display = '';
       for (let i = 0; i < maxLen; i++) {
-        if (i < revealedCount) {
-          // reveal actual char (or blank if newText too short)
+        if (i < revealed) {
           display += newText[i] || '';
+        } else if ((newText[i] || '') === ' ') {
+          display += ' ';
         } else {
-          // show random placeholder char (or space if target is a space)
-          const targetChar = newText[i] || '';
-          display += targetChar === ' '
-            ? ' '
-            : characters[Math.floor(Math.random() * characters.length)];
+          display += characters[Math.floor(Math.random() * characters.length)];
         }
       }
-      quoteDisplay.innerText = display;
-
-      revealedCount += lettersPerTick;
-      if (revealedCount <= maxLen) {
+      el.innerText = display;
+      revealed += lettersPerTick;
+      if (revealed <= maxLen) {
         setTimeout(frame, speed);
       } else {
-        // finally clamp to exact newText
-        quoteDisplay.innerText = newText;
-        resolve();
+        el.innerText = newText; // clamp
+        res();
       }
-    };
-
+    }
     frame();
   });
 }
 
-// Cycle: transition to next quote
-async function showNextQuote() {
-  const nextIndex = (currentQuoteIndex + 1) % quotes.length;
-  await transitionQuote(quotes[nextIndex]);
-  currentQuoteIndex = nextIndex;
+// --- AUTO‑CYCLE LOOP ---
+async function startQuoteLoop() {
+  while (true) {
+    // transition to the **current** quote
+    await transitionQuote(quoteDisplay, quotes[currentQuoteIndex]);
+
+    // wait 3s before next
+    await new Promise(r => setTimeout(r, 3000));
+
+    // advance index
+    currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
+  }
 }
 
-// Show all quotes: build the <p> elements, then decrypt each in parallel
+// --- SHOW ALL / COLLAPSE ---
 async function showAllQuotes() {
-  // hide main, show list
   quoteDisplay.style.display   = 'none';
   expandButton.style.display   = 'none';
   collapseButton.style.display = 'inline-block';
-  allQuotesDiv.innerHTML       = quotes.map(_ => `<p></p>`).join('');
-  allQuotesDiv.style.display   = 'block';
 
-  // decrypt each paragraph at its own pace
+  allQuotesDiv.innerHTML     = quotes.map(_ => `<p></p>`).join('');
+  allQuotesDiv.style.display = 'block';
+
   const ps = Array.from(allQuotesDiv.children);
+  // decrypt each in parallel (stagger start if you like)
   ps.forEach((p, i) => {
-    // start each with empty
     p.innerText = '';
-    // stagger start times a bit if you like:
-    setTimeout(() => transitionQuote.call({ quoteDisplay: p }, quotes[i]), i * 80);
+    setTimeout(() => transitionQuote(p, quotes[i]), i * 80);
   });
 }
 
-// Collapse back: hide list, show main quote (re-decrypt)
 async function collapseQuotes() {
   allQuotesDiv.style.display    = 'none';
   expandButton.style.display    = 'inline-block';
   collapseButton.style.display  = 'none';
   quoteDisplay.style.display    = 'block';
-  // re‑decrypt the current main quote
-  await transitionQuote(quotes[currentQuoteIndex]);
+
+  // re‑decrypt current main quote
+  await transitionQuote(quoteDisplay, quotes[currentQuoteIndex]);
 }
 
-// Attach handlers
+// --- EVENT HOOKUP & INIT ---
 expandButton.addEventListener('click', showAllQuotes);
 collapseButton.addEventListener('click', collapseQuotes);
 
-// Initialize on load
-document.addEventListener("DOMContentLoaded", async () => {
-  // start with empty and decrypt your first random quote
+document.addEventListener("DOMContentLoaded", () => {
+  // start empty then run the loop
   quoteDisplay.innerText = '';
-  await transitionQuote(quotes[currentQuoteIndex]);
-  // then every 3s, flip to the next
-  setInterval(showNextQuote, 3000);
+  startQuoteLoop();
 });
