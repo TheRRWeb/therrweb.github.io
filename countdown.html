@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Countdown to June 27, 2025</title>
+  <title>The RR Summer Countdown</title>
 
   <!-- 1. CUSTOM FONT & CSS -->
   <style>
@@ -52,7 +52,7 @@
 </head>
 <body>
   <!-- TAP OVERLAY -->
-  <div id="firstTapOverlay">Tap anywhere to enable audio</div>
+  <div id="firstTapOverlay">Tap to see and hear The RR Countdown. Increase your volume to see!</div>
 
   <!-- COUNTDOWN -->
   <div class="countdown" id="countdownContainer">
@@ -90,7 +90,7 @@
 
   <!-- JAVASCRIPT -->
   <script>
-    const targetDate = new Date(2025,5,11,18,25,0,0);
+    const targetDate = new Date(2025,5,27,12,00,0,0);
     const overlay = document.getElementById("firstTapOverlay");
     const countdownDiv = document.getElementById("countdownContainer");
     const recommendedDiv = document.getElementById("recommendedAudio");
@@ -131,7 +131,7 @@
       if(diff>60000){
         if(!waited){
           waitAudio.play().catch(()=>{});
-          recommendedDiv.textContent="Audio Recommended – Assumptions, Sam Gellaitry";
+          recommendedDiv.textContent="Turn up volume, Audio Recommended – Assumptions, Sam Gellaitry";
           recommendedDiv.style.display="block";
           waited=true;
         }
@@ -145,7 +145,7 @@
         outroAudio.currentTime = offset>outroAudio.duration?0:offset;
         outroAudio.muted=false;
         outroAudio.play().catch(()=>{});
-        recommendedDiv.textContent="Audio Recommended – Xenogenesis, TheFatRat";
+        recommendedDiv.textContent="Turn up volume, Audio Recommended A LOT – Xenogenesis, TheFatRat";
       }
     }
 
