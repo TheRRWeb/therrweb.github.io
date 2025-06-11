@@ -223,7 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
     none:   { title: defaultTitle, icon: defaultIcon },
     google: {
       title: "Google",
-      icon:  "https://www.gstatic.com/classroom/icongrayscale/teacher/48dp.png"
+      icon:  "https://pensiontransferspecialist.co.uk/wp-content/uploads/2021/10/Google-Workspace-Logo.png"
     },
     teams: {
       title: "Microsoft Teams",
