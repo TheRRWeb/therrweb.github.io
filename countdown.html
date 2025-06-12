@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Countdown to June 27, 2025</title>
 
-  <!-- ========== CUSTOM FONT & CSS ========== -->
+  <!-- 1. CUSTOM FONT & CSS -->
   <style>
     @font-face {
       font-family: "TheRRs";
@@ -42,7 +42,7 @@
     .small-text { font-size:.875rem; color:#dedede; margin:.25rem 0; }
     .medium-text { font-size:1.25rem; color:#4193c9; margin:.5rem 0 .25rem; }
 
-    /* full‐screen overlay */
+    /* full-screen overlay */
     #tapOverlay {
       position:absolute; top:0; left:0; width:100%; height:100%;
       background:rgba(42,42,42,.95); color:#dedede;
@@ -83,8 +83,9 @@
     </p>
     <div class="medium-text">Special Thanks:</div>
     <p class="small-text">
-      Rutham Renish (me), Ruhaan Renish, Dhruv Mondal, Benn Cern Tang, Murdoch Mackenzie, Jenson Cooper, 
-      Xihao 'Hani' Shen, Alex Stankov, Ali Heiba, Ronan Bingham, Pranav Mummalaneneni, Adhrit Nirupam and YOU ALL!
+      Rutham Renish (me), Ruhaan Renish, Dhruv Mondal, Benn Cern Tang, Murdoch Mackenzie,
+      Jenson Cooper, Xihao 'Hani' Shen, Alex Stankov, Ali Heiba, Ronan Bingham,
+      Pranav Mummalaneneni, Adhrit Nirupam and YOU ALL!
     </p>
   </div>
 
@@ -94,7 +95,7 @@
 
   <!-- 6. JAVASCRIPT -->
   <script>
-    const targetDate = new Date(2025,5,12,19,50,0,0);
+    const targetDate = new Date(2025,5,12,19,55,0,0);
     const overlay = document.getElementById("tapOverlay");
     const countdownDiv = document.getElementById("countdownContainer");
     const recDiv = document.getElementById("recommendedAudio");
@@ -102,45 +103,53 @@
     const waitAudio = document.getElementById("waitAudio");
     const outroAudio = document.getElementById("outroAudio");
 
-    let timerID,
-        tapped = false,
-        transitioned = false;
+    let timerID, tapped=false, transitioned=false;
 
     // mute initially
     waitAudio.muted = outroAudio.muted = true;
 
     // first tap: start wait music
     overlay.addEventListener("click", () => {
-      tapped = true;
-      overlay.classList.add("hidden");
-      waitAudio.muted = false;
-      waitAudio.play().catch(()=>{});
-      recDiv.textContent = "Audio Recommended – Assumptions, Sam Gellaitry";
-      recDiv.style.display = "block";
+      if(!tapped) {
+        tapped = true;
+        overlay.classList.add("hidden");
+        waitAudio.muted = false;
+        waitAudio.play().catch(()=>{});
+        recDiv.textContent = "Audio Recommended – Assumptions, Sam Gellaitry";
+        recDiv.style.display = "block";
+      }
     });
 
-    // fade helper
-    function fade(audioEl, duration=500) {
+    // helper to fade & stop waitAudio
+    function fadeAndStop(audioEl, duration=500) {
       const steps=10, dt=duration/steps, dv=audioEl.volume/steps;
       let i=0;
       const iv = setInterval(()=>{
         i++;
         audioEl.volume = Math.max(0, audioEl.volume - dv);
-        if(i>=steps){ clearInterval(iv); audioEl.pause(); audioEl.volume=1; }
+        if(i>=steps){
+          clearInterval(iv);
+          audioEl.pause();
+          audioEl.volume = 1;
+          audioEl.loop = false;  // ensure it won’t restart
+        }
       }, dt);
     }
 
     function scheduleAudio() {
       if(!tapped) return;
       const diff = targetDate - Date.now();
-      if(diff > 60000) {
-        // still waiting
-      } else if(!transitioned) {
-        // at 1 min left, fade wait and show overlay again
-        fade(waitAudio, 500);
+
+      // transition when hitting 1 min left
+      if(diff <= 60000 && !transitioned) {
+        transitioned = true;
+
+        // fade out & stop wait music immediately
+        fadeAndStop(waitAudio);
+
+        // show overlay again for outro
         overlay.textContent = "Tap to play outro music";
         overlay.classList.remove("hidden");
-        transitioned = true;
       }
     }
 
@@ -148,9 +157,9 @@
     overlay.addEventListener("click", () => {
       if(transitioned) {
         outroAudio.muted = false;
-        // start at 61s mark: if late join, compute offset
         const diff = targetDate - Date.now();
-        const offsetSec = diff>0 ? (61000 - diff)/1000 : 61;
+        // compute offset: if joined late, offsetSec; else start at 0
+        const offsetSec = diff > 0 ? (61000 - diff)/1000 : 0;
         outroAudio.currentTime = offsetSec > outroAudio.duration ? 0 : offsetSec;
         outroAudio.play().catch(()=>{});
         recDiv.textContent = "Audio Recommended – Xenogenisis, TheFatRat";
@@ -179,10 +188,11 @@
       document.getElementById("minutes").textContent = mins;
       document.getElementById("seconds").textContent = secs;
       document.getElementById("milliseconds").textContent = ms;
+
       scheduleAudio();
     }
 
-    timerID = setInterval(updateCountdown, 1);
+    timerID = setInterval(updateCountdown,1);
     updateCountdown();
   </script>
 </body>
