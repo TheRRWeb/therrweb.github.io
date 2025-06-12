@@ -1,64 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Countdown to June 27, 2025</title>
-
-  <!-- 1. CUSTOM FONT & CSS -->
   <style>
-    @font-face {
-      font-family: "TheRRs";
-      src: url("/the-rrs.ttf") format("truetype");
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { width:100%; height:100%; }
-    body {
-      display:flex; flex-direction:column; justify-content:center; align-items:center;
-      background:#2a2a2a; color:#dedede; font-family:"TheRRs",sans-serif;
-      position:relative; overflow:hidden; font-size:16px; line-height:1.2;
-    }
-    .countdown { display:flex; gap:1.5rem; text-align:center; }
-    .time-segment { display:flex; flex-direction:column; min-width:4rem; }
-    .number {
-      display:inline-block; width:4ch; font-size:3rem; line-height:1;
-      color:#4193c9; text-align:center; font-variant-numeric:tabular-nums;
-    }
-    .label {
-      margin-top:.25rem; font-size:1rem; color:#5cc93b;
-      text-transform:uppercase; letter-spacing:.05em;
-    }
-    #recommendedAudio {
-      margin-top:1rem; font-size:1rem; display:none;
-    }
-    .finished-message {
-      display:none; flex-direction:column; align-items:center; text-align:center;
-      gap:1rem; padding:0 1rem; font-family:"TheRRs",sans-serif;
-    }
-    .finished-title { display:flex; gap:.5rem; font-size:3rem; }
-    .word-happy { color:#5cc93b; }
-    .word-summer { color:#4193c9; }
-    .word-holiday { color:#dedede; }
-    .small-text { font-size:.875rem; color:#dedede; margin:.25rem 0; }
-    .medium-text { font-size:1.25rem; color:#4193c9; margin:.5rem 0 .25rem; }
-
-    /* full-screen overlay */
-    #tapOverlay {
-      position:absolute; top:0; left:0; width:100%; height:100%;
-      background:rgba(42,42,42,.95); color:#dedede;
-      display:flex; justify-content:center; align-items:center;
-      font-family:"TheRRs",sans-serif; font-size:1.2rem;
-      text-align:center; cursor:pointer; z-index:9999;
-    }
-    #tapOverlay.hidden { display:none; }
+    @font-face{font-family:"TheRRs";src:url("/the-rrs.ttf") format("truetype");}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    html,body{width:100%;height:100%;}
+    body{display:flex;flex-direction:column;justify-content:center;align-items:center;
+      background:#2a2a2a;color:#dedede;font-family:"TheRRs",sans-serif;
+      position:relative;overflow:hidden;font-size:16px;line-height:1.2;}
+    .countdown{display:flex;gap:1.5rem;text-align:center;}
+    .time-segment{display:flex;flex-direction:column;min-width:4rem;}
+    .number{display:inline-block;width:4ch;font-size:3rem;line-height:1;
+      color:#4193c9;text-align:center;font-variant-numeric:tabular-nums;}
+    .label{margin-top:.25rem;font-size:1rem;color:#5cc93b;
+      text-transform:uppercase;letter-spacing:.05em;}
+    #recommendedAudio{margin-top:1rem;font-size:1rem;display:none;}
+    .finished-message{display:none;flex-direction:column;align-items:center;
+      text-align:center;gap:1rem;padding:0 1rem;}
+    .finished-title{display:flex;gap:.5rem;font-size:3rem;}
+    .word-happy{color:#5cc93b;}.word-summer{color:#4193c9;}.word-holiday{color:#dedede;}
+    .small-text{font-size:.875rem;color:#dedede;margin:.25rem 0;}
+    .medium-text{font-size:1.25rem;color:#4193c9;margin:.5rem 0 .25rem;}
+    #tapOverlay{position:absolute;top:0;left:0;width:100%;height:100%;
+      background:rgba(42,42,42,.95);color:#dedede;display:flex;
+      justify-content:center;align-items:center;font-size:1.2rem;
+      cursor:pointer;z-index:9999;}
+    #tapOverlay.hidden{display:none;}
   </style>
 </head>
 <body>
-
-  <!-- 1. TAP OVERLAY -->
+  <!-- 1. Overlay for taps -->
   <div id="tapOverlay">Tap anywhere to enable music</div>
 
-  <!-- 2. COUNTDOWN -->
+  <!-- 2. Countdown display -->
   <div class="countdown" id="countdownContainer">
     <div class="time-segment"><span id="weeks" class="number">0</span><span class="label">Weeks</span></div>
     <div class="time-segment"><span id="days" class="number">0</span><span class="label">Days</span></div>
@@ -68,10 +44,10 @@
     <div class="time-segment"><span id="milliseconds" class="number">0</span><span class="label">Ms</span></div>
   </div>
 
-  <!-- 3. RECOMMENDED AUDIO TEXT -->
+  <!-- 3. Recommendation text -->
   <div id="recommendedAudio"></div>
 
-  <!-- 4. FINISHED MESSAGE -->
+  <!-- 4. Finished message -->
   <div class="finished-message" id="finishedMessage">
     <div class="finished-title">
       <span class="word-happy">Happy</span>
@@ -83,19 +59,19 @@
     </p>
     <div class="medium-text">Special Thanks:</div>
     <p class="small-text">
-      Rutham Renish (me), Ruhaan Renish, Dhruv Mondal, Benn Cern Tang, Murdoch Mackenzie,
-      Jenson Cooper, Xihao 'Hani' Shen, Alex Stankov, Ali Heiba, Ronan Bingham,
+      Rutham Renish (me), Ruhaan Renish, Dhruv Mondal, Benn Cern Tang, Murdoch Mackenzie, 
+      Jenson Cooper, Xihao 'Hani' Shen, Alex Stankov, Ali Heiba, Ronan Bingham, 
       Pranav Mummalaneneni, Adhrit Nirupam and YOU ALL!
     </p>
   </div>
 
-  <!-- 5. AUDIO ELEMENTS -->
+  <!-- 5. Audio elements -->
   <audio id="waitAudio" preload="auto" loop src="/waitmusic.mp3"></audio>
   <audio id="outroAudio" preload="auto" loop src="/outromusic.mp3"></audio>
 
-  <!-- 6. JAVASCRIPT -->
+  <!-- 6. Script -->
   <script>
-    const targetDate = new Date(2025,5,12,20,3,0,0);
+    const targetDate = new Date(2025,5,12,20,7,0,0);
     const overlay = document.getElementById("tapOverlay");
     const countdownDiv = document.getElementById("countdownContainer");
     const recDiv = document.getElementById("recommendedAudio");
@@ -103,116 +79,93 @@
     const waitAudio = document.getElementById("waitAudio");
     const outroAudio = document.getElementById("outroAudio");
 
-    let timerID, tapped=false, transitioned=false, finishedAudioStarted=false;
+    let timerID, tapped=false, transitioned=false;
 
-    // mute initially
+    // initially mute
     waitAudio.muted = outroAudio.muted = true;
 
-    // first tap: start wait music
-    overlay.addEventListener("click", () => {
-      if(!tapped) {
-        tapped = true;
-        overlay.classList.add("hidden");
-        waitAudio.muted = false;
-        waitAudio.play().catch(()=>{});
-        recDiv.textContent = "Audio Recommended – Assumptions, Sam Gellaitry";
-        recDiv.style.display = "block";
-      }
-    });
-
-    // helper to fade & stop waitAudio
-    function fadeAndStop(audioEl, duration=500) {
-      const steps=10, dt=duration/steps, dv=audioEl.volume/steps;
-      let i=0;
-      const iv = setInterval(()=>{
-        i++;
-        audioEl.volume = Math.max(0, audioEl.volume - dv);
-        if(i>=steps){
-          clearInterval(iv);
-          audioEl.pause();
-          audioEl.volume = 1;
-          audioEl.loop = false;
-        }
-      }, dt);
+    // If loaded after zero, auto-start outro
+    const now = Date.now();
+    if(now >= targetDate.getTime()) {
+      // hide countdown
+      countdownDiv.style.display = "none";
+      // show finished
+      finishDiv.style.display = "flex";
+      // start outro at 61s mark
+      outroAudio.muted = false;
+      outroAudio.currentTime = 61;
+      outroAudio.play();
+      // show rec text for outro
+      recDiv.textContent = "Audio Recommended – Xenogenisis, TheFatRat";
+      recDiv.style.display = "block";
+      // hide overlay
+      overlay.classList.add("hidden");
     }
 
-    function scheduleAudio() {
+    // 1st tap: start wait music if before 1 min
+    overlay.addEventListener("click", () => {
+      if(tapped || Date.now() >= targetDate.getTime()) return;
+      tapped = true;
+      overlay.classList.add("hidden");
+      // play wait track
+      waitAudio.muted = false;
+      waitAudio.play();
+      recDiv.textContent = "Audio Recommended – Assumptions, Sam Gellaitry";
+      recDiv.style.display = "block";
+    });
+
+    function schedule() {
       if(!tapped) return;
       const diff = targetDate - Date.now();
 
-      // transition at exactly 1 min left
-      if(diff <= 60000 && !transitioned) {
+      // at exactly 1 min left, stop wait track & show overlay
+      if(diff <= 60000 && !transitioned && Date.now() < targetDate.getTime()) {
         transitioned = true;
-        // fade and stop wait music so no sound after 1 min
-        fadeAndStop(waitAudio);
-        // show overlay again
+        waitAudio.pause();
+        recDiv.style.display = "none";
         overlay.textContent = "Tap to play outro music";
         overlay.classList.remove("hidden");
-        recDiv.style.display = "none"; // hide wait recommendation
-      }
-
-      // if countdown over and user tapped, start outro automatically
-      if(diff <= 0 && tapped && !finishedAudioStarted) {
-        finishedAudioStarted = true;
-        overlay.classList.add("hidden");
-        // show finish message
-        countdownDiv.style.display = "none";
-        recDiv.style.display = "none";
-        finishDiv.style.display = "flex";
-        // play outro at its 61s mark
-        outroAudio.muted = false;
-        outroAudio.currentTime = 61;
-        outroAudio.play().catch(()=>{});
       }
     }
 
-    // second tap: play outro if in transition state
+    // 2nd tap: play outro if transitioned
     overlay.addEventListener("click", () => {
-      if(transitioned && !finishedAudioStarted) {
-        finishedAudioStarted = true;
-        overlay.classList.add("hidden");
-        outroAudio.muted = false;
-        const diff = targetDate - Date.now();
-        const offsetSec = diff > 0 ? (61000 - diff)/1000 : 61;
-        outroAudio.currentTime = offsetSec > outroAudio.duration ? 0 : offsetSec;
-        outroAudio.play().catch(()=>{});
-        recDiv.textContent = "Audio Recommended – Xenogenisis, TheFatRat";
-        recDiv.style.display = "block";
-        // show finish message if countdown is already over
-        if(diff <= 0) {
-          countdownDiv.style.display = "none";
-          finishDiv.style.display = "flex";
-        }
-      }
+      if(!transitioned || Date.now() >= targetDate.getTime()) return;
+      // hide overlay
+      overlay.classList.add("hidden");
+      // start outro at 61s beat
+      outroAudio.muted = false;
+      const diff = targetDate - Date.now();
+      const offset = diff>0 ? (61000 - diff)/1000 : 61;
+      outroAudio.currentTime = offset;
+      outroAudio.play();
+      recDiv.textContent = "Audio Recommended – Xenogenisis, TheFatRat";
+      recDiv.style.display = "block";
     });
 
-    function updateCountdown() {
-      scheduleAudio();
+    // countdown updater
+    function update() {
       const diff = targetDate - Date.now();
       if(diff <= 0) {
         clearInterval(timerID);
-        if(!finishedAudioStarted) {
-          // scheduleAudio will handle starting outro
-          scheduleAudio();
-        }
         return;
       }
-      let d=diff;
-      const w=Math.floor(d/604800000); d%=604800000;
-      const days=Math.floor(d/86400000); d%=86400000;
-      const hrs=Math.floor(d/3600000); d%=3600000;
-      const mins=Math.floor(d/60000); d%=60000;
-      const secs=Math.floor(d/1000), ms=d%1000;
+      let d = diff;
+      const w = Math.floor(d/604800000); d%=604800000;
+      const days = Math.floor(d/86400000); d%=86400000;
+      const hrs = Math.floor(d/3600000); d%=3600000;
+      const mins = Math.floor(d/60000); d%=60000;
+      const secs = Math.floor(d/1000), ms = d%1000;
       document.getElementById("weeks").textContent=w;
       document.getElementById("days").textContent=days;
       document.getElementById("hours").textContent=hrs;
       document.getElementById("minutes").textContent=mins;
       document.getElementById("seconds").textContent=secs;
       document.getElementById("milliseconds").textContent=ms;
+      schedule();
     }
-
-    timerID = setInterval(updateCountdown, 1);
-    updateCountdown();
+    timerID = setInterval(update, 1);
+    update();
   </script>
 </body>
 </html>
