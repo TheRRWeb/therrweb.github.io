@@ -8,7 +8,7 @@ const quotes = [
     `"زنجي" - Ayaan Awan`,
     `"I wrote this with 2 weeks left of year 8 (most useless year ever) SCHOOL SUCKS!!!, Year 6 was peak" - Aydin Desai`,
     `"adhrit is still single" - anonymous`,
-    `"971563756377 - this is Adrihts girlfriend" - Ayd Des`,
+    `"+971563756377 - this is Adrihts girlfriend" - Ayd Des`,
     `"Dare you to call this number and ask where they live: 0588965114" - AA`,
     `"This number is awesome +971 52 567 0512" - Brodie Taylor`,
     `"We are Forsaken - Not1x1x1x1" - Oliver Young`,
