@@ -1,5 +1,5 @@
 const quotes = [
-    `"Just have fun here and download my digital merch" - RR`,
+    `"Just have fun here and download my digital merch." - RR`,
     `"ALIBABAEXPRESS" - Ali Heiba`,
     `"In Africa, every day is 24 hrs" - Mike Cox`,
     `"Shut up, im not a frog" - Totallynotfrog`,
