@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>The RR Summer Countdown</title>
+  <title>Countdown to June 27, 2025</title>
 
   <!-- 1. CUSTOM FONT & CSS -->
   <style>
@@ -15,7 +15,7 @@
     html, body { width:100%; height:100%; }
     body {
       display:flex; flex-direction:column; justify-content:center; align-items:center;
-      background:#2a2a2a; color:#dedede; font-family:"TheRRs", sans-serif;
+      background:#2a2a2a; color:#dedede; font-family:"TheRRs",sans-serif;
       position:relative; overflow:hidden; font-size:16px; line-height:1.2;
     }
     .countdown { display:flex; gap:1.5rem; text-align:center; }
@@ -41,20 +41,24 @@
     .word-holiday { color:#dedede; }
     .small-text { font-size:.875rem; color:#dedede; margin:.25rem 0; }
     .medium-text { font-size:1.25rem; color:#4193c9; margin:.5rem 0 .25rem; }
-    #firstTapOverlay {
+
+    /* overlays */
+    #firstTapOverlay, #secondTapOverlay {
       position:absolute; top:0; left:0; width:100%; height:100%;
-      background:rgba(42,42,42,.95); display:flex; justify-content:center;
-      align-items:center; font-family:"TheRRs",sans-serif; color:#dedede;
-      text-align:center; font-size:1.2rem; cursor:pointer; z-index:9999;
+      background:rgba(42,42,42,.95); color:#dedede; display:flex;
+      justify-content:center; align-items:center; font-family:"TheRRs",sans-serif;
+      font-size:1.2rem; text-align:center; cursor:pointer; z-index:9999;
     }
-    #firstTapOverlay.hidden { display:none; }
+    .hidden { display:none; }
   </style>
 </head>
-<body>
-  <!-- TAP OVERLAY -->
-  <div id="firstTapOverlay">Tap to see and hear The RR Countdown. Increase your volume to see!</div>
 
-  <!-- COUNTDOWN -->
+<body>
+  <!-- 2. TAP OVERLAYS -->
+  <div id="firstTapOverlay">Tap anywhere to enable audio</div>
+  <div id="secondTapOverlay" class="hidden">Tap to play outro music</div>
+
+  <!-- 3. COUNTDOWN & MESSAGES -->
   <div class="countdown" id="countdownContainer">
     <div class="time-segment"><span class="number" id="weeks">0</span><span class="label">Weeks</span></div>
     <div class="time-segment"><span class="number" id="days">0</span><span class="label">Days</span></div>
@@ -64,10 +68,8 @@
     <div class="time-segment"><span class="number" id="milliseconds">0</span><span class="label">Ms</span></div>
   </div>
 
-  <!-- RECOMMENDED AUDIO TEXT -->
   <div id="recommendedAudio"></div>
 
-  <!-- FINISHED MESSAGE -->
   <div class="finished-message" id="finishedMessage">
     <div class="finished-title">
       <span class="word-happy">Happy</span>
@@ -79,86 +81,93 @@
     </p>
     <div class="medium-text">Special Thanks:</div>
     <p class="small-text">
-      Rutham Renish (me), Ruhaan Renish, Dhruv Mondal, Benn Cern Tang, Murdoch Mackenzie, Jenson Cooper, 
-      Xihao 'Hani' Shen, Alex Stankov, Ali Heiba, Ronan Bingham, Pranav Mummalaneneni, Adhrit Nirupam and YOU ALL!
+      Rutham Renish (me), Ruhaan Renish, Dhruv Mondal, Benn Cern Tang, Murdoch Mackenzie, 
+      Jenson Cooper, Xihao 'Hani' Shen, Alex Stankov, Ali Heiba, Ronan Bingham, 
+      Pranav Mummalaneneni, Adhrit Nirupam and YOU ALL!
     </p>
   </div>
 
-  <!-- AUDIO ELEMENTS -->
+  <!-- 4. AUDIO ELEMENTS -->
   <audio id="waitAudio" preload="auto" loop src="/waitmusic.mp3"></audio>
   <audio id="outroAudio" preload="auto" loop src="/outromusic.mp3"></audio>
 
-  <!-- JAVASCRIPT -->
+  <!-- 5. JS COUNTDOWN & AUDIO LOGIC -->
   <script>
-    const targetDate = new Date(2025,5,12,19,41,0,0);
-    const overlay = document.getElementById("firstTapOverlay");
+    const targetDate = new Date(2025,5,12,19,46,0,0);
+    const firstOverlay = document.getElementById("firstTapOverlay");
+    const secondOverlay = document.getElementById("secondTapOverlay");
     const countdownDiv = document.getElementById("countdownContainer");
     const recommendedDiv = document.getElementById("recommendedAudio");
     const finishedDiv = document.getElementById("finishedMessage");
     const waitAudio = document.getElementById("waitAudio");
     const outroAudio = document.getElementById("outroAudio");
 
-    let timerID, waited=false, tapped=false, recommendedShown=false;
+    let timerID, tapped=false, transitionScheduled=false;
 
-    // initial preload & mute
+    // preload & mute both
     waitAudio.muted = outroAudio.muted = true;
     waitAudio.load(); outroAudio.load();
 
-    overlay.addEventListener("click",()=>{
-      tapEnable();
+    // initial tap to enable wait audio
+    firstOverlay.addEventListener("click", () => {
+      tapped = true;
+      waitAudio.muted = false;
+      waitAudio.play().catch(()=>{});
+      recommendedDiv.textContent = "Audio Recommended – Assumptions, Sam Gellaitry";
+      recommendedDiv.style.display = "block";
+      firstOverlay.classList.add("hidden");
     });
-    document.body.addEventListener("click",()=>{ if(!tapped) tapEnable(); });
 
-    function tapEnable(){
-      tapped=true;
-      waitAudio.muted=false;
-      overlay.classList.add("hidden");
-      scheduleAudio();
+    // second tap to play outro
+    secondOverlay.addEventListener("click", () => {
+      secondOverlay.classList.add("hidden");
+      // unmute and play outro at 61s mark
+      outroAudio.muted = false;
+      outroAudio.currentTime = 61;
+      outroAudio.play().catch(()=>{});
+      recommendedDiv.textContent = "Audio Recommended – Xenogenisis, TheFatRat";
+    });
+
+    // fade helper
+    function fadeOut(audioEl, dur=500) {
+      const steps=10, dt=dur/steps, dv=audioEl.volume/steps;
+      let i=0, iv=setInterval(()=>{
+        i++;
+        audioEl.volume = Math.max(0, audioEl.volume - dv);
+        if(i>=steps){ clearInterval(iv); audioEl.pause(); audioEl.volume=1; }
+      }, dt);
     }
 
-    function fadeOut(audioEl, duration=2000){
-      const steps=20, stepTime=duration/steps;
-      let vol=1, delta=vol/steps;
-      const iv=setInterval(()=>{
-        vol-=delta; if(vol<=0){ audioEl.pause(); audioEl.volume=1; clearInterval(iv); }
-        else audioEl.volume=vol;
-      },stepTime);
-    }
-
-    function scheduleAudio(){
+    function scheduleAudio() {
+      if(!tapped) return;
       const diff = targetDate - Date.now();
-      // waitAudio schedule
-      if(diff>60000){
-        if(!waited){
+      if(diff > 60000) {
+        // still waiting music
+        if(waitAudio.paused) {
           waitAudio.play().catch(()=>{});
-          recommendedDiv.textContent="Turn up volume, Audio Recommended – Assumptions, Sam Gellaitry";
-          recommendedDiv.style.display="block";
-          waited=true;
+          recommendedDiv.textContent = "Audio Recommended – Assumptions, Sam Gellaitry";
+          recommendedDiv.style.display = "block";
         }
-      } else {
-        // transition to outro
-        if(!outroAudio.paused) return;
-        // fade out wait
-        fadeOut(waitAudio);
-        // start outro at offset based on 61s mark
-        const offset=(60000 - diff)/1000 + 1; // since outro start at 61s
-        outroAudio.currentTime = offset>outroAudio.duration?0:offset;
-        outroAudio.muted=false;
-        outroAudio.play().catch(()=>{});
-        recommendedDiv.textContent="Turn up volume, Audio Recommended A LOT – Xenogenesis, TheFatRat";
+      } else if(!transitionScheduled) {
+        // fade wait immediately at 1min
+        fadeOut(waitAudio, 300);
+        // show second overlay for outro click
+        secondOverlay.classList.remove("hidden");
+        transitionScheduled = true;
       }
     }
 
-    function updateCountdown(){
-      const diff=targetDate - Date.now();
-      if(diff<=0){
+    function updateCountdown() {
+      const diff = targetDate - Date.now();
+      if(diff <= 0) {
         clearInterval(timerID);
-        countdownDiv.style.display="none";
-        recommendedDiv.style.display="none";
-        finishedDiv.style.display="flex";
-        scheduleAudio(); return;
+        countdownDiv.style.display = "none";
+        recommendedDiv.style.display = "none";
+        finishedDiv.style.display = "flex";
+        scheduleAudio();
+        return;
       }
-      // update display
+      // compute W D H M S ms ...
       let d=diff;
       const w=Math.floor(d/604800000); d%=604800000;
       const days=Math.floor(d/86400000); d%=86400000;
@@ -174,7 +183,7 @@
       scheduleAudio();
     }
 
-    timerID=setInterval(updateCountdown,1);
+    timerID = setInterval(updateCountdown,1);
     updateCountdown();
   </script>
 </body>
