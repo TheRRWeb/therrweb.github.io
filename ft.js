@@ -3,6 +3,16 @@ const quotes = [
     `"ALIBABAEXPRESS" - Ali Heiba`,
     `"In Africa, every day is 24 hrs" - Mike Cox`,
     `"Shut up, im not a frog" - Totallynotfrog`,
+    `"Zechen said the N word" - Hadi Abbas`,
+    `"Oops i did it again" - Zechen liu`,
+    `"زنجي" - Ayaan Awan`,
+    `"I wrote this with 2 weeks left of year 8 (most useless year ever) SCHOOL SUCKS!!!, Year 6 was peak" - Aydin Desai`,
+    `"adhrit is still single" - anonymous`,
+    `"971563756377 - this is Adrihts girlfriend" - Ayd Des`,
+    `"Dare you to call this number and ask where they live: 0588965114" - AA`,
+    `"This number is awesome +971 52 567 0512" - Brodie Taylor`,
+    `"We are Forsaken - Not1x1x1x1" - Oliver Young`,
+    `"I AM YOUR KING, KING POTATO!!!!" - King Potato`,
     `"RR is Benn's Cookie" - Benn Cern Tang`,
     `"I like cats" - Aritro Roy`,
     `"Roses are red, violets are blue, RR made this website, we made it for you" - Murdoch Mackenzie`,
@@ -38,7 +48,12 @@ const quotes = [
     `"When she calls me passionate, unique, successful, special and youthful" - Louis Jack`,
     `"Papas wingeria" - Oliver Wheeler`,
     `"I pray on their success" - Abdulaziz Alayaseh`,
-    `"Lebroooooooooon" - Alexander Akidil`
+    `"Lebroooooooooon" - Alexander Akidil`,
+    `"Literally no one will ever call u those louis." - Esme Logan`,
+    `"If the world hurts you don’t hurt it back just call Fernando (AKA the Muscle Lord) your problems will be solved" - Benjamin Kuit`,
+    `"I am Mujtaba" - Mohammad Abid`,
+    `"Call me short one more time and I’ll bite your toes" - Lynn El Sahmarani`,
+    `"Im way too charged" - Yassen Askar` 
 ];
 // —————— CONFIG ——————
 const characters         = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()_+';
