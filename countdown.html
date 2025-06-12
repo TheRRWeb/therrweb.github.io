@@ -95,7 +95,7 @@
 
   <!-- 6. JAVASCRIPT -->
   <script>
-    const targetDate = new Date(2025,5,12,19,55,0,0);
+    const targetDate = new Date(2025,5,12,20,3,0,0);
     const overlay = document.getElementById("tapOverlay");
     const countdownDiv = document.getElementById("countdownContainer");
     const recDiv = document.getElementById("recommendedAudio");
@@ -103,7 +103,7 @@
     const waitAudio = document.getElementById("waitAudio");
     const outroAudio = document.getElementById("outroAudio");
 
-    let timerID, tapped=false, transitioned=false;
+    let timerID, tapped=false, transitioned=false, finishedAudioStarted=false;
 
     // mute initially
     waitAudio.muted = outroAudio.muted = true;
@@ -131,7 +131,7 @@
           clearInterval(iv);
           audioEl.pause();
           audioEl.volume = 1;
-          audioEl.loop = false;  // ensure it won’t restart
+          audioEl.loop = false;
         }
       }, dt);
     }
@@ -140,59 +140,78 @@
       if(!tapped) return;
       const diff = targetDate - Date.now();
 
-      // transition when hitting 1 min left
+      // transition at exactly 1 min left
       if(diff <= 60000 && !transitioned) {
         transitioned = true;
-
-        // fade out & stop wait music immediately
+        // fade and stop wait music so no sound after 1 min
         fadeAndStop(waitAudio);
-
-        // show overlay again for outro
+        // show overlay again
         overlay.textContent = "Tap to play outro music";
         overlay.classList.remove("hidden");
+        recDiv.style.display = "none"; // hide wait recommendation
+      }
+
+      // if countdown over and user tapped, start outro automatically
+      if(diff <= 0 && tapped && !finishedAudioStarted) {
+        finishedAudioStarted = true;
+        overlay.classList.add("hidden");
+        // show finish message
+        countdownDiv.style.display = "none";
+        recDiv.style.display = "none";
+        finishDiv.style.display = "flex";
+        // play outro at its 61s mark
+        outroAudio.muted = false;
+        outroAudio.currentTime = 61;
+        outroAudio.play().catch(()=>{});
       }
     }
 
-    // second tap: play outro
+    // second tap: play outro if in transition state
     overlay.addEventListener("click", () => {
-      if(transitioned) {
+      if(transitioned && !finishedAudioStarted) {
+        finishedAudioStarted = true;
+        overlay.classList.add("hidden");
         outroAudio.muted = false;
         const diff = targetDate - Date.now();
-        // compute offset: if joined late, offsetSec; else start at 0
-        const offsetSec = diff > 0 ? (61000 - diff)/1000 : 0;
+        const offsetSec = diff > 0 ? (61000 - diff)/1000 : 61;
         outroAudio.currentTime = offsetSec > outroAudio.duration ? 0 : offsetSec;
         outroAudio.play().catch(()=>{});
         recDiv.textContent = "Audio Recommended – Xenogenisis, TheFatRat";
-        overlay.classList.add("hidden");
+        recDiv.style.display = "block";
+        // show finish message if countdown is already over
+        if(diff <= 0) {
+          countdownDiv.style.display = "none";
+          finishDiv.style.display = "flex";
+        }
       }
     });
 
     function updateCountdown() {
+      scheduleAudio();
       const diff = targetDate - Date.now();
       if(diff <= 0) {
         clearInterval(timerID);
-        countdownDiv.style.display = "none";
-        recDiv.style.display = "none";
-        finishDiv.style.display = "flex";
+        if(!finishedAudioStarted) {
+          // scheduleAudio will handle starting outro
+          scheduleAudio();
+        }
         return;
       }
-      let d = diff;
-      const w = Math.floor(d/604800000); d%=604800000;
-      const days = Math.floor(d/86400000); d%=86400000;
-      const hrs = Math.floor(d/3600000); d%=3600000;
-      const mins = Math.floor(d/60000); d%=60000;
-      const secs = Math.floor(d/1000), ms = d%1000;
-      document.getElementById("weeks").textContent = w;
-      document.getElementById("days").textContent = days;
-      document.getElementById("hours").textContent = hrs;
-      document.getElementById("minutes").textContent = mins;
-      document.getElementById("seconds").textContent = secs;
-      document.getElementById("milliseconds").textContent = ms;
-
-      scheduleAudio();
+      let d=diff;
+      const w=Math.floor(d/604800000); d%=604800000;
+      const days=Math.floor(d/86400000); d%=86400000;
+      const hrs=Math.floor(d/3600000); d%=3600000;
+      const mins=Math.floor(d/60000); d%=60000;
+      const secs=Math.floor(d/1000), ms=d%1000;
+      document.getElementById("weeks").textContent=w;
+      document.getElementById("days").textContent=days;
+      document.getElementById("hours").textContent=hrs;
+      document.getElementById("minutes").textContent=mins;
+      document.getElementById("seconds").textContent=secs;
+      document.getElementById("milliseconds").textContent=ms;
     }
 
-    timerID = setInterval(updateCountdown,1);
+    timerID = setInterval(updateCountdown, 1);
     updateCountdown();
   </script>
 </body>
