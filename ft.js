@@ -60,9 +60,11 @@ const quotes = [
     `"Lebroooooooooon" - Alexander Akidil`,
     `"Literally no one will ever call u those louis." - Esme Logan`,
     `"If the world hurts you don’t hurt it back just call Fernando (AKA the Muscle Lord) your problems will be solved" - Benjamin Kuit`,
-    `"I am Mujtaba" - Mohammad Abid`,
+    `"I am Mujtaba" - Mujtaba`,
     `"Call me short one more time and I’ll bite your toes" - Lynn El Sahmarani`,
-    `"Im way too charged" - Yassen Askar` 
+    `"Im way too charged" - Yassen Askar`,
+    `"Ts website is so tuff" - Oliver Sinden`,
+    `"Go back to work boy" - Joshua Paul`
 ];
 // —————— CONFIG ——————
 const characters         = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()_+';
