@@ -85,7 +85,7 @@
   <audio id="outroAudio" preload="auto" loop src="/outromusic.mp3"></audio>
 
   <script>
-    const target = new Date(2025, 5, 22, 13, 52, 0, 0).getTime();
+    const target = new Date(2025, 5, 26, 15, 0, 0, 0).getTime();
     const overlay = document.getElementById("tapOverlay");
     const cd      = document.getElementById("countdownContainer");
     const rec     = document.getElementById("recommendedAudio");
@@ -105,7 +105,7 @@
         state = 2;
         cd.style.display = "none";
         fin.style.display = "flex";
-        overlay.textContent = "Tap to see our Holiday Message and Credits of 2025";
+        overlay.textContent = "Tap to see our Holiday Message and Special Thanks Credits of 2025";
         overlay.classList.remove("hidden");
       } else {
         overlay.textContent = "Tap to see and hear The RR Summer Countdown - Audio Recommended";
