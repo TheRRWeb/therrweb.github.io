@@ -2,7 +2,7 @@
 
 // 1. Set the exact date/time when effects should start:
 //    June 27, 2025 at 12:00:00 PM (local time)
-const targetDate = new Date(2025, 5, 26, 15, 0, 0, 0); // month is zero-based (5 = June)
+const targetDate = new Date(2025, 5, 22, 13, 52, 0, 0); // month is zero-based (5 = June)
 
 (function() {
   // 2. Wait until the page’s DOM is fully loaded
