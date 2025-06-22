@@ -5,107 +5,54 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>The RR Summer Countdown</title>
   <style>
-    @font-face {
-      font-family: "TheRRs";
-      src: url("/the-rrs.ttf") format("truetype");
-    }
+    @font-face { font-family: "TheRRs"; src: url("/the-rrs.ttf") format("truetype"); }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { width:100%; height:100%; }
+    html, body { width: 100%; height: 100%; }
     body {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      background: #2a2a2a;
-      color: #dedede;
-      font-family: "TheRRs", sans-serif;
-      position: relative;
-      overflow: hidden;
-      font-size: 16px;
-      line-height: 1.2;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      background: #2a2a2a; color: #dedede; font-family: "TheRRs", sans-serif;
+      font-size: 16px; line-height: 1.2; position: relative; overflow: hidden;
     }
-    .countdown {
-      display: flex;
-      gap: 1.5rem;
-      text-align: center;
+    .countdown { display: flex; gap: 1.5rem; text-align: center; }
+    .time-segment { display: flex; flex-direction: column; min-width: 4rem; }
+    .number {
+      display: inline-block; width: 4ch; font-size: 3rem; line-height: 1;
+      color: #4193c9; text-align: center; font-variant-numeric: tabular-nums;
     }
-    .time-segment {
-      display: flex;
-      flex-direction: column;
-      min-width: 4rem;
-    }
-    .time-segment .number {
-      display: inline-block;
-      width: 4ch;
-      font-size: 3rem;
-      line-height: 1;
-      color: #4193c9;
-      text-align: center;
-      font-variant-numeric: tabular-nums;
-    }
-    .time-segment .label {
-      margin-top: .25rem;
-      font-size: 1rem;
-      color: #5cc93b;
-      text-transform: uppercase;
-      letter-spacing: .05em;
+    .label {
+      margin-top: .25rem; font-size: 1rem; color: #5cc93b;
+      text-transform: uppercase; letter-spacing: .05em;
     }
     #recommendedAudio {
-      margin-top: 1rem;
-      font-size: 1rem;
-      display: none;
+      margin-top: 1rem; font-size: 1rem; display: none;
     }
     .finished-message {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      gap: 1rem;
-      padding: 0 1rem;
+      display: none; flex-direction: column; align-items: center; text-align: center;
+      gap: 1rem; padding: 0 1rem;
     }
-    .finished-title {
-      display: flex;
-      gap: .5rem;
-      font-size: 3rem;
-    }
+    .finished-title { display: flex; gap: .5rem; font-size: 3rem; }
     .word-happy { color: #5cc93b; }
     .word-summer { color: #4193c9; }
     .word-holiday { color: #dedede; }
     .small-text {
-      font-size: .875rem;
-      color: #dedede;
-      margin: .25rem 0;
+      font-size: .875rem; color: #dedede; margin: .25rem 0;
     }
     .medium-text {
-      font-size: 1.25rem;
-      color: #4193c9;
-      margin: .5rem 0 .25rem;
+      font-size: 1.25rem; color: #4193c9; margin: .5rem 0 .25rem;
     }
     #tapOverlay {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(42,42,42,.95);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: "TheRRs", sans-serif;
-      color: #dedede;
-      text-align: center;
-      font-size: 1.2rem;
-      cursor: pointer;
-      z-index: 9999;
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(42,42,42,.95); color: #dedede;
+      display: flex; justify-content: center; align-items: center;
+      text-align: center; font-size: 1.2rem; cursor: pointer; z-index: 9999;
       padding: 1rem;
     }
     #tapOverlay.hidden { display: none; }
   </style>
 </head>
 <body>
-
-  <!-- Tap overlay -->
   <div id="tapOverlay">Tap to start background music</div>
 
-  <!-- Countdown display -->
   <div class="countdown" id="countdownContainer">
     <div class="time-segment"><span id="weeks" class="number">0</span><span class="label">Weeks</span></div>
     <div class="time-segment"><span id="days" class="number">0</span><span class="label">Days</span></div>
@@ -115,10 +62,8 @@
     <div class="time-segment"><span id="milliseconds" class="number">0</span><span class="label">Ms</span></div>
   </div>
 
-  <!-- Recommendation text -->
   <div id="recommendedAudio"></div>
 
-  <!-- Finished message -->
   <div class="finished-message" id="finishedMessage">
     <div class="finished-title">
       <span class="word-happy">Happy</span>
@@ -136,13 +81,11 @@
     </p>
   </div>
 
-  <!-- Audio elements -->
   <audio id="waitAudio" preload="auto" loop src="/waitmusic.mp3"></audio>
   <audio id="outroAudio" preload="auto" loop src="/outromusic.mp3"></audio>
 
   <script>
-    // Target: June 27, 2025 @ 12:00 PM
-    const target = new Date(2025, 5, 22, 13, 40, 0, 0).getTime();
+    const target = new Date(2025, 5, 22, 13, 44, 0, 0).getTime();
     const overlay = document.getElementById("tapOverlay");
     const cd      = document.getElementById("countdownContainer");
     const rec     = document.getElementById("recommendedAudio");
@@ -150,20 +93,15 @@
     const waitA   = document.getElementById("waitAudio");
     const outroA  = document.getElementById("outroAudio");
 
-    let state = 0; 
-    // 0 = before wait started
-    // 1 = wait music playing
-    // 2 = ready for outro
-    // 3 = outro playing or finished
+    let state = 0; // 0=not started,1=wait playing,2=ready-outr,3=outro
 
-    // Mute both initially
+    // mute both
     waitA.muted = outroA.muted = true;
 
-    // Initialize based on load time
     function init() {
       const now = Date.now();
       if (now >= target) {
-        // After countdown: show finished, prompt outro tap
+        // already past zero → go to finished state
         state = 2;
         cd.style.display = "none";
         fin.style.display = "flex";
@@ -178,7 +116,7 @@
     overlay.addEventListener("click", () => {
       const now = Date.now(), diff = target - now;
       if (state === 0 && now < target) {
-        // Start wait music
+        // start wait
         state = 1;
         overlay.classList.add("hidden");
         waitA.muted = false;
@@ -186,7 +124,7 @@
         rec.textContent = "Audio Recommended – Assumptions, Sam Gellaitry";
         rec.style.display = "block";
       } else if (state === 2) {
-        // Start outro music
+        // start outro
         state = 3;
         overlay.classList.add("hidden");
         rec.style.display = "none";
@@ -198,6 +136,10 @@
         outroA.play().catch(() => {});
         rec.textContent = "Audio Recommended – Xenogenisis, TheFatRat";
         rec.style.display = "block";
+        if (diff <= 0) {
+          cd.style.display = "none";
+          fin.style.display = "flex";
+        }
       }
     });
 
@@ -205,7 +147,7 @@
       if (state === 1) {
         const diff = target - Date.now();
         if (diff <= 60000 && diff > 0) {
-          // At 1 minute left: stop wait, prompt outro tap
+          // switch to outro-ready
           state = 2;
           waitA.pause();
           waitA.currentTime = 0;
@@ -218,11 +160,19 @@
 
     function update() {
       const now = Date.now(), diff = target - now;
+
+      // **NEW**: handle zero here
       if (diff <= 0) {
         clearInterval(timer);
+        // hide countdown & rec
+        cd.style.display = "none";
+        rec.style.display = "none";
+        // show finished
+        fin.style.display = "flex";
         return;
       }
-      // Update countdown numbers
+
+      // update numbers
       let d = diff;
       const w    = Math.floor(d / 604800000); d %= 604800000;
       const days = Math.floor(d / 86400000);  d %= 86400000;
@@ -235,6 +185,7 @@
       document.getElementById("minutes").textContent      = mins;
       document.getElementById("seconds").textContent      = secs;
       document.getElementById("milliseconds").textContent = ms;
+
       schedule();
     }
 
@@ -242,6 +193,5 @@
     const timer = setInterval(update, 1);
     update();
   </script>
-
 </body>
 </html>
