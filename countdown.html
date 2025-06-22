@@ -51,7 +51,7 @@
   </style>
 </head>
 <body>
-  <div id="tapOverlay">Tap to start background music</div>
+  <div id="tapOverlay">Tap to see and hear The RR Summer Countdown - Audio Recommended</div>
 
   <div class="countdown" id="countdownContainer">
     <div class="time-segment"><span id="weeks" class="number">0</span><span class="label">Weeks</span></div>
@@ -85,7 +85,7 @@
   <audio id="outroAudio" preload="auto" loop src="/outromusic.mp3"></audio>
 
   <script>
-    const target = new Date(2025, 5, 22, 13, 44, 0, 0).getTime();
+    const target = new Date(2025, 5, 22, 13, 52, 0, 0).getTime();
     const overlay = document.getElementById("tapOverlay");
     const cd      = document.getElementById("countdownContainer");
     const rec     = document.getElementById("recommendedAudio");
@@ -105,10 +105,10 @@
         state = 2;
         cd.style.display = "none";
         fin.style.display = "flex";
-        overlay.textContent = "Tap to play outro music";
+        overlay.textContent = "Tap to see our Holiday Message and Credits of 2025";
         overlay.classList.remove("hidden");
       } else {
-        overlay.textContent = "Tap to start background music";
+        overlay.textContent = "Tap to see and hear The RR Summer Countdown - Audio Recommended";
         overlay.classList.remove("hidden");
       }
     }
@@ -134,7 +134,7 @@
         outroA.muted = false;
         outroA.currentTime = offset > outroA.duration ? 0 : offset;
         outroA.play().catch(() => {});
-        rec.textContent = "Audio Recommended – Xenogenisis, TheFatRat";
+        rec.textContent = "Audio Recommended A LOT – Xenogenisis, TheFatRat";
         rec.style.display = "block";
         if (diff <= 0) {
           cd.style.display = "none";
@@ -152,7 +152,7 @@
           waitA.pause();
           waitA.currentTime = 0;
           rec.style.display = "none";
-          overlay.textContent = "Tap to play outro music";
+          overlay.textContent = "Tap to countdown to Summer - Audio Recommended A LOT";
           overlay.classList.remove("hidden");
         }
       }
