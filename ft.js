@@ -64,7 +64,8 @@ const quotes = [
     `"Call me short one more time and I’ll bite your toes" - Lynn El Sahmarani`,
     `"Im way too charged" - Yassen Askar`,
     `"Ts website is so tuff" - Oliver Sinden`,
-    `"Go back to work you jobless bum" - Joshua Paul`
+    `"Go back to work you jobless bum" - Joshua Paul`,
+    `"Sol is a snitch" - anonymous`
 ];
 // —————— CONFIG ——————
 const characters         = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()_+';
