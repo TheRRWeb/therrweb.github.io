@@ -14,6 +14,7 @@ const quotes = [
     `"Dare you to call this number and ask where they live: 0588965114" - Random`,
     `"This number is awesome +971 52 567 0512" - Brodie Taylor`,
     `"We are Forsaken - Not1x1x1x1"`,
+    `"I AM KING CARROT, DOWN WITH THE POTATO KING" - THE GLORIOUS CARROT KING`,
     `"I AM YOUR KING, KING POTATO!!!!" - King Potato`,
     `"If you don't hawk tuah, you don't talk to her" - Hailey Welch`,
     `"Don't trust black people" - Ashtyn Minivan`,
