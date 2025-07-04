@@ -78,7 +78,7 @@ html, body {
   position: absolute;
   width: 50px;
   height: 20px;
-  top: 5px;              /* ← raised higher above card */
+  top: -5px;              /* ← raised higher above card */
   left: calc(50% - 25px);
   background-color: var(--bg-color);
   transition: background-color 0.3s;
