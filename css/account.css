@@ -20,14 +20,14 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   Flip-Card Layout (Uiverse by andrew-demchenk0)
+   Flip-Card Container & Toggle Slider
 ───────────────────────────────────────────────────────────────── */
 .wrapper {
-  --input-focus: #2d8cf0;
-  --font-color: #323232;
-  --font-color-sub: #666;
-  --bg-color: #2a2a2a;
-  --main-color: #5cc93b;
+  --input-focus:   #2d8cf0;
+  --font-color:    #323232;
+  --font-color-sub:#666;
+  --bg-color:      #2a2a2a;
+  --main-color:    #5cc93b;
 }
 
 .card-switch {
@@ -49,23 +49,25 @@
   height: 0;
 }
 
-/* Slider between “Log in” and “Sign up” */
+/* Slider background */
 .slider {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
   background-color: #dedede;
   border-radius: 5px;
+  z-index: 5;
   transition: 0.3s;
 }
+/* Slider knob */
 .slider:before {
   content: "";
   position: absolute;
   height: 20px; width: 20px;
   background-color: var(--bg-color);
   border-radius: 5px;
-  left: 0; bottom: 2px;
+  bottom: 2px; left: 0;
   transition: 0.3s;
 }
+/* Move knob when checked */
 .toggle:checked + .slider:before {
   transform: translateX(30px);
 }
@@ -86,28 +88,25 @@
   font-weight: 600;
 }
 
-/* Card inner container */
+/* Inner card that flips */
 .flip-card__inner {
-  width: 300px;
-  height: 350px;
+  width: 300px; height: 350px;
   position: relative;
   perspective: 1000px;
   transition: transform 0.8s;
   transform-style: preserve-3d;
   margin: auto;
 }
-
-/* Flip on toggle */
+/* Flip when toggle checked */
 .toggle:checked ~ .flip-card__inner {
   transform: rotateY(180deg);
 }
 
-/* Front and back faces */
+/* Card faces */
 .flip-card__front,
 .flip-card__back {
   position: absolute;
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   backface-visibility: hidden;
   border-radius: 5px;
   border: 2px solid var(--main-color);
@@ -118,18 +117,17 @@
   justify-content: center;
   align-items: center;
   gap: 20px;
+  z-index: 1;
 }
 
-/* Back rotated */
+/* Back side rotated */
 .flip-card__back {
   transform: rotateY(180deg);
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   Your Themed Inputs, Buttons & Errors
+   Form Fields, Buttons & Errors
 ───────────────────────────────────────────────────────────────── */
-
-/* Section titles */
 .title {
   font-size: 25px;
   font-weight: 900;
@@ -137,7 +135,6 @@
   margin: 0;
 }
 
-/* Form container */
 .flip-card__form {
   display: flex;
   flex-direction: column;
@@ -145,10 +142,8 @@
   gap: 12px;
 }
 
-/* Text inputs */
 .flip-card__input {
-  width: 250px;
-  height: 40px;
+  width: 250px; height: 40px;
   padding: 10px;
   font-size: 16px;
   color: #dedede;
@@ -162,11 +157,11 @@
 .flip-card__input::placeholder {
   color: var(--font-color-sub);
 }
+
 .flip-card__input:focus {
   border-color: var(--input-focus);
 }
 
-/* Container for Sign In / Sign Up buttons */
 .auth-buttons {
   display: flex;
   gap: 10px;
@@ -176,10 +171,9 @@
   box-sizing: border-box;
 }
 
-/* Action buttons */
+/* Primary action buttons */
 .flip-card__btn {
-  width: 120px;
-  height: 40px;
+  width: 120px; height: 40px;
   border: none;
   border-radius: 5px;
   background-color: #dedede;
@@ -194,12 +188,13 @@
   background-color: #4193c9;
   color: #ffffff;
 }
+
 .flip-card__btn:active {
   background-color: var(--bg-color);
   color: #dedede;
 }
 
-/* Forgot-password link style */
+/* “Forgot Password?” link */
 button.text-link {
   background: none;
   border: none;
@@ -208,13 +203,15 @@ button.text-link {
   cursor: pointer;
   text-decoration: none;
 }
+
 button.text-link:hover {
   text-decoration: underline;
 }
 
-/* Error message */
+/* Error messages */
 .flip-error,
-#error-message {
+#error-signin,
+#error-signup {
   color: #ff4d4d;
   font-weight: bold;
   font-size: 14px;
@@ -226,8 +223,7 @@ button.text-link:hover {
 /* Responsive tweaks */
 @media (max-width: 320px) {
   .flip-card__inner {
-    width: 260px;
-    height: 300px;
+    width: 260px; height: 300px;
   }
   .flip-card__input {
     width: 220px;
@@ -237,7 +233,6 @@ button.text-link:hover {
     font-size: 14px;
   }
 }
-
 /* User controls (after sign‑in) */
 #user-controls {
   display: flex;
