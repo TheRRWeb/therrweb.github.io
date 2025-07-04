@@ -26,7 +26,7 @@
   --input-focus: #2d8cf0;
   --font-color: #323232;
   --font-color-sub: #666;
-  --bg-color: #2a2a2a; /* match your dark theme */
+  --bg-color: #2a2a2a;
   --main-color: #5cc93b;
 }
 
@@ -49,6 +49,44 @@
   height: 0;
 }
 
+/* Slider between “Log in” and “Sign up” */
+.slider {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #dedede;
+  border-radius: 5px;
+  transition: 0.3s;
+}
+.slider:before {
+  content: "";
+  position: absolute;
+  height: 20px; width: 20px;
+  background-color: var(--bg-color);
+  border-radius: 5px;
+  left: 0; bottom: 2px;
+  transition: 0.3s;
+}
+.toggle:checked + .slider:before {
+  transform: translateX(30px);
+}
+
+/* “Log in” / “Sign up” labels */
+.card-side::before {
+  position: absolute;
+  content: 'Log in';
+  left: 0; top: -30px;
+  color: var(--font-color);
+  font-weight: 600;
+}
+.card-side::after {
+  position: absolute;
+  content: 'Sign up';
+  right: 0; top: -30px;
+  color: var(--font-color);
+  font-weight: 600;
+}
+
+/* Card inner container */
 .flip-card__inner {
   width: 300px;
   height: 350px;
@@ -59,10 +97,12 @@
   margin: auto;
 }
 
+/* Flip on toggle */
 .toggle:checked ~ .flip-card__inner {
   transform: rotateY(180deg);
 }
 
+/* Front and back faces */
 .flip-card__front,
 .flip-card__back {
   position: absolute;
@@ -80,31 +120,16 @@
   gap: 20px;
 }
 
+/* Back rotated */
 .flip-card__back {
   transform: rotateY(180deg);
 }
 
-.card-side::before {
-  position: absolute;
-  content: 'Log in';
-  left: 0;
-  top: -30px;
-  color: var(--font-color);
-  font-weight: 600;
-}
-
-.card-side::after {
-  position: absolute;
-  content: 'Sign up';
-  right: 0;
-  top: -30px;
-  color: var(--font-color);
-  font-weight: 600;
-}
-
 /* ─────────────────────────────────────────────────────────────────
-   Themed Inputs, Buttons & Errors
+   Your Themed Inputs, Buttons & Errors
 ───────────────────────────────────────────────────────────────── */
+
+/* Section titles */
 .title {
   font-size: 25px;
   font-weight: 900;
@@ -112,6 +137,7 @@
   margin: 0;
 }
 
+/* Form container */
 .flip-card__form {
   display: flex;
   flex-direction: column;
@@ -119,6 +145,7 @@
   gap: 12px;
 }
 
+/* Text inputs */
 .flip-card__input {
   width: 250px;
   height: 40px;
@@ -135,11 +162,11 @@
 .flip-card__input::placeholder {
   color: var(--font-color-sub);
 }
-
 .flip-card__input:focus {
   border-color: var(--input-focus);
 }
 
+/* Container for Sign In / Sign Up buttons */
 .auth-buttons {
   display: flex;
   gap: 10px;
@@ -149,13 +176,14 @@
   box-sizing: border-box;
 }
 
+/* Action buttons */
 .flip-card__btn {
   width: 120px;
   height: 40px;
   border: none;
   border-radius: 5px;
-  background-color: var(--main-color);
-  color: #ffffff;
+  background-color: #dedede;
+  color: #2a2a2a;
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
@@ -164,13 +192,14 @@
 
 .flip-card__btn:hover {
   background-color: #4193c9;
+  color: #ffffff;
 }
-
 .flip-card__btn:active {
   background-color: var(--bg-color);
   color: #dedede;
 }
 
+/* Forgot-password link style */
 button.text-link {
   background: none;
   border: none;
@@ -179,12 +208,13 @@ button.text-link {
   cursor: pointer;
   text-decoration: none;
 }
-
 button.text-link:hover {
   text-decoration: underline;
 }
 
-.flip-error {
+/* Error message */
+.flip-error,
+#error-message {
   color: #ff4d4d;
   font-weight: bold;
   font-size: 14px;
