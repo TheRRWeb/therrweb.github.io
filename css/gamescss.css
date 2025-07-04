@@ -1,3 +1,4 @@
+
 body {
   font-family: 'Trebuchet MS', sans-serif;
   text-align: center;
@@ -7,7 +8,7 @@ body {
   display: flex;
   justify-content: center;
   gap: 20px;
-  flex-wrap: wrap;  /* 🔥 This makes images move to the next line when needed */
+  flex-wrap: wrap;  
   max-width: 90%;
 }
 
@@ -22,7 +23,6 @@ body {
   transform: scale(1.1);
 }
 
-/* Full-Screen Container */
 #fullscreenContainer {
   display: none;
   position: fixed;
@@ -56,8 +56,8 @@ body {
   font-size: 20px;
   padding: 10px 15px;
   cursor: pointer;
-  border-radius: 5px;  /* Change this for corner rounding */
-  width: 50px;  /* Change this for button width */
-  height: 50px; /* Change this for button height */
+  border-radius: 5px;  
+  width: 50px;  
+  height: 50px; 
 }
 

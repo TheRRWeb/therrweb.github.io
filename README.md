@@ -8,18 +8,6 @@ This is The RR Web, a very great gaming website made by [Rutham Renish](https://
 > Sometimes we need a break so just head to my website to wind down and chill
 
 To access my website, the link is in the side of the repository<br><br>
-### What's new:<br>
-- Data saving games
-- More mobile friendly games
-  - Retro bowl
-  - Rooftop Snipers
-<br>
-
-### What's coming soon:<br>
-- More games
-- Removing news
-<br>
-
 ```
 The RR Web is protected by the BSD 3 Clause license. I am not liable for anything the user does.
 ```
