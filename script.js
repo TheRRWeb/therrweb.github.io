@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const db = firebase.firestore();
 
   // ------------------------------------------------
-  // 1) Site‑wide: membership toggles (memshow/hide)
+  // 1) Site-wide: membership toggles (memshow/hide)
   // ------------------------------------------------
   let currentIsMember = false;
   function applyMembershipView(isMember) {
@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
       userMembershipSpan.textContent = currentIsMember ? "You are a Membership User" : "";
     }
 
-    // toggle account‑page views
+    // toggle account-page views
     const signedOutView = document.getElementById("auth-container");
     const signedInView  = document.getElementById("user-controls");
     const userEmailSpan = document.getElementById("user-email");
@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (userUidSpan)   userUidSpan.textContent   = user.uid;
   });
 
-  // prevent DOM‑tampering
+  // prevent DOM-tampering
   const tamperObserver = new MutationObserver(() => applyMembershipView(currentIsMember));
   document.querySelectorAll(".memshow, .memhide")
     .forEach(el => tamperObserver.observe(el, {
@@ -70,14 +70,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }));
 
   // -----------------------------------
-  // 2) Account‑page only logic (guarded)
+  // 2) Account-page only logic (guarded)
   // -----------------------------------
-  const emailInput        = document.getElementById("email");
-  const passwordInput     = document.getElementById("password");
   const signInBtn         = document.getElementById("sign-in-btn");
   const signUpBtn         = document.getElementById("sign-up-btn");
   const forgotPasswordBtn = document.getElementById("forgot-password-btn");
-  const errorMessageEl    = document.getElementById("error-message");
   const changePasswordBtn = document.getElementById("change-password");
   const deleteAccountBtn  = document.getElementById("delete-account");
   const saveBtn           = document.getElementById("save-game-data");
@@ -85,12 +82,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const signOutBtn        = document.getElementById("sign-out");
   const clearLocalBtn     = document.getElementById("clear-local-btn");
   const clearFirestoreBtn = document.getElementById("clear-firestore-btn");
+  const errorMessageEl    = document.getElementById("error-message");
 
-  if (emailInput && signInBtn && signUpBtn) {
+  if (signInBtn && signUpBtn && forgotPasswordBtn) {
     // Sign In
     signInBtn.addEventListener("click", () => {
-      const email = emailInput.value.trim();
-      const pwd   = passwordInput.value;
+      const email = document.getElementById("email-signin").value.trim();
+      const pwd   = document.getElementById("password-signin").value;
       firebase.auth().signInWithEmailAndPassword(email, pwd)
         .catch(err => {
           if (["auth/invalid-email","auth/user-not-found","auth/wrong-password"].includes(err.code)) {
@@ -105,8 +103,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Sign Up
     signUpBtn.addEventListener("click", () => {
-      const email = emailInput.value.trim();
-      const pwd   = passwordInput.value;
+      const email = document.getElementById("email-signup").value.trim();
+      const pwd   = document.getElementById("password-signup").value;
       firebase.auth().createUserWithEmailAndPassword(email, pwd)
         .then(() => { alert("Account created!"); location.reload(); })
         .catch(err => {
@@ -122,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Forgot Password
     forgotPasswordBtn.addEventListener("click", () => {
-      const email = emailInput.value.trim();
+      const email = document.getElementById("email-signin").value.trim();
       if (!email) {
         errorMessageEl.textContent = "Enter your email to reset password.";
         return;
