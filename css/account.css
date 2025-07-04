@@ -19,86 +19,193 @@
   margin-bottom: 15px;
 }
 
-/* AUTH FORM */
-/* Container for the form */
-#auth-form {
+/* ─────────────────────────────────────────────────────────────────
+   Flip-Card Layout (Uiverse by andrew-demchenk0)
+───────────────────────────────────────────────────────────────── */
+.wrapper {
+  --input-focus: #2d8cf0;
+  --font-color: #323232;
+  --font-color-sub: #666;
+  --bg-color: #2a2a2a; /* match your dark theme */
+  --main-color: #5cc93b;
+}
+
+.card-switch {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 420px;
+}
+
+.switch {
+  position: relative;
+  width: 300px;
+  height: 350px;
+}
+
+.toggle {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.flip-card__inner {
+  width: 300px;
+  height: 350px;
+  position: relative;
+  perspective: 1000px;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+  margin: auto;
+}
+
+.toggle:checked ~ .flip-card__inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card__front,
+.flip-card__back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 5px;
+  border: 2px solid var(--main-color);
+  box-shadow: 4px 4px var(--main-color);
+  background: var(--bg-color);
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.flip-card__back {
+  transform: rotateY(180deg);
+}
+
+.card-side::before {
+  position: absolute;
+  content: 'Log in';
+  left: 0;
+  top: -30px;
+  color: var(--font-color);
+  font-weight: 600;
+}
+
+.card-side::after {
+  position: absolute;
+  content: 'Sign up';
+  right: 0;
+  top: -30px;
+  color: var(--font-color);
+  font-weight: 600;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   Themed Inputs, Buttons & Errors
+───────────────────────────────────────────────────────────────── */
+.title {
+  font-size: 25px;
+  font-weight: 900;
+  color: var(--main-color);
+  margin: 0;
+}
+
+.flip-card__form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 12px;
-  margin-bottom: 20px;
 }
 
-/* Input fields */
-input[type="email"],
-input[type="password"] {
-  background-color: #2a2a2a;
-  border: 1px solid #5cc93b;
-  border-radius: 5px;
+.flip-card__input {
+  width: 250px;
+  height: 40px;
   padding: 10px;
-  color: #dedede;
   font-size: 16px;
+  color: #dedede;
+  background-color: var(--bg-color);
+  border: 1px solid var(--main-color);
+  border-radius: 5px;
+  outline: none;
+  box-sizing: border-box;
 }
 
-/* Placeholder text color */
-input[type="email"]::placeholder,
-input[type="password"]::placeholder {
-  color: #888;
+.flip-card__input::placeholder {
+  color: var(--font-color-sub);
 }
 
-/* Container for Sign In and Sign Up buttons */
+.flip-card__input:focus {
+  border-color: var(--input-focus);
+}
+
 .auth-buttons {
   display: flex;
   gap: 10px;
   justify-content: center;
+  width: 100%;
+  padding: 0 15px;
+  box-sizing: border-box;
 }
 
-/* Buttons styling */
-button {
-  background-color: #5cc93b;
-  color: white;
-  padding: 10px 15px;
+.flip-card__btn {
+  width: 120px;
+  height: 40px;
+  border: none;
   border-radius: 5px;
+  background-color: var(--main-color);
+  color: #ffffff;
   font-size: 16px;
   font-weight: bold;
-  border: none;
+  cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
-/* Hover effect for buttons */
-button:hover {
+.flip-card__btn:hover {
   background-color: #4193c9;
-  cursor: pointer;
-  text-decoration: none;
 }
 
-/* Active state for buttons */
-button:active {
-  background-color: #2a2a2a;
+.flip-card__btn:active {
+  background-color: var(--bg-color);
   color: #dedede;
 }
 
-/* Styling for the 'Forgot Password?' button */
 button.text-link {
   background: none;
   border: none;
   color: #4193c9;
   font-size: 14px;
-  padding: 0; 
   cursor: pointer;
-  align-self: center;
+  text-decoration: none;
 }
 
-/* Hover effect for the 'Forgot Password?' button */
 button.text-link:hover {
   text-decoration: underline;
 }
 
-/* Error message styling */
-#error-message {
+.flip-error {
   color: #ff4d4d;
   font-weight: bold;
   font-size: 14px;
   min-height: 20px;
+  text-align: center;
+  margin: 0;
+}
+
+/* Responsive tweaks */
+@media (max-width: 320px) {
+  .flip-card__inner {
+    width: 260px;
+    height: 300px;
+  }
+  .flip-card__input {
+    width: 220px;
+  }
+  .flip-card__btn {
+    width: 100px;
+    font-size: 14px;
+  }
 }
 
 /* User controls (after sign‑in) */
