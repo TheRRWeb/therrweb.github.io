@@ -1,11 +1,11 @@
 // script.js
 document.addEventListener("DOMContentLoaded", () => {
+  // 0) First-time setup
   if (localStorage.getItem("r-touch") === null) {
     localStorage.setItem("r-touch", "on");
   }
-  // -----------------------------
-  // 0) Firebase Initialization
-  // -----------------------------
+
+  // 1) Firebase Initialization
   const firebaseConfig = {
     apiKey: "AIzaSyB1OXqvU6bi9cp-aPs6AGNnCaTGwHtkuUs",
     authDomain: "therrweb.firebaseapp.com",
@@ -18,9 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // ------------------------------------------------
-  // 1) Site-wide: membership toggles (memshow/hide)
-  // ------------------------------------------------
+  // 2) Membership view toggles (memshow/memhide) — unchanged from before
   let currentIsMember = false;
   function applyMembershipView(isMember) {
     document.querySelectorAll(".memshow")
@@ -36,19 +34,18 @@ document.addEventListener("DOMContentLoaded", () => {
       if (userMembershipSpan) userMembershipSpan.textContent = "";
       return;
     }
-    // check membership by UID then email
     let snap = await db.collection("membership").doc(user.uid).get().catch(() => null);
     if (!snap || !snap.exists) {
       snap = await db.collection("membership").doc(user.email).get().catch(() => null);
     }
     currentIsMember = snap && snap.exists && snap.data().membership === true;
-
     applyMembershipView(currentIsMember);
     if (userMembershipSpan) {
-      userMembershipSpan.textContent = currentIsMember ? "You are a Membership User" : "";
+      userMembershipSpan.textContent = currentIsMember
+        ? "You are a Membership User"
+        : "";
     }
 
-    // toggle account-page views
     const signedOutView = document.getElementById("auth-container");
     const signedInView  = document.getElementById("user-controls");
     const userEmailSpan = document.getElementById("user-email");
@@ -61,7 +58,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (userUidSpan)   userUidSpan.textContent   = user.uid;
   });
 
-  // prevent DOM-tampering
   const tamperObserver = new MutationObserver(() => applyMembershipView(currentIsMember));
   document.querySelectorAll(".memshow, .memhide")
     .forEach(el => tamperObserver.observe(el, {
@@ -69,128 +65,146 @@ document.addEventListener("DOMContentLoaded", () => {
       attributeFilter: ["style","class"]
     }));
 
-  // -----------------------------------
-  // 2) Account-page only logic (guarded)
-  // -----------------------------------
-  const signInBtn         = document.getElementById("sign-in-btn");
-  const signUpBtn         = document.getElementById("sign-up-btn");
-  const forgotPasswordBtn = document.getElementById("forgot-password-btn");
-  const changePasswordBtn = document.getElementById("change-password");
-  const deleteAccountBtn  = document.getElementById("delete-account");
-  const saveBtn           = document.getElementById("save-game-data");
-  const loadBtn           = document.getElementById("load-game-data");
-  const signOutBtn        = document.getElementById("sign-out");
-  const clearLocalBtn     = document.getElementById("clear-local-btn");
-  const clearFirestoreBtn = document.getElementById("clear-firestore-btn");
-  const errorMessageEl    = document.getElementById("error-message");
+  // 3) Account-page logic
+  const emailSigninInput    = document.querySelector(".email-signin");
+  const passwordSigninInput = document.querySelector(".password-signin");
+  const emailSignupInput    = document.querySelector(".email-signup");
+  const passwordSignupInput = document.querySelector(".password-signup");
 
-  if (signInBtn && signUpBtn && forgotPasswordBtn) {
+  const signInBtn           = document.querySelector(".sign-in-btn");
+  const signUpBtn           = document.querySelector(".sign-up-btn");
+  const forgotPasswordBtn   = document.querySelector(".forgot-password-btn");
+
+  const errorLoginMsg       = document.querySelector(".flip-card__front .error-message");
+  const errorSignupMsg      = document.querySelector(".flip-card__back .error-message");
+
+  const changePasswordBtn   = document.getElementById("change-password");
+  const deleteAccountBtn    = document.getElementById("delete-account");
+  const saveBtn             = document.getElementById("save-game-data");
+  const loadBtn             = document.getElementById("load-game-data");
+  const signOutBtn          = document.getElementById("sign-out");
+  const clearLocalBtn       = document.getElementById("clear-local-btn");
+  const clearFirestoreBtn   = document.getElementById("clear-firestore-btn");
+
+  if (emailSigninInput && signInBtn && signUpBtn) {
     // Sign In
     signInBtn.addEventListener("click", () => {
-      const email = document.getElementById("email-signin").value.trim();
-      const pwd   = document.getElementById("password-signin").value;
+      const email = emailSigninInput.value.trim();
+      const pwd   = passwordSigninInput.value;
       firebase.auth().signInWithEmailAndPassword(email, pwd)
         .catch(err => {
-          if (["auth/invalid-email","auth/user-not-found","auth/wrong-password"].includes(err.code)) {
-            errorMessageEl.textContent = "Incorrect email or password.";
+          if (["auth/invalid-email","auth/user-not-found","auth/wrong-password"]
+              .includes(err.code)) {
+            errorLoginMsg.textContent = "Incorrect email or password.";
           } else if (err.message.toLowerCase().includes("network error")) {
-            errorMessageEl.textContent = "There is a network issue, try again later.";
+            errorLoginMsg.textContent = "There is a network issue, try again later.";
           } else {
-            errorMessageEl.textContent = err.message;
+            errorLoginMsg.textContent = err.message;
           }
         });
     });
 
     // Sign Up
     signUpBtn.addEventListener("click", () => {
-      const email = document.getElementById("email-signup").value.trim();
-      const pwd   = document.getElementById("password-signup").value;
+      const email = emailSignupInput.value.trim();
+      const pwd   = passwordSignupInput.value;
       firebase.auth().createUserWithEmailAndPassword(email, pwd)
         .then(() => { alert("Account created!"); location.reload(); })
         .catch(err => {
           if (err.code === "auth/email-already-in-use") {
-            errorMessageEl.textContent = "Email already used.";
+            errorSignupMsg.textContent = "Email already used.";
           } else if (err.message.toLowerCase().includes("network error")) {
-            errorMessageEl.textContent = "There is a network issue, try again later.";
+            errorSignupMsg.textContent = "There is a network issue, try again later.";
           } else {
-            errorMessageEl.textContent = err.message;
+            errorSignupMsg.textContent = err.message;
           }
         });
     });
 
     // Forgot Password
     forgotPasswordBtn.addEventListener("click", () => {
-      const email = document.getElementById("email-signin").value.trim();
+      const email = emailSigninInput.value.trim();
       if (!email) {
-        errorMessageEl.textContent = "Enter your email to reset password.";
+        errorLoginMsg.textContent = "Enter your email to reset password.";
         return;
       }
       firebase.auth().sendPasswordResetEmail(email)
         .then(() => alert("Reset email sent."))
         .catch(() => {
-          errorMessageEl.textContent = "Network issue, try again later.";
+          errorLoginMsg.textContent = "Network issue, try again later.";
         });
     });
 
-    // Change Password (reset link)
-    changePasswordBtn.addEventListener("click", () => {
-      const u = firebase.auth().currentUser;
-      if (u) {
-        firebase.auth().sendPasswordResetEmail(u.email)
-          .then(() => alert("Reset email sent."))
-          .catch(() => {
-            errorMessageEl.textContent = "Network issue, try again later.";
-          });
-      }
-    });
+    // Change Password
+    if (changePasswordBtn) {
+      changePasswordBtn.addEventListener("click", () => {
+        const u = firebase.auth().currentUser;
+        if (u) {
+          firebase.auth().sendPasswordResetEmail(u.email)
+            .then(() => alert("Reset email sent."))
+            .catch(() => {
+              errorLoginMsg.textContent = "Network issue, try again later.";
+            });
+        }
+      });
+    }
 
-    // Delete Account + cleanup
-    deleteAccountBtn.addEventListener("click", async () => {
-      const u = firebase.auth().currentUser;
-      if (!u || !confirm("Delete account AND all your cloud data?")) return;
-      try {
-        await db.collection("userdata").doc(u.uid).delete();
-        await db.collection("membership").doc(u.uid).delete().catch(() => {});
-        await u.delete();
-        alert("Deleted account & data."); location.reload();
-      } catch (e) {
-        console.error(e);
-        alert("Error deleting: " + e.message);
-      }
-    });
+    // Delete Account
+    if (deleteAccountBtn) {
+      deleteAccountBtn.addEventListener("click", async () => {
+        const u = firebase.auth().currentUser;
+        if (!u || !confirm("Delete account AND all your cloud data?")) return;
+        try {
+          await db.collection("userdata").doc(u.uid).delete();
+          await db.collection("membership").doc(u.uid).delete().catch(() => {});
+          await u.delete();
+          alert("Deleted account & data."); location.reload();
+        } catch (e) {
+          console.error(e);
+          alert("Error deleting: " + e.message);
+        }
+      });
+    }
 
-    // Save → Firestore
-    saveBtn.addEventListener("click", async () => {
-      const u = firebase.auth().currentUser;
-      if (!u) return alert("Sign in first.");
-      try {
-        await db.collection("userdata").doc(u.uid).set({ ...localStorage });
-        alert("Data saved!");
-      } catch {
-        alert("Save failed, try again.");
-      }
-    });
+    // Save Game Data
+    if (saveBtn) {
+      saveBtn.addEventListener("click", async () => {
+        const u = firebase.auth().currentUser;
+        if (!u) return alert("Sign in first.");
+        try {
+          await db.collection("userdata").doc(u.uid)
+            .set(Object.fromEntries(Object.entries(localStorage)), { merge: true });
+          alert("Data saved!");
+        } catch {
+          alert("Save failed, try again.");
+        }
+      });
+    }
 
-    // Load ← Firestore
-    loadBtn.addEventListener("click", async () => {
-      const u = firebase.auth().currentUser;
-      if (!u) return alert("Sign in first.");
-      try {
-        const snap = await db.collection("userdata").doc(u.uid).get();
-        if (!snap.exists) return alert("No data found.");
-        localStorage.clear();
-        Object.entries(snap.data()).forEach(([k,v]) => localStorage.setItem(k, v));
-        alert("Data loaded!"); location.reload();
-      } catch {
-        alert("Load failed, try again.");
-      }
-    });
+    // Load Game Data
+    if (loadBtn) {
+      loadBtn.addEventListener("click", async () => {
+        const u = firebase.auth().currentUser;
+        if (!u) return alert("Sign in first.");
+        try {
+          const snap = await db.collection("userdata").doc(u.uid).get();
+          if (!snap.exists) throw new Error();
+          localStorage.clear();
+          Object.entries(snap.data()).forEach(([k,v]) =>
+            localStorage.setItem(k, v)
+          );
+          alert("Data loaded!"); location.reload();
+        } catch {
+          alert("Load failed, try again.");
+        }
+      });
+    }
 
     // Sign Out
     signOutBtn.addEventListener("click", () => {
       firebase.auth().signOut()
         .then(() => location.reload())
-        .catch(e => { console.error(e); alert("Sign‑out failed."); });
+        .catch(e => { console.error(e); alert("Sign-out failed."); });
     });
 
     // Clear LocalStorage
@@ -210,8 +224,7 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("Delete failed.");
       }
     });
-  }
-    // Disguise‑Mode (class‑based)
+  };
   const faviconLink         = document.querySelector("link[rel='icon']");
   const shortcutFaviconLink = document.querySelector("link[rel='shortcut icon']");
   const defaultTitle        = document.title;
