@@ -106,7 +106,7 @@ html, body {
 }
 /* labels beside toggle */
 .card-side::before {
-  content: "Log in";
+  content: "Sign In";
   position: absolute;
   top: -15px;             /* match slider top + extra */
   left: calc(50% - 100px); /* slightly left of slider */
@@ -115,19 +115,21 @@ html, body {
   text-decoration: underline;
 }
 .card-side::after {
-  content: "Sign up";
+  content: "Sign Up";
   position: absolute;
   top: -15px;
   left: calc(50% + 50px);  /* slightly right of slider */
   color: var(--font-color);
-  font-weight: bold;
+  font-weight: normal;
   text-decoration: none;
 }
 .toggle:checked ~ .card-side::before {
   text-decoration: none;
+  font-weight: normal;
 }
 .toggle:checked ~ .card-side::after {
   text-decoration: underline;
+  font-weight: bold;
 }
 
 /* ─────────────────────────────────────────────────────────────────
