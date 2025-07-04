@@ -39,30 +39,53 @@
     <h2>Persuade your teachers and watch the countdown at the home page, live on Thursday 26 June at 3:00 PM</h2>
     <main id="card-view">
       <div id="auth-container">
-        <div class="wrapper">
+        div class="wrapper">
         <div class="card-switch">
-            <label class="switch">
-                <input type="checkbox" class="toggle">
-                <span class="slider"></span>
-                <span class="card-side"></span>
-                <div class="flip-card__inner">
-                    <div class="flip-card__front">
-                        <div class="title">Sign in to RR</div>
-                        <form class="flip-card__form" id="sign-in-form">
-                            <input class="flip-card__input" id="email" name="email" type="email" placeholder="Email" required>
-                            <input class="flip-card__input" id="password" name="password" type="password" placeholder="Password" required>
-                            <div class="auth-buttons">
-                                <button class="flip-card__btn signin-btn" type="button" id="sign-in-btn">Sign In</button>
-                                <button class="flip-card__btn signup-btn" type="button" id="sign-up-btn">Sign Up</button>
-                            </div>
-                            <button class="flip-card__btn text-link" type="button" id="forgot-password-btn">Forgot Password?</button>
-                            <p id="error-message" class="flip-error"></p>
-                        </form>
-                    </div>
-                </div>
-            </label>
+          <label class="switch">
+            <input type="checkbox" class="toggle">
+            <span class="slider"></span>
+            <span class="card-side"></span>
+
+            <div class="flip-card__inner">
+
+              <!-- Front: Sign In -->
+              <div class="flip-card__front">
+                <div class="title">Sign in to RR</div>
+                <form class="flip-card__form" id="sign-in-form">
+                  <input class="flip-card__input" id="email-signin"  name="email"    type="email"    placeholder="Email"    required>
+                  <input class="flip-card__input" id="password-signin" name="password" type="password" placeholder="Password" required>
+
+                  <div class="auth-buttons">
+                    <button class="flip-card__btn" type="button" id="sign-in-btn">Sign In</button>
+                  </div>
+
+                  <button class="flip-card__btn text-link" type="button" id="forgot-password-btn">
+                    Forgot Password?
+                  </button>
+
+                  <p id="error-signin" class="flip-error"></p>
+                </form>
+              </div>
+
+              <!-- Back: Sign Up -->
+              <div class="flip-card__back">
+                <div class="title">Create an RR Account</div>
+                <form class="flip-card__form" id="sign-up-form">
+                  <input class="flip-card__input" id="email-signup"  name="email"    type="email"    placeholder="Email"    required>
+                  <input class="flip-card__input" id="password-signup" name="password" type="password" placeholder="Password" required>
+
+                  <div class="auth-buttons">
+                    <button class="flip-card__btn" type="button" id="sign-up-btn">Sign Up</button>
+                  </div>
+
+                  <p id="error-signup" class="flip-error"></p>
+                </form>
+              </div>
+
+            </div>
+          </label>
         </div>
-    </div>
+      </div>
         <hr style="border: none; border-top: 1px solid #dedede; margin: 20px 0;">
         <h3>Newsletter Signup</h3>
         <p style="color: #dedede;">Sign up for our free newsletter and get updates in your inbox. Find out when and what the next update is, what games are coming soon, new The RR Web links, news and more!</p>
