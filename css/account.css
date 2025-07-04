@@ -20,16 +20,19 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   Flip-Card Container & Toggle Slider
+   Base & Variables
 ───────────────────────────────────────────────────────────────── */
 .wrapper {
-  --input-focus:   #2d8cf0;
-  --font-color:    #323232;
-  --font-color-sub:#666;
-  --bg-color:      #2a2a2a;
-  --main-color:    #5cc93b;
+  --input-focus:    #2d8cf0;
+  --font-color:     #323232;
+  --font-color-sub: #666;
+  --bg-color:       #2a2a2a;
+  --main-color:     #5cc93b;
 }
 
+/* ─────────────────────────────────────────────────────────────────
+   Flip-Card & Toggle Layout
+───────────────────────────────────────────────────────────────── */
 .card-switch {
   display: flex;
   justify-content: center;
@@ -39,8 +42,10 @@
 
 .switch {
   position: relative;
-  width: 300px;
-  height: 350px;
+  width: 50px;   /* small switch width */
+  height: 20px;  /* small switch height */
+  margin-bottom: 20px; /* space from card */
+  display: inline-block;
 }
 
 .toggle {
@@ -49,55 +54,62 @@
   height: 0;
 }
 
-/* Slider background */
+/* Slider track */
 .slider {
-  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
   background-color: #dedede;
   border-radius: 5px;
-  z-index: 5;
+  cursor: pointer;
   transition: 0.3s;
+  z-index: 2;
 }
+
 /* Slider knob */
 .slider:before {
   content: "";
   position: absolute;
-  height: 20px; width: 20px;
+  width: 20px; height: 20px;
   background-color: var(--bg-color);
   border-radius: 5px;
-  bottom: 2px; left: 0;
+  left: 0; bottom: 0;
   transition: 0.3s;
 }
-/* Move knob when checked */
+
+/* Move knob on checked */
 .toggle:checked + .slider:before {
   transform: translateX(30px);
 }
 
-/* “Log in” / “Sign up” labels */
+/* “Log in” / “Sign up” labels on either side */
 .card-side::before {
   position: absolute;
   content: 'Log in';
-  left: 0; top: -30px;
+  left: -60px;
+  top: 0;
   color: var(--font-color);
   font-weight: 600;
 }
 .card-side::after {
   position: absolute;
   content: 'Sign up';
-  right: 0; top: -30px;
+  right: -60px;
+  top: 0;
   color: var(--font-color);
   font-weight: 600;
 }
 
-/* Inner card that flips */
+/* Card inner container */
 .flip-card__inner {
   width: 300px; height: 350px;
   position: relative;
   perspective: 1000px;
   transition: transform 0.8s;
   transform-style: preserve-3d;
-  margin: auto;
+  margin-top: 10px;
 }
-/* Flip when toggle checked */
+
+/* Flip effect */
 .toggle:checked ~ .flip-card__inner {
   transform: rotateY(180deg);
 }
@@ -108,34 +120,35 @@
   position: absolute;
   width: 100%; height: 100%;
   backface-visibility: hidden;
-  border-radius: 5px;
+  border-radius: 8px;
   border: 2px solid var(--main-color);
-  box-shadow: 4px 4px var(--main-color);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   background: var(--bg-color);
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  gap: 20px;
-  z-index: 1;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
-/* Back side rotated */
+/* Back rotated */
 .flip-card__back {
   transform: rotateY(180deg);
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   Form Fields, Buttons & Errors
+   Inputs, Buttons & Errors
 ───────────────────────────────────────────────────────────────── */
 .title {
-  font-size: 25px;
-  font-weight: 900;
+  font-size: 24px;
+  font-weight: 700;
   color: var(--main-color);
-  margin: 0;
+  margin-bottom: 20px;
+  text-align: center;
 }
 
 .flip-card__form {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -143,7 +156,7 @@
 }
 
 .flip-card__input {
-  width: 250px; height: 40px;
+  width: 80%;
   padding: 10px;
   font-size: 16px;
   color: #dedede;
@@ -165,15 +178,12 @@
 .auth-buttons {
   display: flex;
   gap: 10px;
-  justify-content: center;
-  width: 100%;
-  padding: 0 15px;
-  box-sizing: border-box;
+  margin-top: 10px;
 }
 
-/* Primary action buttons */
 .flip-card__btn {
-  width: 120px; height: 40px;
+  flex: 1;
+  padding: 10px;
   border: none;
   border-radius: 5px;
   background-color: #dedede;
@@ -181,55 +191,51 @@
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s;
 }
 
 .flip-card__btn:hover {
   background-color: #4193c9;
-  color: #ffffff;
+  color: #fff;
 }
 
+.button-confirm:active,
 .flip-card__btn:active {
-  background-color: var(--bg-color);
-  color: #dedede;
+  transform: translateY(2px);
 }
 
-/* “Forgot Password?” link */
 button.text-link {
   background: none;
   border: none;
   color: #4193c9;
   font-size: 14px;
   cursor: pointer;
-  text-decoration: none;
+  margin-top: 8px;
 }
 
 button.text-link:hover {
   text-decoration: underline;
 }
 
-/* Error messages */
 .flip-error,
-#error-signin,
-#error-signup {
+#error-message {
   color: #ff4d4d;
-  font-weight: bold;
   font-size: 14px;
   min-height: 20px;
   text-align: center;
-  margin: 0;
+  margin-top: 6px;
+  word-wrap: break-word;
 }
 
 /* Responsive tweaks */
-@media (max-width: 320px) {
+@media (max-width: 360px) {
   .flip-card__inner {
-    width: 260px; height: 300px;
+    width: 260px; height: 320px;
   }
   .flip-card__input {
-    width: 220px;
+    width: 90%;
   }
   .flip-card__btn {
-    width: 100px;
     font-size: 14px;
   }
 }
