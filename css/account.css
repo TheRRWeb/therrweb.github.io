@@ -108,7 +108,7 @@ html, body {
 .card-side::before {
   content: "Log in";
   position: absolute;
-  top: -100px;             /* match slider top + extra */
+  top: -15px;             /* match slider top + extra */
   left: calc(50% - 100px); /* slightly left of slider */
   color: var(--font-color);
   font-weight: bold;
@@ -117,7 +117,7 @@ html, body {
 .card-side::after {
   content: "Sign up";
   position: absolute;
-  top: -100px;
+  top: -15px;
   left: calc(50% + 50px);  /* slightly right of slider */
   color: var(--font-color);
   font-weight: bold;
