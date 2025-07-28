@@ -3,10 +3,12 @@
   max-width: 600px;
   margin: 20px auto;
   background-color: #2a2a2a;
-  border-radius: 8px;
   padding: 20px;
   color: #dedede;
-  box-shadow: 0 0 15px rgba(92, 201, 59, 0.5);
+  border-radius: 5px;
+  padding: 20px;
+  border: 2px solid rgba(92, 201, 59, 1);
+  box-shadow: 4px 4px rgba(92, 201, 59, 1);
 }
 
 #card-view h1 {
