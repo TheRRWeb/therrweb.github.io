@@ -20,6 +20,7 @@ body {
 
 .game-thumbnail img {
   width: 200px;
+  height: 200px;
   cursor: pointer;
   border-radius: 5px;
   border: 2px solid rgba(92, 201, 59, 1);
