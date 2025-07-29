@@ -27,11 +27,13 @@ document.addEventListener("DOMContentLoaded", () => {
       .forEach(el => el.style.display = isMember ? "none" : "block");
   }
   const userMembershipSpan = document.getElementById("user-membership");
+  const userFullNameSpan   = document.getElementById("user-fullname");
 
   firebase.auth().onAuthStateChanged(async user => {
     if (!user) {
       applyMembershipView(false);
       if (userMembershipSpan) userMembershipSpan.textContent = "";
+      if (userFullNameSpan)   userFullNameSpan.textContent   = "";
       return;
     }
     let snap = await db.collection("membership").doc(user.uid).get().catch(() => null);
@@ -44,6 +46,10 @@ document.addEventListener("DOMContentLoaded", () => {
       userMembershipSpan.textContent = currentIsMember
         ? "You are a Membership User"
         : "";
+    }
+   // — NEW: show full name in HTML
+    if (userFullNameSpan) {
+      userFullNameSpan.textContent = user.displayName || "";
     }
 
     const signedOutView = document.getElementById("auth-container");
