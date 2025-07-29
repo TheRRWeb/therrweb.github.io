@@ -70,6 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const passwordSigninInput = document.querySelector(".password-signin");
   const emailSignupInput    = document.querySelector(".email-signup");
   const passwordSignupInput = document.querySelector(".password-signup");
+  const nameSignupInput    = document.querySelector(".name-signup");
 
   const signInBtn           = document.querySelector(".sign-in-btn");
   const signUpBtn           = document.querySelector(".sign-up-btn");
@@ -89,6 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (emailSigninInput && signInBtn && signUpBtn) {
     // Sign In
     signInBtn.addEventListener("click", () => {
+      const fullName = nameSignupInput.value.trim();
       const email = emailSigninInput.value.trim();
       const pwd   = passwordSigninInput.value;
       firebase.auth().signInWithEmailAndPassword(email, pwd)
@@ -104,12 +106,25 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // Sign Up
+        // Sign Up
     signUpBtn.addEventListener("click", () => {
-      const email = emailSignupInput.value.trim();
-      const pwd   = passwordSignupInput.value;
+      const fullName = document.querySelector(".name-signup").value.trim();
+      const email    = emailSignupInput.value.trim();
+      const pwd      = passwordSignupInput.value;
       firebase.auth().createUserWithEmailAndPassword(email, pwd)
-        .then(() => { alert("Account created!"); location.reload(); })
+        .then((cred) => {
+          // 1) set the Auth displayName
+          return cred.user.updateProfile({ displayName: fullName })
+            .then(() => {
+              // 2) save fullName into your userdata doc
+              return db.collection("userdata").doc(cred.user.uid)
+                .set({ fullName: fullName }, { merge: true });
+            });
+        })
+        .then(() => { 
+          alert("Account created!"); 
+          location.reload(); 
+        })
         .catch(err => {
           if (err.code === "auth/email-already-in-use") {
             errorSignupMsg.textContent = "Email already used.";
