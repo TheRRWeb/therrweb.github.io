@@ -31,7 +31,7 @@ body {
   transform: scale(1.1);
 }
 
-.game-thumbnail img {
+.game-thumbnail img:hover {
   border: 2px solid rgba(65, 147, 201, 1);
   box-shadow: 4px 4px rgba(65, 147, 201, 1);
 }
