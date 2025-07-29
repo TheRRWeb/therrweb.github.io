@@ -156,8 +156,6 @@ html, body {
   background-color: var(--bg-color);
   border-radius: 5px;
   padding: 20px;
-  border: 2px solid var(--main-color);
-  box-shadow: 4px 4px var(--main-color);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -165,8 +163,16 @@ html, body {
   backface-visibility: hidden;
   box-sizing: border-box;
 }
+
+.flip-card__front {
+  border: 2px solid var(--main-color);
+  box-shadow: 4px 4px var(--main-color);
+}
+
 .flip-card__back {
   transform: rotateY(180deg);
+  border: 2px solid var(--input-focus);
+  box-shadow: 4px 4px var(--input-focus);
 }
 
 /* ─────────────────────────────────────────────────────────────────
