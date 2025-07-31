@@ -77,6 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const emailSignupInput    = document.querySelector(".email-signup");
   const passwordSignupInput = document.querySelector(".password-signup");
   const nameSignupInput    = document.querySelector(".name-signup");
+  const newsletterCheckbox = document.querySelector(".newsletter-checkbox");
 
   const signInBtn           = document.querySelector(".sign-in-btn");
   const signUpBtn           = document.querySelector(".sign-up-btn");
@@ -113,33 +114,47 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
         // Sign Up
+        // Sign Up
     signUpBtn.addEventListener("click", () => {
-      const fullName = document.querySelector(".name-signup").value.trim();
-      const email    = emailSignupInput.value.trim();
-      const pwd      = passwordSignupInput.value;
-      firebase.auth().createUserWithEmailAndPassword(email, pwd)
-        .then((cred) => {
-          // 1) set the Auth displayName
-          return cred.user.updateProfile({ displayName: fullName })
+        const fullName = nameSignupInput.value.trim();
+        const email    = emailSignupInput.value.trim();
+        const pwd      = passwordSignupInput.value;
+        firebase.auth().createUserWithEmailAndPassword(email, pwd)
+            .then((cred) => {
+                // 1) set the Auth displayName
+                return cred.user.updateProfile({ displayName: fullName })
+                    .then(() => {
+                        // 2) save fullName into your userdata doc
+                        return db.collection("userdata").doc(cred.user.uid)
+                            .set({ fullName: fullName }, { merge: true });
+                    });
+            })
             .then(() => {
-              // 2) save fullName into your userdata doc
-              return db.collection("userdata").doc(cred.user.uid)
-                .set({ fullName: fullName }, { merge: true });
+                // → KIT SUBSCRIBE: if checked, call ConvertKit API
+                if (newsletterCheckbox && newsletterCheckbox.checked) {
+                    fetch("https://api.convertkit.com/v3/forms/8364111/subscribe", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            api_key:    "3qTsZK3BKMcQnNzS4xGh5g",    // ← your ConvertKit API key here
+                            email:      email,
+                            first_name: fullName
+                        })
+                    })
+                    .catch(err => console.error("Kit subscribe failed:", err));
+                }
+                alert("Account created!");
+                location.reload();
+            })
+            .catch(err => {
+                if (err.code === "auth/email-already-in-use") {
+                    errorSignupMsg.textContent = "Email already used.";
+                } else if (err.message.toLowerCase().includes("network error")) {
+                    errorSignupMsg.textContent = "There is a network issue, try again later.";
+                } else {
+                    errorSignupMsg.textContent = err.message;
+                }
             });
-        })
-        .then(() => { 
-          alert("Account created!"); 
-          location.reload(); 
-        })
-        .catch(err => {
-          if (err.code === "auth/email-already-in-use") {
-            errorSignupMsg.textContent = "Email already used.";
-          } else if (err.message.toLowerCase().includes("network error")) {
-            errorSignupMsg.textContent = "There is a network issue, try again later.";
-          } else {
-            errorSignupMsg.textContent = err.message;
-          }
-        });
     });
 
     // Forgot Password
