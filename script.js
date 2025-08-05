@@ -140,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
-                            "Authorization": "5046bd3f3ba5d4269e6bed3d46cf48b7-us10"  // ← put your Mailchimp API key here
+                            "Authorization": "apikey 5046bd3f3ba5d4269e6bed3d46cf48b7-us10"  // ← put your Mailchimp API key here
                         },
                         body: JSON.stringify({
                             email_address: email,
