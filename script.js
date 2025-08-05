@@ -130,18 +130,29 @@ document.addEventListener("DOMContentLoaded", () => {
                     });
             })
             .then(() => {
-                // → KIT SUBSCRIBE: if checked, call ConvertKit API
+                // → MAILCHIMP SUBSCRIBE: if checked, call Mailchimp API
                 if (newsletterCheckbox && newsletterCheckbox.checked) {
-                    fetch("https://api.convertkit.com/v3/forms/8364111/subscribe", {
+                    // split fullName into first and last
+                    const nameParts = fullName.split(/\s+/);
+                    const firstName = nameParts[0];
+                    const lastName  = nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
+                    fetch("https://us10.api.mailchimp.com/3.0/lists/10bb880c3c/members", {
                         method: "POST",
-                        headers: { "Content-Type": "application/json" },
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": "5046bd3f3ba5d4269e6bed3d46cf48b7-us10"  // ← put your Mailchimp API key here
+                        },
                         body: JSON.stringify({
-                            api_key:    "3qTsZK3BKMcQnNzS4xGh5g",    // ← your ConvertKit API key here
-                            email:      email,
-                            first_name: fullName
+                            email_address: email,
+                            status: "subscribed",
+                            merge_fields: {
+                                FNAME: firstName,
+                                LNAME: lastName,
+                                DOB: ""
+                            }
                         })
                     })
-                    .catch(err => console.error("Kit subscribe failed:", err));
+                    .catch(err => console.error("Mailchimp subscribe failed:", err));
                 }
                 alert("Account created!");
                 location.reload();
