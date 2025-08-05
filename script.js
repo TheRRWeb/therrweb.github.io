@@ -114,48 +114,33 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
         // Sign Up
-        // Sign Up
-    signUpBtn.addEventListener("click", () => {
+        signUpBtn.addEventListener("click", () => {
         const fullName = nameSignupInput.value.trim();
         const email    = emailSignupInput.value.trim();
         const pwd      = passwordSignupInput.value;
         firebase.auth().createUserWithEmailAndPassword(email, pwd)
             .then((cred) => {
-                // 1) set the Auth displayName
                 return cred.user.updateProfile({ displayName: fullName })
                     .then(() => {
-                        // 2) save fullName into your userdata doc
                         return db.collection("userdata").doc(cred.user.uid)
                             .set({ fullName: fullName }, { merge: true });
                     });
             })
             .then(() => {
-                // → MAILCHIMP SUBSCRIBE: if checked, call Mailchimp API
+                // → NETLIFY PROXY: if checked, call our subscribe function
                 if (newsletterCheckbox && newsletterCheckbox.checked) {
-                    // split fullName into first and last
-                    const nameParts = fullName.split(/\s+/);
-                    const firstName = nameParts[0];
-                    const lastName  = nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
-                    fetch("https://us10.api.mailchimp.com/3.0/lists/10bb880c3c/members", {
+                    fetch("/.netlify/functions/subscribe", {
                         method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": "apikey 5046bd3f3ba5d4269e6bed3d46cf48b7-us10"  // ← put your Mailchimp API key here
-                        },
-                        body: JSON.stringify({
-                            email_address: email,
-                            status: "subscribed",
-                            merge_fields: {
-                                FNAME: firstName,
-                                LNAME: lastName,
-                                DOB: ""
-                            }
-                        })
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email, fullName })
                     })
-                    .catch(err => console.error("Mailchimp subscribe failed:", err));
+                    .then(res => {
+                        if (!res.ok) console.error("Subscribe proxy failed:", res.status);
+                    })
+                    .catch(err => console.error("Proxy error:", err));
                 }
                 alert("Account created!");
-                //location.reload();
+                location.reload();
             })
             .catch(err => {
                 if (err.code === "auth/email-already-in-use") {
