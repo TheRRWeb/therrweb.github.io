@@ -140,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     .catch(err => console.error("Proxy error:", err));
                 }
                 alert("Account created!");
-                location.reload();
+                //location.reload();
             })
             .catch(err => {
                 if (err.code === "auth/email-already-in-use") {
