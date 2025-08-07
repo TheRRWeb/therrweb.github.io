@@ -28,7 +28,19 @@ exports.handler = async (event) => {
             body: JSON.stringify({
                 email_address: email,
                 status:        "subscribed",
-                merge_fields:  { FNAME, LNAME, DOB: "" }
+                merge_fields:  {
+                  FNAME,
+                  LNAME,
+                  DOB: "",
+                  ADDRESS: {
+                    addr1:   "",
+                    addr2:   "",
+                    city:    "",
+                    state:   "",
+                    zip:     "",
+                    country: ""
+                  }
+                }
             })
         });
 
