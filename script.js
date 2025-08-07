@@ -16,6 +16,27 @@ document.addEventListener("DOMContentLoaded", () => {
     measurementId: "G-WC9WXR0CY5"
   };
   firebase.initializeApp(firebaseConfig);
+    // 1.a) Force LOCAL persistence and protect all pages except public ones
+  firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+    .catch(console.error);
+
+  // Define pages that DO NOT require auth:
+  const publicPages = [
+    "/",            // if your index is served at root
+    "/index.html",
+    "/login.html"
+  ];
+
+  const currentPath = window.location.pathname;
+  // If this page is NOT in publicPages, enforce sign-in
+  if (!publicPages.includes(currentPath)) {
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) {
+        // Not signed in → redirect to login page
+        window.location.replace("/login.html");
+      }
+    });
+  }
   const db = firebase.firestore();
 
   // 2) Membership view toggles (memshow/memhide) — unchanged from before
