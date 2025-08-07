@@ -113,34 +113,40 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-        // Sign Up
-        signUpBtn.addEventListener("click", () => {
+    signUpBtn.addEventListener("click", () => {
         const fullName = nameSignupInput.value.trim();
         const email    = emailSignupInput.value.trim();
         const pwd      = passwordSignupInput.value;
+
         firebase.auth().createUserWithEmailAndPassword(email, pwd)
             .then((cred) => {
+                // 1) set the Auth displayName
                 return cred.user.updateProfile({ displayName: fullName })
                     .then(() => {
+                        // 2) save fullName into your userdata doc
                         return db.collection("userdata").doc(cred.user.uid)
                             .set({ fullName: fullName }, { merge: true });
                     });
             })
-            .then(() => {
+            .then(async () => {
                 // → NETLIFY PROXY: if checked, call our subscribe function
                 if (newsletterCheckbox && newsletterCheckbox.checked) {
-                    fetch("/.netlify/functions/subscribe", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ email, fullName })
-                    })
-                    .then(res => {
-                        if (!res.ok) console.error("Subscribe proxy failed:", res.status);
-                    })
-                    .catch(err => console.error("Proxy error:", err));
+                    try {
+                        const res = await fetch("/.netlify/functions/subscribe", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ email, fullName })
+                        });
+                        if (!res.ok) {
+                            const errorText = await res.text();
+                            console.error("Subscribe proxy failed:", res.status, errorText);
+                        }
+                    } catch (err) {
+                        console.error("Proxy error:", err);
+                    }
                 }
                 alert("Account created!");
-                //location.reload();
+                location.reload();
             })
             .catch(err => {
                 if (err.code === "auth/email-already-in-use") {
