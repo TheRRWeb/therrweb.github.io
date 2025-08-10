@@ -123,6 +123,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const email = emailSigninInput.value.trim();
       const pwd   = passwordSigninInput.value;
       firebase.auth().signInWithEmailAndPassword(email, pwd)
+        .then(() => {
+          window.location.href = "/";
+        })
         .catch(err => {
           if (["auth/invalid-email","auth/user-not-found","auth/wrong-password"]
               .includes(err.code)) {
@@ -135,6 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    // Sign Up
     signUpBtn.addEventListener("click", () => {
         const fullName = nameSignupInput.value.trim();
         const email    = emailSignupInput.value.trim();
@@ -168,7 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 }
                 alert("Account created!");
-                location.reload();
+                window.location.href = "/";
             })
             .catch(err => {
                 if (err.code === "auth/email-already-in-use") {
@@ -180,7 +184,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
     });
-
     // Forgot Password
     forgotPasswordBtn.addEventListener("click", () => {
       const email = emailSigninInput.value.trim();
