@@ -23,6 +23,9 @@ html, body {
   font-family: 'Trebuchet MS', sans-serif;
   color: var(--font-color);
   align-items: center;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 .wrapper {
   position: relative;
