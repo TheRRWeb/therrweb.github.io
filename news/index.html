@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en-AE">
+  <head>
+    <title>The RR News</title> <!--Title-->
+    <link rel="stylesheet" type="text/css" href="/css/style.css">
+    <link rel="stylesheet" type="text/css" href="/css/login.css"> <!--CSS Link-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!--Font Awesome-->
+    <link id="favicon" rel="icon" type="image/x-icon" href="/logos/RRlogo12.png"> <!--Logo-->
+    <link rel="shortcut icon" href="/logos/RRlogo12.png" type="image/x-icon"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="R, RR, Games, Fun, Web">
+    <meta name="description" content="The RR Web, home to the greatest fun and games available anywhere">
+    <meta name="author" content="Rutham Renish">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="The RR News">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#2a2a2a">
+    <link rel="apple-touch-icon" href="/logos/RRlogo11.jpg">
+    <link rel="apple-touch-startup-image" href="/logos/RRlogo12.png">
+    <meta name="theme-color" content="#2a2a2a">
+  </head>
+  <body>
+    <header>
+      <div class="navbar" id="Navbar">
+        <a href="/" class="homeimg"><img src="/logos/RRlogo12.png" alt="logo"></a>
+        <a href="/games/">Games</a>
+        <a href="https://therrweb.beehiiv.com/">News</a>
+        <a href="/account/">Account</a>
+        <a data-umami-event="Merch" href="/RRMerchKit.zip" download>Merch</a>
+        <a href="/">Home</a>
+        <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+          <i class="fa fa-bars"></i>
+        </a>
+      </div>
+    </header>
+    <h1>The RR Web</h1>
+    <hr>
+    <h2>Our news are powered by Intuit Mailchimp. Click the logo below to signup and get $30 in bill credits</h2>
+    <a href="http://eepurl.com/jkv6MU"><img src="https://cdn-images.mailchimp.com/monkey_rewards/intuit-mc-rewards-2.png"></a>
+    <style type="text/css">
+  .news-gallery {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    max-width: 90%;
+    margin: 0 auto;
+    padding: 8px 0;
+  }
+
+  .news-card {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    box-sizing: border-box;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 2px solid rgba(92,201,59,1);
+    box-shadow: 4px 4px rgba(92,201,59,1); /* fixed static shadow position */
+    cursor: pointer;
+    transition: border-color 160ms ease, box-shadow 160ms ease;
+    background-color: #111;
+  }
+
+  /* Hover: change only the color of border and shadow (no movement) */
+  .news-card:hover {
+    border-color: #4193c9;
+    box-shadow: 4px 4px #4193c9;
+  }
+
+  /* background covering image */
+  .news-card__bg {
+    position: absolute;
+    inset: 0;
+    background-image: url("https://therrweb.netlify.app/logos/RRlogo11.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: brightness(0.25);
+  }
+
+  /* content overlay (we use absolute positioning for title/date) */
+  .news-card__content {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  /* Title: bigger start, Trebuchet MS, bold, left padded */
+  .news-card .news-title {
+    position: absolute;
+    top: 14px;      /* padding from top */
+    left: 14px;     /* padding left */
+    right: 14px;    /* padding right */
+    margin: 0;
+    color: #dedede;
+    font-family: "Trebuchet MS", "Helvetica Neue", Arial, sans-serif;
+    font-weight: 800;
+    line-height: 1.02;
+    text-align: left;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* up to 3 lines */
+    -webkit-box-orient: vertical;
+    word-break: break-word;
+    font-size: 45px; /* STARTING SIZE (will be reduced by JS if needed) */
+  }
+
+  /* Date: visible above border, bottom-left, padded */
+  .news-card .news-date {
+    position: absolute;
+    left: 14px;
+    bottom: 16px;   /* lifted above the border */
+    margin: 0;
+    color: #dedede;
+    font-family: "Trebuchet MS", "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
+    z-index: 3;
+    line-height: 1;
+  }
+
+  /* Responsive: on tiny screens stack full width */
+  @media (max-width: 420px) {
+    .news-card { width: calc(100% - 40px); height: 200px; }
+    .news-gallery { gap: 12px; }
+  }
+</style>
+
+<div id="news-archive-root">
+  <div id="news-archive-placeholder" class="display_archive news-gallery">
+    <!-- original Mailchimp code stays so it injects content -->
+    <style type="text/css">
+      .display_archive {font-family: arial,verdana; font-size: 12px;}
+      .campaign {line-height: 125%; margin: 5px;}
+    </style>
+    <script language="javascript" src="https://app.us10.list-manage.com/generate-js/?u=97f8256407b1f890ab4064c4b&show=10&fid=25688" type="text/javascript"></script>
+  </div>
+</div>
+
+<script>
+(function () {
+  function escapeHTML(s) {
+    return String(s || "").replace(/[&<>"']/g, function (m) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m];
+    });
+  }
+
+  // Adjust title size so it never overlaps date area.
+  function fitTitle(card, titleEl, dateEl) {
+    if (!card || !titleEl || !dateEl) return;
+    const minSize = 12;
+    const step = 1; // reduce 1px at a time
+    // start from current computed size (should be 24px)
+    let size = parseFloat(window.getComputedStyle(titleEl).fontSize) || 24;
+
+    // compute available height for title:
+    // available = distance from title top to (date top - safetyGap)
+    const cardHeight = card.clientHeight;
+    const titleTop = 14; // matches CSS top padding
+    const dateHeight = dateEl.offsetHeight || 16;
+    const safetyGap = 8; // px gap between title bottom and date top
+    const available = cardHeight - titleTop - dateHeight - safetyGap - 4; // small extra buffer
+
+    // reduce until fits
+    titleEl.style.fontSize = size + "px";
+    let titleHeight = titleEl.scrollHeight;
+    let attempts = 0;
+    while ((titleHeight > available) && attempts < 30) {
+      size = Math.max(minSize, size - step);
+      titleEl.style.fontSize = size + "px";
+      titleHeight = titleEl.scrollHeight;
+      if (size === minSize) break;
+      attempts++;
+    }
+  }
+
+  function makeCard({ title, date, href }) {
+    const card = document.createElement("div");
+    card.className = "news-card";
+
+    const wrapper = document.createElement(href ? "a" : "div");
+    if (href) {
+      wrapper.href = href;
+      wrapper.target = "_blank";
+      wrapper.rel = "noopener noreferrer";
+      wrapper.style.display = "block";
+      wrapper.style.width = "100%";
+      wrapper.style.height = "100%";
+      wrapper.style.textDecoration = "none";
+      wrapper.style.color = "inherit";
+    } else {
+      wrapper.style.display = "block";
+      wrapper.style.width = "100%";
+      wrapper.style.height = "100%";
+    }
+
+    const bg = document.createElement("div");
+    bg.className = "news-card__bg";
+    wrapper.appendChild(bg);
+
+    const content = document.createElement("div");
+    content.className = "news-card__content";
+
+    const t = document.createElement("div");
+    t.className = "news-title";
+    t.innerHTML = escapeHTML(title || "");
+
+    const d = document.createElement("div");
+    d.className = "news-date";
+    d.textContent = date || "";
+
+    content.appendChild(t);
+    content.appendChild(d);
+    wrapper.appendChild(content);
+    card.appendChild(wrapper);
+
+    return { card, titleEl: t, dateEl: d };
+  }
+
+  function transformArchive(container) {
+    if (!container) return;
+    const campaigns = Array.from(container.querySelectorAll(".campaign"));
+    if (!campaigns.length) return;
+
+    const gallery = document.createElement("div");
+    gallery.className = "news-gallery";
+
+    campaigns.forEach(c => {
+      if (c.dataset.mcProcessed === "1") return;
+      c.dataset.mcProcessed = "1";
+
+      let title = "";
+      let href = "";
+      let date = "";
+
+      const a = c.querySelector("a");
+      if (a) {
+        title = a.textContent.trim();
+        href = a.href || "";
+        const clone = c.cloneNode(true);
+        clone.querySelectorAll("a").forEach(n => n.remove());
+        const leftover = (clone.textContent || "").trim();
+        const parts = leftover.split(/- (.+)/);
+        if (parts.length >= 2) {
+          date = parts[0].trim();
+          if (!title) title = parts[1].trim();
+        } else {
+          date = leftover.split("\n")[0].trim();
+        }
+      } else {
+        const raw = (c.textContent || "").trim();
+        const parts = raw.split(/ - (.+)/);
+        if (parts.length >= 3) {
+          date = parts[0].trim();
+          title = parts[1].trim();
+        } else {
+          title = raw;
+        }
+      }
+
+      const built = makeCard({ title, date, href });
+      gallery.appendChild(built.card);
+
+      // After insertion, adjust the title size to avoid overlap with date
+      setTimeout(() => {
+        try {
+          fitTitle(built.card, built.titleEl, built.dateEl);
+        } catch (e) { /* ignore */ }
+      }, 40);
+    });
+
+    // Replace placeholder content with our gallery
+    container.innerHTML = "";
+    container.appendChild(gallery);
+  }
+
+  const placeholder = document.getElementById("news-archive-placeholder");
+  if (!placeholder) return;
+
+  // Attempt transform after a short delay
+  setTimeout(() => transformArchive(placeholder), 350);
+
+  // Observe Mailchimp injection
+  const obs = new MutationObserver((mutations, observer) => {
+    if (placeholder.querySelectorAll(".campaign").length) {
+      transformArchive(placeholder);
+      observer.disconnect();
+    }
+  });
+  obs.observe(placeholder, { childList: true, subtree: true });
+
+  // Safety retry for slow networks
+  setTimeout(() => transformArchive(placeholder), 1500);
+})();
+</script>
+
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class="footer-col">
+            <h3>Site Map</h3>
+            <ul>
+              <li>
+                <a href="/">Home</a>
+              </li>
+              <li>
+                <a href="/account/">Account</a>
+              </li>
+              <li>
+                <a href="https://therrweb.beehiiv.com/">News</a>
+              </li>
+              <li>
+                <a href="/games/">Games</a>
+              </li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h3>Miscellaneous</h3>
+            <ul>
+              <li>
+                <a data-umami-event="Merch" href="/RRMerchKit.zip" download>Merch</a>
+              </li>
+              <li>
+                <a data-umami-event="Discord" href="https://discord.gg/u3Hs33Dq8b">Discord</a>
+              </li>
+              <li>
+                <a data-umami-event="Portal" href="https://forms.office.com/Pages/ResponsePage.aspx?id=8LIk8ugClkGNohLHcIklNHf2zSA9E61IoosX7n_qv4hUMFZJM0NKU0NIR0kzWlNPM1JXUk1JMFY0Vy4u">Portal</a>
+              </li>
+              <li>
+                <a href="/LICENSE">License</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="container">
+        <h5>This website is protected by the BSD 3-Clause License. In no event shall the copyright holder or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption). <a href="/LICENSE">Click me to learn more.</a></h5>
+      </div>
+    </footer>
+    <script defer src="https://cloud.umami.is/script.js" data-website-id="f493113c-eb84-4958-809a-c84a5c898bf5"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script type="text/javascript" src="/script.js"></script>
+  </body>
+</html>
