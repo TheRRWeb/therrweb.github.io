@@ -59,6 +59,22 @@
     </label>
   </div>
 </div>
+<div id="email-verify" style="display:none; max-width:540px; margin: 18px auto;">
+  <div class="ev-box">
+    <h1 id="ev-title">Verification email sent</h1>
+    <h2 id="ev-sub">Click the verification link in the email to continue.</h2>
+
+    <p id="ev-note" style="margin-top:8px; color:#dedede; font-family:Arial, Verdana, sans-serif;">
+      We sent a verification to <span id="ev-email" style="font-weight:700;"></span>.
+    </p>
+
+    <div style="margin-top:18px; display:flex; gap:10px; align-items:center;">
+      <button id="ev-resend" class="ev-btn" disabled>Resend (60)</button>
+      <button id="ev-cancel" class="ev-btn ev-btn--muted">Cancel / Sign out</button>
+      <span id="ev-status" style="margin-left:8px; color:#dedede; font-size:13px;"></span>
+    </div>
+  </div>
+</div>
     <script defer src="https://cloud.umami.is/script.js" data-website-id="f493113c-eb84-4958-809a-c84a5c898bf5"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
