@@ -190,64 +190,175 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // Sign Up
-    signUpBtn.addEventListener("click", () => {
-        const fullName = nameSignupInput.value.trim();
-        const email    = emailSignupInput.value.trim();
-        const pwd      = passwordSignupInput.value;
+    // --- SIGN UP with email verification (replace existing signUpBtn handler) ---
+signUpBtn.addEventListener("click", async () => {
+  const fullName = nameSignupInput.value.trim();
+  const email    = emailSignupInput.value.trim();
+  const pwd      = passwordSignupInput.value;
 
-        firebase.auth().createUserWithEmailAndPassword(email, pwd)
-            .then((cred) => {
-                // 1) set the Auth displayName
-                return cred.user.updateProfile({ displayName: fullName })
-                    .then(() => {
-                        // 2) save fullName into your userdata doc
-                        return db.collection("userdata").doc(cred.user.uid)
-                            .set({ fullName: fullName }, { merge: true });
-                    });
-            })
-            .then(async () => {
-                // → NETLIFY PROXY: if checked, call our subscribe function
-                if (newsletterCheckbox && newsletterCheckbox.checked) {
-                    try {
-                        const res = await fetch("/.netlify/functions/subscribe", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ email, fullName })
-                        });
-                        if (!res.ok) {
-                            const errorText = await res.text();
-                            console.error("Subscribe proxy failed:", res.status, errorText);
-                        }
-                    } catch (err) {
-                        console.error("Proxy error:", err);
-                    }
-                }
+  // simple client validation
+  if (!fullName || !email || !pwd) {
+    errorSignupMsg.textContent = "Enter name, email and password.";
+    return;
+  }
+  errorSignupMsg.textContent = "";
 
-                // After signup, redirect back if redirect param exists on the signup page
-                const params = new URLSearchParams(window.location.search);
-                const redirect = params.get("redirect");
-                if (redirect) {
-                  try {
-                    const target = decodeURIComponent(redirect);
-                    window.location.replace(target);
-                  } catch (e) {
-                    window.location.href = "/";
-                  }
-                } else {
-                  window.location.href = "/";
-                }
-            })
-            .catch(err => {
-                if (err.code === "auth/email-already-in-use") {
-                    errorSignupMsg.textContent = "Email already used.";
-                } else if (err.message.toLowerCase().includes("network error")) {
-                    errorSignupMsg.textContent = "There is a network issue, try again later.";
-                } else {
-                    errorSignupMsg.textContent = err.message;
-                }
-            });
-    });
+  try {
+    // create user (this also signs them in)
+    const cred = await firebase.auth().createUserWithEmailAndPassword(email, pwd);
+
+    // set displayName and save in userdata doc
+    await cred.user.updateProfile({ displayName: fullName });
+    await db.collection("userdata").doc(cred.user.uid)
+      .set({ fullName: fullName }, { merge: true });
+
+    // optional: newsletter signup proxy (keeps your existing Netlify Mailchimp proxy)
+    if (newsletterCheckbox && newsletterCheckbox.checked) {
+      try {
+        const res = await fetch("/.netlify/functions/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, fullName })
+        });
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error("Subscribe proxy failed:", res.status, errorText);
+        }
+      } catch (err) {
+        console.error("Proxy error:", err);
+      }
+    }
+
+    // send verification email
+    // optionally pass an action URL (firebase will use default if omitted)
+    await cred.user.sendEmailVerification();
+
+    // show the Email-Verify UI, hide the wrapper
+    const wrapper = document.querySelector(".wrapper");
+    if (wrapper) wrapper.style.display = "none";
+    const ev = document.getElementById("email-verify");
+    if (ev) ev.style.display = "block";
+
+    // populate displayed email
+    const evEmail = document.getElementById("ev-email");
+    if (evEmail) evEmail.textContent = email;
+
+    const resendBtn = document.getElementById("ev-resend");
+    const cancelBtn = document.getElementById("ev-cancel");
+    const evStatus  = document.getElementById("ev-status");
+    if (evStatus) evStatus.textContent = "Verification email sent.";
+
+    // disable resend for N seconds
+    let cooldown = 60; // seconds
+    let countdown = cooldown;
+    if (resendBtn) {
+      resendBtn.disabled = true;
+      resendBtn.textContent = `Resend (${countdown})`;
+    }
+
+    // countdown interval
+    const countdownTimer = setInterval(() => {
+      countdown--;
+      if (resendBtn) resendBtn.textContent = `Resend (${countdown})`;
+      if (countdown <= 0) {
+        clearInterval(countdownTimer);
+        if (resendBtn) {
+          resendBtn.disabled = false;
+          resendBtn.textContent = `Resend`;
+        }
+      }
+    }, 1000);
+
+    // resend handler
+    const onResend = async () => {
+      try {
+        const user = firebase.auth().currentUser;
+        if (!user) throw new Error("No signed-in user.");
+        await user.sendEmailVerification();
+        if (evStatus) evStatus.textContent = "Verification email resent.";
+        // restart cooldown
+        countdown = cooldown;
+        if (resendBtn) {
+          resendBtn.disabled = true;
+          resendBtn.textContent = `Resend (${countdown})`;
+        }
+        // restart interval
+        const t = setInterval(() => {
+          countdown--;
+          if (resendBtn) resendBtn.textContent = `Resend (${countdown})`;
+          if (countdown <= 0) {
+            clearInterval(t);
+            if (resendBtn) { resendBtn.disabled = false; resendBtn.textContent = `Resend`; }
+          }
+        }, 1000);
+      } catch (e) {
+        console.error("Resend failed:", e);
+        if (evStatus) evStatus.textContent = "Resend failed — try again later.";
+      }
+    };
+
+    if (resendBtn) {
+      resendBtn.removeEventListener("click", onResend); // safe remove
+      resendBtn.addEventListener("click", onResend);
+    }
+
+    // cancel / sign out button - clears session and shows wrapper again
+    if (cancelBtn) {
+      cancelBtn.addEventListener("click", async () => {
+        try {
+          await firebase.auth().signOut();
+        } catch (e) { /* ignore */ }
+        if (ev) ev.style.display = "none";
+        if (wrapper) wrapper.style.display = "block";
+      });
+    }
+
+    // poll for verification: reload user every few seconds and check emailVerified
+    const signedUser = cred.user;
+    const pollInterval = 3000; // 3s
+    const maxChecks = 120;     // stop after ~6 minutes
+    let checks = 0;
+    const poll = setInterval(async () => {
+      checks++;
+      try {
+        await signedUser.reload();
+        if (signedUser.emailVerified) {
+          clearInterval(poll);
+          // optionally clear timers
+          if (resendBtn) { resendBtn.disabled = true; }
+          if (evStatus) evStatus.textContent = "Email verified! Redirecting…";
+
+          // after verified, redirect to target (if any) — you already use ?redirect=<path>
+          const params = new URLSearchParams(window.location.search);
+          const redirect = params.get("redirect");
+          // if redirect param not present on this page, try to read the original redirect param from location.hash (or fallback to '/')
+          let target = "/";
+          if (redirect) {
+            try { target = decodeURIComponent(redirect); } catch(e){ target = redirect; }
+          }
+          // navigate to target (replace to avoid back-button returning to verify)
+          window.location.replace(target);
+        } else if (checks >= maxChecks) {
+          clearInterval(poll);
+          if (evStatus) evStatus.textContent = "Still waiting for verification. Check your email.";
+        }
+      } catch (e) {
+        console.error("Verification poll error:", e);
+      }
+    }, pollInterval);
+
+  } catch (err) {
+    console.error("Signup error:", err);
+    if (err.code === "auth/email-already-in-use") {
+      errorSignupMsg.textContent = "Email already used.";
+    } else if (err.message && err.message.toLowerCase().includes("network error")) {
+      errorSignupMsg.textContent = "There is a network issue, try again later.";
+    } else {
+      errorSignupMsg.textContent = err.message || "Signup failed.";
+    }
+  }
+});
+// --- end sign-up with verification ---
 
     // Forgot Password
     forgotPasswordBtn.addEventListener("click", () => {
