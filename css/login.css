@@ -274,3 +274,58 @@ button.forgot-password-btn {
     font-size: 14px;
   }
 }
+/* Email verify box styles */
+#email-verify .ev-box {
+  background: #2a2a2a;              /* your black */
+  border-radius: 5px;
+  border: 2px solid rgba(92, 201, 59, 1);
+  box-shadow: 4px 4px rgba(92, 201, 59, 1);
+  padding: 20px;
+  box-sizing: border-box;
+  color: #dedede;
+  font-family: "Trebuchet MS", "Helvetica Neue", Arial, sans-serif;
+}
+
+#email-verify h1 {
+  margin: 0 0 6px 0;
+  font-size: 20px;
+  color: #5cc93b;
+}
+
+#email-verify h2 {
+  margin: 0;
+  font-size: 14px;
+  color: #4193c9;
+  font-weight: 600;
+  opacity: 0.95;
+}
+
+/* Buttons */
+.ev-btn {
+  background: transparent;
+  border: 2px solid #5cc93b;
+  color: #dedede;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  min-width: 96px;
+}
+
+.ev-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+  border-color: #666;
+}
+
+/* muted button */
+.ev-btn--muted {
+  border-color: #666;
+  color: #dedede;
+}
+
+/* small responsive tweak */
+@media (max-width: 420px) {
+  #email-verify .ev-box { padding: 14px; }
+  #email-verify h1 { font-size: 18px; }
+}
