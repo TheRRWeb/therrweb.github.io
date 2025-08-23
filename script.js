@@ -113,15 +113,48 @@ document.addEventListener("DOMContentLoaded", () => {
     handleSignedOut();
   }
 
-  // Also listen for future auth state changes
-  firebase.auth().onAuthStateChanged(async (user) => {
-    if (user) {
+  // ------------ auth state handling (paste in place of existing onAuthStateChanged) ------------
+firebase.auth().onAuthStateChanged(async (user) => {
+  // If no user, behave as signed out
+  if (!user) {
+    handleSignedOut();
+    return;
+  }
+
+  // Ensure we have the freshest user info (updates emailVerified)
+  try {
+    await user.reload();
+  } catch (e) {
+    console.warn("user.reload() failed:", e);
+  }
+
+  // If user exists but is NOT verified, decide what to do:
+  const justSignedUp = sessionStorage.getItem("rr_just_signed_up") === "1";
+
+  if (!user.emailVerified) {
+    // If the user just signed up in this tab (short window), allow staying signed in
+    // so the verification UI/polling can run.
+    if (justSignedUp) {
+      // let the normal signed-in flow continue (show verify UI etc.)
       await handleSignedIn(user);
-    } else {
-      handleSignedOut();
+      return;
     }
-  });
-  // ---------- end unified auth handlers ----------
+
+    // Otherwise (not just-signed-up), prevent auto sign-in: sign out immediately
+    // so the user must either verify or sign in consciously.
+    try {
+      await firebase.auth().signOut();
+    } catch (e) {
+      console.error("Auto sign-out failed:", e);
+    }
+    // ensure UI shows signed-out state
+    handleSignedOut();
+    return;
+  }
+
+  // user is verified → normal flow
+  await handleSignedIn(user);
+});
 
   const tamperObserver = new MutationObserver(() => applyMembershipView(currentIsMember));
   document.querySelectorAll(".memshow, .memhide")
@@ -155,24 +188,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Sign-in & Sign-up listeners (only attach when sign-in form exists)
   if (emailSigninInput && signInBtn && signUpBtn) {
-    // ---------- SIGN IN handler (replace existing signInBtn listener) ----------
-signInBtn.removeEventListener && signInBtn.removeEventListener("click", null); // safe best-effort removal
+    /* ---------------- SIGN IN handler ---------------- */
+signInBtn.removeEventListener && signInBtn.removeEventListener("click", null);
 signInBtn.addEventListener("click", async () => {
   const email = emailSigninInput.value.trim();
   const pwd   = passwordSigninInput.value;
   errorLoginMsg.textContent = "";
 
   try {
+    // Attempt sign-in
     const cred = await firebase.auth().signInWithEmailAndPassword(email, pwd);
     const user = cred.user;
-    // ensure latest state
+
+    // Force fresh state (important for emailVerified)
     await user.reload();
 
     if (!user.emailVerified) {
-      // Account exists but unverified — send verification and show verify UI
+      // User exists but is unverified.
+      // Send verification link (best-effort), allow a short window for the page to keep user signed-in
       try { await user.sendEmailVerification(); } catch (e) { console.error("sendEmailVerification:", e); }
 
-      // show verify UI (hide wrapper)
+      // Mark a short session flag so onAuthStateChanged won't immediately sign them out (10s)
+      sessionStorage.setItem("rr_just_signed_up", "1");
+      setTimeout(() => sessionStorage.removeItem("rr_just_signed_up"), 10000);
+
+      // Show verification UI, hide wrapper
       const wrapper = document.querySelector(".wrapper");
       if (wrapper) wrapper.style.display = "none";
       const ev = document.getElementById("email-verify");
@@ -182,12 +222,12 @@ signInBtn.addEventListener("click", async () => {
       const evStatus = document.getElementById("ev-status");
       if (evStatus) evStatus.textContent = "Verification email sent. Check your inbox.";
 
-      // setup resend + cancel + poll (use helper below)
+      // Start the verify flow (resend/cancel/poll) — helper defined below
       setupVerifyFlow(user);
-      return; // block access until verified
+      return; // block normal app access until verified
     }
 
-    // Verified user — proceed to redirect target
+    // Verified user — proceed to target page
     const params = new URLSearchParams(window.location.search);
     const redirect = params.get("redirect");
     if (redirect) {
@@ -196,10 +236,13 @@ signInBtn.addEventListener("click", async () => {
     } else {
       window.location.href = "/";
     }
+
   } catch (err) {
     console.error("Sign in error:", err);
     if (["auth/invalid-email","auth/user-not-found","auth/wrong-password"].includes(err.code)) {
       errorLoginMsg.textContent = "Incorrect email or password.";
+    } else if (err.code === "auth/user-disabled") {
+      errorLoginMsg.textContent = "Account disabled. Contact support.";
     } else if (err.message && err.message.toLowerCase().includes("network error")) {
       errorLoginMsg.textContent = "There is a network issue, try again later.";
     } else {
@@ -208,12 +251,13 @@ signInBtn.addEventListener("click", async () => {
   }
 });
 
-// ---------- SIGN UP handler (replace existing signUpBtn listener) ----------
+
+/* ---------------- SIGN UP handler ---------------- */
 signUpBtn.removeEventListener && signUpBtn.removeEventListener("click", null);
 signUpBtn.addEventListener("click", async () => {
-  const fullName = nameSignupInput.value.trim();
-  const email    = emailSignupInput.value.trim();
-  const pwd      = passwordSignupInput.value;
+  const fullName = (nameSignupInput && nameSignupInput.value || "").trim();
+  const email    = (emailSignupInput && emailSignupInput.value || "").trim();
+  const pwd      = (passwordSignupInput && passwordSignupInput.value || "");
   errorSignupMsg.textContent = "";
 
   if (!fullName || !email || !pwd) {
@@ -222,17 +266,15 @@ signUpBtn.addEventListener("click", async () => {
   }
 
   try {
-    // create account (user will be signed in)
+    // Create account (this signs them in)
     const cred = await firebase.auth().createUserWithEmailAndPassword(email, pwd);
 
-    // 1) set displayName
+    // Set displayName and save userdata
     await cred.user.updateProfile({ displayName: fullName });
-
-    // 2) save into userdata doc
     await db.collection("userdata").doc(cred.user.uid)
       .set({ fullName: fullName }, { merge: true });
 
-    // 3) optional: subscribe proxy (keeps your existing function usage)
+    // Optional: call your Netlify subscribe proxy if checked (keep as you had)
     if (newsletterCheckbox && newsletterCheckbox.checked) {
       try {
         const res = await fetch("/.netlify/functions/subscribe", {
@@ -241,18 +283,22 @@ signUpBtn.addEventListener("click", async () => {
           body: JSON.stringify({ email, fullName })
         });
         if (!res.ok) {
-          const text = await res.text().catch(()=>"");
-          console.error("Subscribe proxy failed:", res.status, text);
+          const txt = await res.text().catch(()=>"");
+          console.error("Subscribe proxy failed:", res.status, txt);
         }
       } catch (e) {
         console.error("Subscribe proxy error:", e);
       }
     }
 
-    // 4) send verification email
+    // Send verification email (best-effort)
     try { await cred.user.sendEmailVerification(); } catch (e) { console.error("sendEmailVerification:", e); }
 
-    // 5) show verify UI and start flow (don't alert or redirect)
+    // Allow this tab a short signup window so verification UI/polling works (10s)
+    sessionStorage.setItem("rr_just_signed_up", "1");
+    setTimeout(() => sessionStorage.removeItem("rr_just_signed_up"), 10000);
+
+    // Show verification UI (hide wrapper)
     const wrapper = document.querySelector(".wrapper");
     if (wrapper) wrapper.style.display = "none";
     const ev = document.getElementById("email-verify");
@@ -262,13 +308,14 @@ signUpBtn.addEventListener("click", async () => {
     const evStatus = document.getElementById("ev-status");
     if (evStatus) evStatus.textContent = "Verification email sent. Check your inbox.";
 
-    // start resend/cancel/poll flow
+    // Start the verify flow (resend/cancel/poll)
     setupVerifyFlow(cred.user);
 
   } catch (err) {
     console.error("Signup error:", err);
     if (err.code === "auth/email-already-in-use") {
-      errorSignupMsg.textContent = "Email already used.";
+      // custom message you requested
+      errorSignupMsg.textContent = "Email already used, try to Sign IN";
     } else if (err.message && err.message.toLowerCase().includes("network error")) {
       errorSignupMsg.textContent = "There is a network issue, try again later.";
     } else {
@@ -277,6 +324,137 @@ signUpBtn.addEventListener("click", async () => {
   }
 });
 
+
+/* ---------------- Shared verification UI helpers ----------------
+   - setupVerifyFlow(user) prepares:
+     * a 60s resend cooldown
+     * Cancel button that deletes the (unverified) client-side account
+     * a poll that reloads the user every 3s and redirects when emailVerified becomes true
+*/
+let __verifyPoll = null;
+let __resendTimer = null;
+
+function clearVerifyTimers() {
+  if (__verifyPoll) { clearInterval(__verifyPoll); __verifyPoll = null; }
+  if (__resendTimer) { clearInterval(__resendTimer); __resendTimer = null; }
+}
+
+function setupVerifyFlow(user) {
+  clearVerifyTimers();
+  const ev = document.getElementById("email-verify");
+  const wrapper = document.querySelector(".wrapper");
+  const resendBtn = document.getElementById("ev-resend");
+  const cancelBtn = document.getElementById("ev-cancel");
+  const evStatus = document.getElementById("ev-status");
+
+  // Resend cooldown 60s
+  let countdown = 60;
+  if (resendBtn) {
+    resendBtn.disabled = true;
+    resendBtn.textContent = `Resend (${countdown})`;
+    __resendTimer = setInterval(() => {
+      countdown--;
+      if (countdown <= 0) {
+        clearInterval(__resendTimer); __resendTimer = null;
+        resendBtn.disabled = false;
+        resendBtn.textContent = "Resend";
+      } else {
+        resendBtn.textContent = `Resend (${countdown})`;
+      }
+    }, 1000);
+
+    // resend handler
+    resendBtn.onclick = async () => {
+      try {
+        // if currentUser is available, use it; otherwise use the supplied user object
+        const cur = firebase.auth().currentUser || user;
+        if (cur) {
+          await cur.sendEmailVerification();
+          if (evStatus) evStatus.textContent = "Verification email resent.";
+        }
+      } catch (e) {
+        console.error("Resend failed:", e);
+        if (evStatus) evStatus.textContent = "Resend failed — try again later.";
+      }
+      // restart cooldown
+      countdown = 60;
+      if (resendBtn) {
+        resendBtn.disabled = true;
+        resendBtn.textContent = `Resend (${countdown})`;
+        if (__resendTimer) clearInterval(__resendTimer);
+        __resendTimer = setInterval(() => {
+          countdown--;
+          if (countdown <= 0) {
+            clearInterval(__resendTimer); __resendTimer = null;
+            resendBtn.disabled = false;
+            resendBtn.textContent = "Resend";
+          } else {
+            resendBtn.textContent = `Resend (${countdown})`;
+          }
+        }, 1000);
+      }
+    };
+  }
+
+  // Cancel button: delete the unverified account (client-side delete)
+  if (cancelBtn) {
+    cancelBtn.onclick = async () => {
+      try {
+        const cur = firebase.auth().currentUser || user;
+        if (!cur) {
+          if (ev) ev.style.display = "none";
+          if (wrapper) wrapper.style.display = "block";
+          clearVerifyTimers();
+          return;
+        }
+        // Try to delete client-side (should succeed if credentials are recent)
+        await cur.delete();
+        if (ev) ev.style.display = "none";
+        if (wrapper) wrapper.style.display = "block";
+        if (evStatus) evStatus.textContent = "Account deleted.";
+        clearVerifyTimers();
+        return;
+      } catch (err) {
+        console.error("Client delete failed:", err);
+        // Fallback: sign out and return to wrapper (you said no server functions right now)
+        try { await firebase.auth().signOut(); } catch(e){/*ignore*/ }
+        if (ev) ev.style.display = "none";
+        if (wrapper) wrapper.style.display = "block";
+        if (evStatus) evStatus.textContent = "Delete failed — please contact support.";
+        clearVerifyTimers();
+        return;
+      }
+    };
+  }
+
+  // Poll for verification every 3s (stops after ~6 minutes)
+  let checks = 0;
+  const maxChecks = 120;
+  __verifyPoll = setInterval(async () => {
+    checks++;
+    try {
+      const cur = firebase.auth().currentUser || user;
+      if (!cur) return;
+      await cur.reload();
+      if (cur.emailVerified) {
+        clearVerifyTimers();
+        // redirect to original target (if any)
+        const params = new URLSearchParams(window.location.search);
+        const redirect = params.get("redirect");
+        if (redirect) {
+          try { window.location.replace(decodeURIComponent(redirect)); } catch (e) { window.location.href = "/"; }
+        } else {
+          window.location.href = "/";
+        }
+      } else if (checks >= maxChecks) {
+        clearVerifyTimers();
+        if (evStatus) evStatus.textContent = "Still waiting for verification. You can resend or cancel.";
+      }
+    } catch (err) {
+      console.error("Verification poll error:", err);
+    }
+  }, 3000);
+}
 // ---------- Shared helpers for verification UI flow ----------
 let __verifyPoll = null;
 let __resendTimer = null;
