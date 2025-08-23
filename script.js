@@ -1,4 +1,4 @@
-// ----------------- auth + sign-up / sign-in (cleaned) -----------------
+// ----------------- auth + sign-up / sign-in (updated) -----------------
 document.addEventListener("DOMContentLoaded", () => {
   // 0) first-time setup
   if (localStorage.getItem("r-touch") === null) localStorage.setItem("r-touch", "on");
@@ -96,8 +96,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!user.emailVerified) {
       if (justSignedUp) {
         // allow the short-lived verification UI flow to continue (signup/signin handlers open that UI)
-        // but do not persist access for long-term; protected pages are still guarded by redirect below
-        handleSignedOut(); // keep main app blocked (we'll show verify UI separately)
+        // do not grant long-term access here
+        handleSignedOut(); // keep app blocked until verification is confirmed
         return;
       }
       // Not just-signed-up -> sign out immediately and redirect if needed.
@@ -210,18 +210,15 @@ document.addEventListener("DOMContentLoaded", () => {
         cancelBtn.onclick = async () => {
           try {
             const cur = firebase.auth().currentUser || userObj;
-            if (cur) {
-              await cur.delete(); // should succeed right after signup/signin
-            }
+            if (cur) await cur.delete();
           } catch (e) {
             console.warn("client delete failed", e);
             try { await firebase.auth().signOut(); } catch(_) {}
           } finally {
-            // restore wrapper UI
             if (ev) ev.style.display = "none";
             if (wrapper) wrapper.style.display = "block";
             clearVerifyTimers();
-            // clear pending session items
+            // clear pending session items just in case
             sessionStorage.removeItem("rr_pending_fullName");
             sessionStorage.removeItem("rr_pending_news");
             sessionStorage.removeItem("rr_just_signed_up");
@@ -239,46 +236,31 @@ document.addEventListener("DOMContentLoaded", () => {
           if (!cur) return;
           await cur.reload();
           if (cur.emailVerified) {
-            // verified -> perform post-verification actions:
             clearVerifyTimers();
-            // 1) set displayName and userdata if we have pending info
-            const pendingName = sessionStorage.getItem("rr_pending_fullName");
-            const pendingNews = sessionStorage.getItem("rr_pending_news") === "1";
-            try {
-              if (pendingName) {
-                await cur.updateProfile({ displayName: pendingName });
-                // save to userdata
-                await db.collection("userdata").doc(cur.uid).set({ fullName: pendingName }, { merge: true });
-              }
-              // subscribe if requested (keep using your existing Netlify proxy)
-              if (pendingNews) {
-                try {
-                  await fetch("/.netlify/functions/subscribe", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email: cur.email, fullName: pendingName || "" })
-                  });
-                } catch (err) {
-                  console.warn("subscribe proxy failed", err);
-                }
-              }
-            } catch (postErr) {
-              console.error("post-verification actions failed", postErr);
-            } finally {
-              // clear pending keys
-              sessionStorage.removeItem("rr_pending_fullName");
-              sessionStorage.removeItem("rr_pending_news");
-              sessionStorage.removeItem("rr_just_signed_up");
-            }
 
-            // Now show signed-in UI (do not navigate away — user stays on page)
-            try { await handleSignedIn(cur); } catch(e){ console.warn(e); }
+            // show verified message then redirect to original target (if any)
+            if (evStatus) evStatus.textContent = "Verified — redirecting...";
+            const params = new URLSearchParams(window.location.search);
+            const redirect = params.get("redirect");
+            // perform any post-verification actions that must happen now
+            // (displayName and userdata were saved at signup already; subscribe proxy was optional)
+            // Clear any pending session keys
+            sessionStorage.removeItem("rr_pending_fullName");
+            sessionStorage.removeItem("rr_pending_news");
+            sessionStorage.removeItem("rr_just_signed_up");
 
-            // done
-            clearVerifyTimers();
+            // Give a short moment so the user sees "Verified"
+            setTimeout(() => {
+              if (redirect) {
+                try { window.location.replace(decodeURIComponent(redirect)); } catch (e) { window.location.href = "/"; }
+              } else {
+                window.location.href = "/";
+              }
+            }, 900);
+
+            return;
           } else if (checks >= maxChecks) {
             clearVerifyTimers();
-            const evStatus = document.getElementById("ev-status");
             if (evStatus) evStatus.textContent = "Still waiting for verification. You can resend or cancel.";
           }
         } catch (err) {
@@ -304,14 +286,21 @@ document.addEventListener("DOMContentLoaded", () => {
         // create the account (account exists on Firebase now)
         const cred = await firebase.auth().createUserWithEmailAndPassword(email, pwd);
 
-        // store pending info in sessionStorage while the tab is open
-        sessionStorage.setItem("rr_pending_fullName", fullName);
+        // **NEW**: save displayName and userdata immediately (like normal)
+        try {
+          await cred.user.updateProfile({ displayName: fullName });
+          await db.collection("userdata").doc(cred.user.uid).set({ fullName: fullName }, { merge: true });
+        } catch (e) {
+          console.warn("saving displayName/userdata immediately failed:", e);
+        }
+
+        // store pending news flag for potential subscribe after verification
         sessionStorage.setItem("rr_pending_news", (newsletterCheckbox && newsletterCheckbox.checked) ? "1" : "0");
 
         // send verification email
         try { await cred.user.sendEmailVerification(); } catch (e) { console.warn("sendEmailVerification:", e); }
 
-        // short window to keep the auth alive for verification UI
+        // mark short window for verification UI
         sessionStorage.setItem("rr_just_signed_up", "1");
         setTimeout(() => sessionStorage.removeItem("rr_just_signed_up"), 10000);
 
@@ -356,8 +345,14 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        // verified -> show signed-in UI
-        await handleSignedIn(user);
+        // verified -> redirect to original target (if any) or show signed-in UI
+        const params = new URLSearchParams(window.location.search);
+        const redirect = params.get("redirect");
+        if (redirect) {
+          try { window.location.replace(decodeURIComponent(redirect)); } catch (e) { window.location.href = "/"; }
+        } else {
+          await handleSignedIn(user);
+        }
 
       } catch (err) {
         console.error("signin error", err);
@@ -365,7 +360,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (["auth/invalid-email","auth/user-not-found","auth/wrong-password"].includes(err.code)) {
             errorLoginMsg.textContent = "Incorrect email or password.";
           } else if (err.code === "auth/user-disabled") {
-            errorLoginMsg.textContent = "Account disabled. Contact support.";
+            errorLoginMsg.textContent = "Your account has been disabled, Contact Support: therrweb@gmail.com";
           } else if (err.message && err.message.toLowerCase().includes("network error")) {
             errorLoginMsg.textContent = "There is a network issue, try again later.";
           } else {
@@ -374,7 +369,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     });
-
     // Forgot Password
     forgotPasswordBtn.addEventListener("click", () => {
       const email = emailSigninInput.value.trim();
