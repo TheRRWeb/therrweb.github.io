@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en-AE">
-  <head>
-    <title>The RR Account</title> <!--Title-->
-    <link rel="stylesheet" type="text/css" href="/css/style.css">
+<head>
+  <title>The RR Settings</title>
+  <link rel="stylesheet" type="text/css" href="/css/style.css">
     <link rel="stylesheet" type="text/css" href="/css/account.css"> <!--CSS Link-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!--Font Awesome-->
     <link id="favicon" rel="icon" type="image/x-icon" href="/logos/RRlogo12.png"> <!--Logo-->
@@ -12,133 +12,262 @@
     <meta name="description" content="The RR Web, home to the greatest fun and games available anywhere">
     <meta name="author" content="Rutham Renish">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="The RR Account">
+    <meta name="apple-mobile-web-app-title" content="The RR Settings">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#2a2a2a">
     <link rel="apple-touch-icon" href="/logos/RRlogo11.jpg">
     <link rel="apple-touch-startup-image" href="/logos/RRlogo12.png">
     <meta name="theme-color" content="#2a2a2a">
-  </head>
-  <body>
-    <header>
-      <div class="navbar" id="Navbar">
-        <a href="/" class="homeimg"><img src="/logos/RRlogo12.png" alt="logo"></a>
-        <a href="/games/">Games</a>
-        <a href="https://therrweb.beehiiv.com/">News</a>
-        <a href="/account/">Account</a>
-        <a data-umami-event="Merch" href="/RRMerchKit.zip" download>Merch</a>
-        <a href="/">Home</a>
-        <a href="javascript:void(0);" class="icon" onclick="myFunction()">
-          <i class="fa fa-bars"></i>
-        </a>
-      </div>
-    </header>
-    <h1>The RR Account</h1>
+</head>
+<body>
+  <header>
+    <div class="navbar" id="Navbar">
+      <a href="/" class="homeimg"><img src="/logos/RRlogo12.png" alt="logo"></a>
+      <a href="/games/">Games</a>
+      <a href="/news/">News</a>
+      <a href="/account/">Settings</a>
+      <a data-umami-event="Merch" href="/RRMerchKit.zip" download>Merch</a>
+      <a href="/">Home</a>
+      <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+        <i class="fa fa-bars"></i>
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <h1>The RR Settings</h1>
     <hr>
-    <h2>Persuade your teachers and watch the countdown at the home page, live on Thursday 26 June at 3:00 PM</h2>
-    <main id="card-view">
+
+    <div id="card-view">
+      <!-- shown while the auth check is running -->
       <div id="auth-container">
         <h2>Loading Settings</h2>
       </div>
-      <div id="user-controls" style="display: none;">
-        <h2>Settings</h2>
-        <h3>Account Information</h3>
-        <p style="color: #dedede;">Name: <span id="user-fullname"></span></p>
-        <p style="color: #dedede;">Email: <span id="user-email"></span></p>
-        <p style="color: #dedede;">UID: <span id="user-uid"></span></p>
-        <p style="color: #dedede;"><span id="user-membership" style="margin-left:8px;"></span></p>
-        <hr style="border: none; border-top: 1px solid #dedede; margin: 20px 0;">
-        <h3>Newsletter Signup</h3>
-        <p style="color: #dedede;">Sign up for our free newsletter and get updates in your inbox. Find out when and what the next update is, what games are coming soon, new The RR Web links, news and more!</p>
-        <iframe src="https://embeds.beehiiv.com/5de3b974-bfed-4801-bdb8-37b2e06d056e?slim=true" data-test-id="beehiiv-embed" height="52" frameborder="0" scrolling="no" style="margin: 0; border-radius: 0px !important; background-color: transparent;"></iframe>
-        <hr style="border: none; border-top: 1px solid #dedede; margin: 20px 0;">
-        <h3>Data Settings</h3>
-        <button id="save-game-data">Save Game Data</button>
-        <button id="load-game-data">Load Game Data</button>
-        <hr style="border: none; border-top: 1px solid #dedede; margin: 20px 0;">
-        <div class="disguise-mode">
-          <h3>Disguise Mode</h3>
-          <p style="color: #dedede;">Change the web title and icon - For Safari users, the favicon may take days to show the correct logo</p>
-          <div class="theme-selector">
-            <label><input type="radio" name="siteTheme" value="none"> None</label>
-            <label><input type="radio" name="siteTheme" value="google"> Google</label>
-            <label><input type="radio" name="siteTheme" value="teams"> Teams</label>
-            <label><input type="radio" name="siteTheme" value="custom"> Custom…</label>
-          </div>
-          <div class="custom-options" style="display:none; margin-top:8px;">
-            <input type="text" class="custom-title-input" placeholder="Custom Title">
-            <input type="file" class="custom-icon-input" accept="image/*">
-          </div>
-        </div>
-        <hr style="border: none; border-top: 1px solid #dedede; margin: 20px 0;">
-        <h3>R Touch</h3>
-        <p style="color: #dedede;">Override some keyboard games with RR added touch controls (only on games with RT labels)</p>
-        <label><input type="checkbox" class="r-touch-toggle">R Touch</label>
-        <hr style="border:none;border-top:1px solid #dedede;margin:20px 0;">
-        <h3>Toolbar Position</h3>
-        <div class="toolbar-selector">
-          <label><input type="radio" name="toolbar-pos" value="left"> Left</label>
-          <label><input type="radio" name="toolbar-pos" value="right"> Right</label>
-        </div>
-        <hr style="border: none; border-top: 1px solid #dedede; margin: 20px 0;">
-        <h3>Account Settings</h3>
-        <button id="change-password">Change Password</button>
-        <button id="sign-out">Sign Out</button>
-        <hr style="border: none; border-top: 1px solid #dedede; margin: 20px 0;">
-        <h3 style="color: #ff4d4d;">Danger Zone</h3>
-        <button style="background-color: #ff4d4d;" id="clear-local-btn">Clear Local Storage</button>
-        <button style="background-color: #ff4d4d;" id="clear-firestore-btn">Clear Cloud Data</button>
-        <button style="background-color: #ff4d4d;" id="delete-account">Delete Account</button>
-      </div>
-    </main>
-    <footer>
-      <div class="container">
-        <div class="row">
-          <div class="footer-col">
-            <h3>Site Map</h3>
-            <ul>
-              <li>
-                <a href="/">Home</a>
-              </li>
-              <li>
-                <a href="/account/">Account</a>
-              </li>
-              <li>
-                <a href="https://therrweb.beehiiv.com/">News</a>
-              </li>
-              <li>
-                <a href="/games/">Games</a>
-              </li>
+
+      <!-- main settings area (hidden until signed in) -->
+      <div id="user-controls" style="display:none;">
+        <div class="settings-shell">
+
+          <!-- LEFT: menu -->
+          <nav class="settings-menu" aria-label="Settings menu">
+            <div class="menu-header">
+              <div class="hamb" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </div>
+              <div class="menu-title">Settings</div>
+            </div>
+
+            <ul class="menu-list" id="settingsMenu">
+              <li><button data-target="panel-account-info" class="active">Account Info</button></li>
+              <li><button data-target="panel-account-settings">Account Settings</button></li>
+              <li><button data-target="panel-r-plus">R Plus</button></li>
+              <li><button data-target="panel-newsletter">Newsletter</button></li>
+              <li><button data-target="panel-friendly">Friendly Text</button></li>
+              <li><button data-target="panel-super-secret">Super Secret Mode</button></li>
+              <li><button data-target="panel-rtouch">R Touch</button></li>
+              <li><button data-target="panel-toolbar">Toolbar Settings</button></li>
+              <li><button data-target="panel-themes">Themes</button></li>
+              <li><button data-target="panel-ads">Ads with RR</button></li>
+              <li><button data-target="panel-jobs">Jobs at RR</button></li>
+              <li><button data-target="panel-report">Report a Problem</button></li>
+              <li><button data-target="panel-request">Request Games</button></li>
             </ul>
-          </div>
-          <div class="footer-col">
-            <h3>Miscellaneous</h3>
-            <ul>
-              <li>
-                <a data-umami-event="Merch" href="/RRMerchKit.zip" download>Merch</a>
-              </li>
-              <li>
-                <a data-umami-event="Discord" href="https://discord.gg/u3Hs33Dq8b">Discord</a>
-              </li>
-              <li>
-                <a data-umami-event="Portal" href="https://forms.office.com/Pages/ResponsePage.aspx?id=8LIk8ugClkGNohLHcIklNHf2zSA9E61IoosX7n_qv4hUMFZJM0NKU0NIR0kzWlNPM1JXUk1JMFY0Vy4u">Portal</a>
-              </li>
-              <li>
-                <a href="/LICENSE">License</a>
-              </li>
-            </ul>
-          </div>
+          </nav>
+
+          <!-- RIGHT: view -->
+          <section class="settings-view" id="settingsView">
+
+            <!-- Account Info (default visible) -->
+            <div id="panel-account-info" class="settings-panel active">
+              <h2>Account Information</h2>
+              <p class="muted">Your basic account details</p>
+              <div class="field"><label>Name:</label><div id="user-fullname" style="font-weight:bold;"></div></div>
+              <div class="field"><label>Email:</label><div id="user-email" style="font-weight:bold;"></div></div>
+              <div class="field"><label>UID:</label><div id="user-uid" class="muted"></div></div>
+              <div class="field"><label>Membership:</label><div id="user-membership" class="muted" style="margin-top:6px;"></div></div>
+            </div>
+
+            <!-- Account Settings -->
+            <div id="panel-account-settings" class="settings-panel">
+              <h2>Account Settings</h2>
+              <p class="muted">Data settings and account actions.</p>
+
+              <hr style="border:none;border-top:1px solid #333;margin:10px 0;">
+
+              <h3>Data Settings</h3>
+              <div class="row" style="margin-bottom:10px;">
+                <button id="save-game-data" class="btn">Save Game Data</button>
+                <button id="load-game-data" class="btn ghost">Load Game Data</button>
+              </div>
+
+              <hr style="border:none;border-top:1px solid #333;margin:14px 0;">
+
+              <h3>Account Actions</h3>
+              <div class="row" style="margin-bottom:10px;">
+                <button id="change-password" class="btn ghost">Change Password</button>
+                <button id="sign-out" class="btn ghost">Sign Out</button>
+              </div>
+
+              <hr style="border:none;border-top:1px solid #333;margin:14px 0;">
+
+              <h3 style="color:#ff8a8a;">Danger Zone</h3>
+              <p class="muted">Delete or clear data. These actions cannot be undone.</p>
+              <div class="row" style="margin-top:8px;">
+                <button id="clear-local-btn" class="btn ghost">Clear Local Storage</button>
+                <button id="clear-firestore-btn" class="btn ghost">Clear Cloud Data</button>
+                <button id="delete-account" class="btn danger">Delete Account</button>
+              </div>
+            </div>
+
+            <!-- R Plus -->
+            <div id="panel-r-plus" class="settings-panel">
+              <h2>R Plus</h2>
+              <p class="muted">(Empty placeholder — add R Plus features here)</p>
+            </div>
+
+            <!-- Newsletter -->
+            <div id="panel-newsletter" class="settings-panel">
+              <h2>Newsletter</h2>
+              <p class="muted">Sign up and newsletter settings.</p>
+              <iframe src="https://embeds.beehiiv.com/5de3b974-bfed-4801-bdb8-37b2e06d056e?slim=true" data-test-id="beehiiv-embed" height="52" frameborder="0" scrolling="no" style="margin: 0; border-radius: 0px !important; background-color: transparent;"></iframe>
+            </div>
+
+            <!-- Friendly Text -->
+            <div id="panel-friendly" class="settings-panel">
+              <h2>Friendly Text</h2>
+              <p class="muted">(Empty placeholder for friendly messages)</p>
+            </div>
+
+            <!-- Super Secret Mode (was Disguise Mode) -->
+            <div id="panel-super-secret" class="settings-panel">
+              <h2>Super Secret Mode</h2>
+              <p class="muted">Change the web title and icon — For Safari, favicon updates may take a while.</p>
+
+              <div style="margin-top:10px;">
+                <label style="display:block;margin-bottom:6px;"><input type="radio" name="siteTheme" value="none"> None</label>
+                <label style="display:block;margin-bottom:6px;"><input type="radio" name="siteTheme" value="google"> Google</label>
+                <label style="display:block;margin-bottom:6px;"><input type="radio" name="siteTheme" value="teams"> Teams</label>
+                <label style="display:block;margin-bottom:6px;"><input type="radio" name="siteTheme" value="custom"> Custom…</label>
+
+                <div class="custom-options" style="display:none; margin-top:8px;">
+                  <input type="text" class="custom-title-input" placeholder="Custom Title" style="margin-bottom:8px; width:100%;">
+                  <input type="file" class="custom-icon-input" accept="image/*">
+                </div>
+              </div>
+            </div>
+
+            <!-- R Touch -->
+            <div id="panel-rtouch" class="settings-panel">
+              <h2>R Touch</h2>
+              <p class="muted">Override some keyboard games with RR added touch controls (only on games with RT labels)</p>
+              <label><input type="checkbox" class="r-touch-toggle"> R Touch</label>
+            </div>
+
+            <!-- Toolbar Settings -->
+            <div id="panel-toolbar" class="settings-panel">
+              <h2>Toolbar Settings</h2>
+              <p class="muted">Choose toolbar position</p>
+              <div class="toolbar-selector">
+                <label style="display:block;margin-bottom:6px;"><input type="radio" name="toolbar-pos" value="left"> Left</label>
+                <label style="display:block;margin-bottom:6px;"><input type="radio" name="toolbar-pos" value="right"> Right</label>
+              </div>
+            </div>
+
+            <!-- Themes -->
+            <div id="panel-themes" class="settings-panel">
+              <h2>Themes</h2>
+              <p class="muted">(Theme options placeholder)</p>
+            </div>
+
+            <!-- Ads with RR -->
+            <div id="panel-ads" class="settings-panel">
+              <h2>Ads with RR</h2>
+              <p class="muted">(Empty — ad partnership details go here)</p>
+            </div>
+
+            <!-- Jobs at RR -->
+            <div id="panel-jobs" class="settings-panel">
+              <h2>Jobs at RR</h2>
+              <p class="muted">(Job listings and application info)</p>
+            </div>
+
+            <!-- Report a Problem -->
+            <div id="panel-report" class="settings-panel">
+              <h2>Report a Problem</h2>
+              <p class="muted">(Form or instructions go here)</p>
+            </div>
+
+            <!-- Request Games -->
+            <div id="panel-request" class="settings-panel">
+              <h2>Request Games</h2>
+              <p class="muted">(Request submission form placeholder)</p>
+            </div>
+
+          </section>
+        </div> <!-- settings-shell -->
+      </div> <!-- user-controls -->
+    </div> <!-- card-view -->
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="row">
+        <div class="footer-col">
+          <h3>Site Map</h3>
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/account/">Settings</a></li>
+            <li><a href="/news/">News</a></li>
+            <li><a href="/games/">Games</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Miscellaneous</h3>
+          <ul>
+            <li><a data-umami-event="Merch" href="/RRMerchKit.zip" download>Merch</a></li>
+            <li><a data-umami-event="Discord" href="https://discord.gg/u3Hs33Dq8b">Discord</a></li>
+            <li><a data-umami-event="Portal" href="https://forms.office.com/...">Portal</a></li>
+            <li><a href="/LICENSE">License</a></li>
+          </ul>
         </div>
       </div>
-      <div class="container">
-        <h5>This website is protected by the BSD 3-Clause License. In no event shall the copyright holder or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption). <a href="/LICENSE">Click me to learn more.</a></h5>
-      </div>
-    </footer>
-    <script defer src="https://cloud.umami.is/script.js" data-website-id="f493113c-eb84-4958-809a-c84a5c898bf5"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <script type="text/javascript" src="/script.js"></script>
-  </body>
+    </div>
+    <div class="container">
+      <h5 style="font-size:12px; color:#999;">This website is protected by the BSD 3-Clause License. <a href="/LICENSE">Click me to learn more.</a></h5>
+    </div>
+  </footer>
+
+  <!-- menu switching script -->
+  <script>
+    (function(){
+      // menu buttons -> panels
+      const menu = document.getElementById('settingsMenu');
+      if(!menu) return;
+      const buttons = Array.from(menu.querySelectorAll('button[data-target]'));
+      const panels = Array.from(document.querySelectorAll('.settings-panel'));
+
+      function showPanel(id){
+        panels.forEach(p => p.id === id ? p.classList.add('active') : p.classList.remove('active'));
+        buttons.forEach(b => b.dataset.target === id ? b.classList.add('active') : b.classList.remove('active'));
+        // smooth scroll panel top on mobile
+        const view = document.getElementById('settingsView');
+        if(view) view.scrollTop = 0;
+      }
+
+      // click handlers
+      buttons.forEach(b => b.addEventListener('click', () => showPanel(b.dataset.target)));
+
+      // default: show first
+      if(buttons.length) showPanel(buttons[0].dataset.target);
+    })();
+  </script>
+
+  <!-- keep your analytics & firebase + script.js -->
+  <script defer src="https://cloud.umami.is/script.js" data-website-id="f493113c-eb84-4958-809a-c84a5c898bf5"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script type="text/javascript" src="/script.js"></script>
+</body>
 </html>
