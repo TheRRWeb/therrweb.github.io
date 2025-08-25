@@ -1,14 +1,14 @@
-// ----------------- auth + sign-up / sign-in (updated) -----------------
+// ---------------- auth, signup/signin, delete, save/load, signout (until above Forgot Password) ----------------
 document.addEventListener("DOMContentLoaded", () => {
-  // 0) first-time setup
+  // 0) First-time setup
   if (localStorage.getItem("r-touch") === null) localStorage.setItem("r-touch", "on");
 
-  // 1) Firebase init (keep your config)
+  // 1) Firebase Initialization
   const firebaseConfig = {
     apiKey: "AIzaSyB1OXqvU6bi9cp-aPs6AGNnCaTGwHtkuUs",
     authDomain: "therrweb.firebaseapp.com",
     projectId: "therrweb",
-    storageBucket: "therrweb.firebasestorage.app",
+    storageBucket: "therrweb",
     messagingSenderId: "77162554401",
     appId: "1:77162554401:web:4462bfcbbee40167b9af60",
     measurementId: "G-WC9WXR0CY5"
@@ -17,32 +17,30 @@ document.addEventListener("DOMContentLoaded", () => {
     firebase.initializeApp(firebaseConfig);
   }
 
-  // 1.a) persistence
+  // 1.a) Force LOCAL persistence
   firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(console.error);
 
-  // public pages (no auth required)
+  // Public pages that DO NOT require auth
   const publicPages = ["/", "/index.html", "/account/login.html"];
   const currentPath = window.location.pathname;
 
   const db = firebase.firestore();
 
-  // UI helper elements
-  const userMembershipSpan = document.getElementById("user-membership");
-  const userFullNameSpan   = document.getElementById("user-fullname");
-
-  // MEMBERSHIP / UI helpers
+  // 2) Membership view toggles (memshow/memhide)
   let currentIsMember = false;
   function applyMembershipView(isMember) {
     document.querySelectorAll(".memshow").forEach(el => el.style.display = isMember ? "block" : "none");
     document.querySelectorAll(".memhide").forEach(el => el.style.display = isMember ? "none" : "block");
   }
+  const userMembershipSpan = document.getElementById("user-membership");
+  const userFullNameSpan   = document.getElementById("user-fullname");
 
+  // UI helpers: signed-in / signed-out
   async function handleSignedIn(user) {
     try {
-      // membership lookup
-      let snap = await db.collection("membership").doc(user.uid).get().catch(()=>null);
-      if (!snap || !snap.exists) snap = await db.collection("membership").doc(user.email).get().catch(()=>null);
-      currentIsMember = !!(snap && snap.exists && snap.data().membership === true);
+      // membership is keyed by email in your setup — check membership by email only
+      let snap = await db.collection("membership").doc(user.email).get().catch(() => null);
+      currentIsMember = snap && snap.exists && snap.data().membership === true;
       applyMembershipView(currentIsMember);
       if (userMembershipSpan) userMembershipSpan.textContent = currentIsMember ? "You are a Membership User" : "";
       if (userFullNameSpan) userFullNameSpan.textContent = user.displayName || "";
@@ -57,8 +55,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       if (userEmailSpan) userEmailSpan.textContent = user.email;
       if (userUidSpan)   userUidSpan.textContent   = user.uid;
-    } catch (e) {
-      console.error("handleSignedIn error", e);
+    } catch (err) {
+      console.error("handleSignedIn error:", err);
       handleSignedOut();
     }
   }
@@ -76,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Unified auth-state handling
+  // Unified auth-state handling: block unverified users (unless just-signed-up in this tab short window)
   async function unifiedAuthHandler(user) {
     if (!user) {
       handleSignedOut();
@@ -87,21 +85,20 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // refresh to get latest emailVerified
-    try { await user.reload(); } catch(e) { console.warn("user.reload failed", e); }
+    try { await user.reload(); } catch (e) { console.warn("user.reload() failed:", e); }
 
     const justSignedUp = sessionStorage.getItem("rr_just_signed_up") === "1";
 
-    // If user is not verified, block access unless they just signed up in this tab temporarily
     if (!user.emailVerified) {
       if (justSignedUp) {
-        // allow the short-lived verification UI flow to continue (signup/signin handlers open that UI)
-        // do not grant long-term access here
-        handleSignedOut(); // keep app blocked until verification is confirmed
+        // allow the short-lived verification UI flow (signup/signin handlers will show verify UI),
+        // but don't grant long-term access here.
+        handleSignedOut(); // keep app blocked
         return;
       }
-      // Not just-signed-up -> sign out immediately and redirect if needed.
-      try { await firebase.auth().signOut(); } catch(e){ console.warn("signOut failed", e); }
+
+      // Not just-signed-up: sign out immediately and redirect if protected
+      try { await firebase.auth().signOut(); } catch (e) { console.warn("Auto sign-out failed:", e); }
       handleSignedOut();
       if (!publicPages.includes(currentPath)) {
         const target = window.location.pathname + window.location.search + window.location.hash;
@@ -110,26 +107,29 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // user is verified => normal signed-in UI
+    // Verified user → normal flow
     await handleSignedIn(user);
   }
 
-  firebase.auth().onAuthStateChanged(async u => {
-    try { await unifiedAuthHandler(u); } catch (e) { console.error("auth handler", e); handleSignedOut(); }
+  firebase.auth().onAuthStateChanged(async (u) => {
+    try { await unifiedAuthHandler(u); } catch (e) { console.error("unifiedAuthHandler error:", e); handleSignedOut(); }
   });
 
-  // Observe memshow / memhide tampering (keep)
-  const tamperObserver = new MutationObserver(()=> applyMembershipView(currentIsMember));
-  document.querySelectorAll(".memshow, .memhide")
-    .forEach(el => tamperObserver.observe(el, { attributes: true, attributeFilter: ["style","class"] }));
+  // Tamper observer for memshow/memhide
+  const tamperObserver = new MutationObserver(() => applyMembershipView(currentIsMember));
+  document.querySelectorAll(".memshow, .memhide").forEach(el => tamperObserver.observe(el, {
+    attributes: true,
+    attributeFilter: ["style","class"]
+  }));
 
-  // ------ Account page elements ------
+  // 3) Account-page logic — element refs
   const emailSigninInput    = document.querySelector(".email-signin");
   const passwordSigninInput = document.querySelector(".password-signin");
   const emailSignupInput    = document.querySelector(".email-signup");
   const passwordSignupInput = document.querySelector(".password-signup");
   const nameSignupInput     = document.querySelector(".name-signup");
   const newsletterCheckbox  = document.querySelector(".newsletter-checkbox");
+  const termsCheckbox       = document.getElementById("terms-checkbox"); // requires this element in signup HTML
 
   const signInBtn           = document.querySelector(".sign-in-btn");
   const signUpBtn           = document.querySelector(".sign-up-btn");
@@ -146,10 +146,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const clearLocalBtn       = document.getElementById("clear-local-btn");
   const clearFirestoreBtn   = document.getElementById("clear-firestore-btn");
 
-  // only attach handlers if UI present
+  // Only attach handlers if the account UI exists on this page
   if (emailSigninInput && signInBtn && signUpBtn) {
 
-    // verification UI helpers (single set)
+    // Verification UI helpers
     let verifyPoll = null;
     let resendTimer = null;
     function clearVerifyTimers() {
@@ -169,10 +169,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (wrapper) wrapper.style.display = "none";
       if (ev) ev.style.display = "block";
       if (evEmail) evEmail.textContent = (userObj && userObj.email) || "";
-
       if (evStatus) evStatus.textContent = "Verification email sent. Check your inbox.";
 
-      // resend cooldown 60s
+      // Resend cooldown 60s
       let secs = 60;
       if (resendBtn) {
         resendBtn.disabled = true;
@@ -189,7 +188,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (cur) await cur.sendEmailVerification();
             if (evStatus) evStatus.textContent = "Verification email resent.";
           } catch (e) {
-            console.error("resend failed", e);
+            console.error("Resend failed:", e);
             if (evStatus) evStatus.textContent = "Resend failed — try again later.";
           }
           // restart cooldown
@@ -205,20 +204,37 @@ document.addEventListener("DOMContentLoaded", () => {
         };
       }
 
-      // cancel -> delete unverified account (client-only)
+      // Cancel: delete auth user + userdata (by uid) — do NOT delete membership
       if (cancelBtn) {
         cancelBtn.onclick = async () => {
           try {
             const cur = firebase.auth().currentUser || userObj;
-            if (cur) await cur.delete();
-          } catch (e) {
-            console.warn("client delete failed", e);
-            try { await firebase.auth().signOut(); } catch(_) {}
+            if (!cur) {
+              if (ev) ev.style.display = "none";
+              if (wrapper) wrapper.style.display = "block";
+              clearVerifyTimers();
+              return;
+            }
+
+            const uid = cur.uid;
+
+            // Delete userdata by uid (only)
+            try { await db.collection("userdata").doc(uid).delete().catch(()=>{}); } catch (e) { console.warn("delete userdata failed", e); }
+
+            // delete auth user (client-side)
+            try { await cur.delete(); }
+            catch (e) {
+              console.warn("cur.delete() failed (may require reauth):", e);
+              try { await firebase.auth().signOut(); } catch (_) {}
+            }
+          } catch (err) {
+            console.error("Cancel-delete flow error:", err);
+            try { await firebase.auth().signOut(); } catch (_) {}
           } finally {
             if (ev) ev.style.display = "none";
             if (wrapper) wrapper.style.display = "block";
             clearVerifyTimers();
-            // clear pending session items just in case
+            // clear any temp session keys
             sessionStorage.removeItem("rr_pending_fullName");
             sessionStorage.removeItem("rr_pending_news");
             sessionStorage.removeItem("rr_just_signed_up");
@@ -226,7 +242,7 @@ document.addEventListener("DOMContentLoaded", () => {
         };
       }
 
-      // poll for verification (every 3s - ~6 minutes max)
+      // Poll for verification every 3s (stops after ~6 minutes)
       let checks = 0;
       const maxChecks = 120;
       verifyPoll = setInterval(async () => {
@@ -238,18 +254,16 @@ document.addEventListener("DOMContentLoaded", () => {
           if (cur.emailVerified) {
             clearVerifyTimers();
 
-            // show verified message then redirect to original target (if any)
+            // show verified message briefly then redirect to original target (if any)
             if (evStatus) evStatus.textContent = "Verified — redirecting...";
             const params = new URLSearchParams(window.location.search);
             const redirect = params.get("redirect");
-            // perform any post-verification actions that must happen now
-            // (displayName and userdata were saved at signup already; subscribe proxy was optional)
-            // Clear any pending session keys
+
+            // clear short-lived flags
             sessionStorage.removeItem("rr_pending_fullName");
             sessionStorage.removeItem("rr_pending_news");
             sessionStorage.removeItem("rr_just_signed_up");
 
-            // Give a short moment so the user sees "Verified"
             setTimeout(() => {
               if (redirect) {
                 try { window.location.replace(decodeURIComponent(redirect)); } catch (e) { window.location.href = "/"; }
@@ -257,14 +271,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 window.location.href = "/";
               }
             }, 900);
-
             return;
           } else if (checks >= maxChecks) {
             clearVerifyTimers();
             if (evStatus) evStatus.textContent = "Still waiting for verification. You can resend or cancel.";
           }
         } catch (err) {
-          console.error("verification poll error", err);
+          console.error("Verification poll error:", err);
         }
       }, 3000);
     } // end setupVerifyUI
@@ -273,9 +286,15 @@ document.addEventListener("DOMContentLoaded", () => {
     signUpBtn.removeEventListener && signUpBtn.removeEventListener("click", null);
     signUpBtn.addEventListener("click", async () => {
       const fullName = (nameSignupInput && nameSignupInput.value || "").trim();
-      const email = (emailSignupInput && emailSignupInput.value || "").trim();
-      const pwd = (passwordSignupInput && passwordSignupInput.value) || "";
+      const email    = (emailSignupInput && emailSignupInput.value || "").trim();
+      const pwd      = (passwordSignupInput && passwordSignupInput.value || "");
       if (errorSignupMsg) errorSignupMsg.textContent = "";
+
+      // Require Terms & Conditions checkbox
+      if (!termsCheckbox || !termsCheckbox.checked) {
+        if (errorSignupMsg) errorSignupMsg.textContent = "You must accept the Terms & Conditions to sign up.";
+        return;
+      }
 
       if (!fullName || !email || !pwd) {
         if (errorSignupMsg) errorSignupMsg.textContent = "Enter name, email and password.";
@@ -285,30 +304,51 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         // create the account (account exists on Firebase now)
         const cred = await firebase.auth().createUserWithEmailAndPassword(email, pwd);
+        const user = cred.user;
 
-        // **NEW**: save displayName and userdata immediately (like normal)
+        // save displayName and userdata immediately
         try {
-          await cred.user.updateProfile({ displayName: fullName });
-          await db.collection("userdata").doc(cred.user.uid).set({ fullName: fullName }, { merge: true });
+          await user.updateProfile({ displayName: fullName });
         } catch (e) {
-          console.warn("saving displayName/userdata immediately failed:", e);
+          console.warn("updateProfile failed:", e);
+        }
+        try {
+          await db.collection("userdata").doc(user.uid).set({ fullName: fullName }, { merge: true });
+        } catch (e) {
+          console.warn("saving userdata failed:", e);
         }
 
-        // store pending news flag for potential subscribe after verification
-        sessionStorage.setItem("rr_pending_news", (newsletterCheckbox && newsletterCheckbox.checked) ? "1" : "0");
+        // Immediately subscribe to Mailchimp via Netlify proxy (fire-and-forget)
+        if (newsletterCheckbox && newsletterCheckbox.checked) {
+          (async () => {
+            try {
+              const res = await fetch("/.netlify/functions/subscribe", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, fullName })
+              });
+              if (!res.ok) {
+                const txt = await res.text().catch(()=>"");
+                console.warn("Subscribe proxy returned non-ok:", res.status, txt);
+              }
+            } catch (err) {
+              console.warn("Subscribe proxy failed:", err);
+            }
+          })();
+        }
 
         // send verification email
-        try { await cred.user.sendEmailVerification(); } catch (e) { console.warn("sendEmailVerification:", e); }
+        try { await user.sendEmailVerification(); } catch (e) { console.warn("sendEmailVerification:", e); }
 
-        // mark short window for verification UI
+        // keep a tiny short-lived window so auth listener won't immediately sign them out
         sessionStorage.setItem("rr_just_signed_up", "1");
         setTimeout(() => sessionStorage.removeItem("rr_just_signed_up"), 10000);
 
         // show verification UI and start polling
-        setupVerifyUI(cred.user);
+        setupVerifyUI(user);
 
       } catch (err) {
-        console.error("signup error", err);
+        console.error("signup error:", err);
         if (errorSignupMsg) {
           if (err.code === "auth/email-already-in-use") {
             errorSignupMsg.textContent = "Email already used, try to Sign IN";
@@ -345,7 +385,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        // verified -> redirect to original target (if any) or show signed-in UI
+        // verified -> go to redirect if provided, else show signed-in UI
         const params = new URLSearchParams(window.location.search);
         const redirect = params.get("redirect");
         if (redirect) {
@@ -368,7 +408,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
       }
-    });
+    })
     // Forgot Password
     forgotPasswordBtn.addEventListener("click", () => {
       const email = emailSigninInput.value.trim();
@@ -398,82 +438,93 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // --- Attach core user-action listeners unconditionally (if elements exist) ---
   if (deleteAccountBtn) {
-    deleteAccountBtn.addEventListener("click", async () => {
-      const u = firebase.auth().currentUser;
-      if (!u || !confirm("Delete account AND all your cloud data?")) return;
-      try {
-        await db.collection("userdata").doc(u.uid).delete();
-        await db.collection("membership").doc(u.uid).delete().catch(() => {});
-        await u.delete();
-        alert("Deleted account & data."); location.reload();
-      } catch (e) {
-        console.error(e);
-        alert("Error deleting: " + e.message);
-      }
-    });
-  }
+      deleteAccountBtn.addEventListener("click", async () => {
+        const u = firebase.auth().currentUser;
+        if (!u) return;
+        if (!confirm("Delete account AND all your cloud data?")) return;
+        try {
+          const uid = u.uid;
+          // delete userdata by uid only
+          await db.collection("userdata").doc(uid).delete().catch(()=>{});
+          // delete auth user
+          await u.delete();
+          alert("Deleted account & data.");
+          location.reload();
+        } catch (e) {
+          console.error("Error deleting account & data:", e);
+          if (e && e.code === "auth/requires-recent-login") {
+            alert("Unable to delete: please sign in again and try delete.");
+          } else {
+            alert("Error deleting: " + (e && e.message ? e.message : "Unknown error"));
+          }
+        }
+      });
+    }
 
-  if (saveBtn) {
-    saveBtn.addEventListener("click", async () => {
-      const u = firebase.auth().currentUser;
-      if (!u) return alert("Sign in first.");
-      try {
-        await db.collection("userdata").doc(u.uid)
-          .set(Object.fromEntries(Object.entries(localStorage)), { merge: true });
-        alert("Data saved!");
-      } catch {
-        alert("Save failed, try again.");
-      }
-    });
-  }
+    // Save Game Data
+    if (saveBtn) {
+      saveBtn.addEventListener("click", async () => {
+        const u = firebase.auth().currentUser;
+        if (!u) return alert("Sign in first.");
+        try {
+          await db.collection("userdata").doc(u.uid)
+            .set(Object.fromEntries(Object.entries(localStorage)), { merge: true });
+          alert("Data saved!");
+        } catch {
+          alert("Save failed, try again.");
+        }
+      });
+    }
 
-  if (loadBtn) {
-    loadBtn.addEventListener("click", async () => {
-      const u = firebase.auth().currentUser;
-      if (!u) return alert("Sign in first.");
-      try {
-        const snap = await db.collection("userdata").doc(u.uid).get();
-        if (!snap.exists) throw new Error();
-        localStorage.clear();
-        Object.entries(snap.data()).forEach(([k,v]) =>
-          localStorage.setItem(k, v)
-        );
-        alert("Data loaded!"); location.reload();
-      } catch {
-        alert("Load failed, try again.");
-      }
-    });
-  }
+    // Load Game Data
+    if (loadBtn) {
+      loadBtn.addEventListener("click", async () => {
+        const u = firebase.auth().currentUser;
+        if (!u) return alert("Sign in first.");
+        try {
+          const snap = await db.collection("userdata").doc(u.uid).get();
+          if (!snap.exists) throw new Error();
+          localStorage.clear();
+          Object.entries(snap.data()).forEach(([k,v]) => localStorage.setItem(k, v));
+          alert("Data loaded!"); location.reload();
+        } catch {
+          alert("Load failed, try again.");
+        }
+      });
+    }
 
-  if (signOutBtn) {
-    signOutBtn.addEventListener("click", () => {
-      firebase.auth().signOut()
-        .then(() => location.reload())
-        .catch(e => { console.error(e); alert("Sign-out failed."); });
-    });
-  }
+    // Sign Out
+    if (signOutBtn) {
+      signOutBtn.addEventListener("click", () => {
+        firebase.auth().signOut()
+          .then(() => location.reload())
+          .catch(e => { console.error(e); alert("Sign-out failed."); });
+      });
+    }
 
-  if (clearLocalBtn) {
-    clearLocalBtn.addEventListener("click", () => {
-      if (confirm("Clear all localStorage?")) { localStorage.clear(); alert("Cleared."); }
-    });
-  }
+    // Clear LocalStorage
+    if (clearLocalBtn) {
+      clearLocalBtn.addEventListener("click", () => {
+        if (confirm("Clear all localStorage?")) { localStorage.clear(); alert("Cleared."); }
+      });
+    }
 
-  if (clearFirestoreBtn) {
-    clearFirestoreBtn.addEventListener("click", async () => {
-      const u = firebase.auth().currentUser;
-      if (!u) return alert("Sign in first.");
-      if (!confirm("Delete cloud data?")) return;
-      try {
-        await db.collection("userdata").doc(u.uid).delete();
-        alert("Cloud data deleted.");
-      } catch {
-        alert("Delete failed.");
-      }
-    });
-  }
+    // Clear Firestore data (cloud userdata)
+    if (clearFirestoreBtn) {
+      clearFirestoreBtn.addEventListener("click", async () => {
+        const u = firebase.auth().currentUser;
+        if (!u) return alert("Sign in first.");
+        if (!confirm("Delete cloud data?")) return;
+        try {
+          await db.collection("userdata").doc(u.uid).delete();
+          alert("Cloud data deleted.");
+        } catch {
+          alert("Delete failed.");
+        }
+      });
+    }
+
   const faviconLink         = document.querySelector("link[rel='icon']");
   const shortcutFaviconLink = document.querySelector("link[rel='shortcut icon']");
   const defaultTitle        = document.title;
