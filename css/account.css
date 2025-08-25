@@ -1,93 +1,120 @@
-/* Card view container */
-#card-view {
-  max-width: 600px;
-  margin: 20px auto;
-  background-color: #2a2a2a;
-  padding: 20px;
-  color: #dedede;
-  border-radius: 5px;
-  padding: 20px;
-  border: 2px solid rgba(92, 201, 59, 1);
-  box-shadow: 4px 4px rgba(92, 201, 59, 1);
-}
+:root{
+      --rr-green: #5cc93b;
+      --rr-blue:  #4193c9;
+      --rr-bg:    #2a2a2a;
+      --rr-fg:    #dedede;
+      --card-shadow: 4px 4px rgba(92,201,59,1);
+    }
+    body{
+      margin:0;
+      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      background:#111;
+      color:var(--rr-fg);
+      -webkit-font-smoothing:antialiased;
+    }
+    header .navbar{ display:flex; gap:12px; align-items:center; padding:10px 16px; background:var(--rr-bg); border-bottom:1px solid #1f1f1f; }
+    header .navbar a{ color:var(--rr-fg); text-decoration:none; padding:6px 8px; }
+    header .navbar .homeimg img{ height:34px; width:auto; display:block; }
 
-#card-view h1 {
-  color: #5cc93b;
-  margin-bottom: 15px;
-}
+    main { max-width:1100px; margin:22px auto; padding:0 12px; }
 
-#card-view h2 {
-  color: #4193c9;
-  margin-bottom: 15px;
-}
+    h1{ color:var(--rr-green); margin:10px 0 4px 0; font-size:26px; }
+    hr{ border:none; border-top:1px solid #333; margin:12px 0 18px; }
 
-/* User controls (after sign‑in) */
-#user-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;            /* Spacing between buttons */
-  margin-top: 15px;
-}
+    /* card view container (we keep a similar card look) */
+    #card-view {
+      background-color: var(--rr-bg);
+      border-radius:8px;
+      border: 2px solid var(--rr-green);
+      box-shadow: var(--card-shadow);
+      padding: 14px;
+    }
 
-/* Buttons inside user‑controls */
-#user-controls button {
-  background-color: #4193c9;
-  padding: 10px 15px;
-  border-radius: 5px;
-  font-size: 16px;
-  font-weight: bold;
-  color: white;
-  border: none;
-  transition: background-color 0.3s ease;
-  width: 100%;         /* Makes all buttons stretch to container width */
-  box-sizing: border-box;
-  margin-top: 10px;
-}
+    /* layout: left menu + right view */
+    .settings-shell {
+      display:flex;
+      gap:20px;
+      align-items:stretch;
+    }
 
-#user-controls button:hover {
-  background-color: #5cc93b;
-  cursor: pointer;
-}
+    /* left menu (small, non-collapsible) */
+    .settings-menu {
+      width:220px;
+      min-width:160px;
+      background: #222;
+      border-radius:6px;
+      padding:12px;
+      box-sizing:border-box;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .menu-header {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom:6px;
+    }
+    .menu-header .hamb {
+      width:28px; height:20px; display:flex; flex-direction:column; justify-content:space-between;
+    }
+    .menu-header .hamb span { display:block; height:3px; background:var(--rr-fg); border-radius:2px; }
+    .menu-title { font-weight:bold; color:var(--rr-blue); font-size:14px; }
 
-#user-controls .danger {
-  background-color: #ff4d4d;
-}
+    .menu-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; overflow:auto; }
+    .menu-list button {
+      text-align:left;
+      padding:10px 10px;
+      background:transparent;
+      color:var(--rr-fg);
+      border:1px solid transparent;
+      border-radius:6px;
+      cursor:pointer;
+      font-size:14px;
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .menu-list button:hover { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.02); }
+    .menu-list button.active {
+      background: linear-gradient(90deg, var(--rr-blue), var(--rr-green));
+      color:#111;
+      font-weight:bold;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.12) inset;
+    }
 
-#user-controls .danger:hover {
-  background-color: #cc0000;
-}
+    /* right side view */
+    .settings-view {
+      flex:1;
+      min-height:360px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.06), transparent);
+      border-radius:6px;
+      padding:14px;
+      box-sizing:border-box;
+    }
 
-#user-membership:empty {
-  display: none;
-}
-#user-membership:empty + br,
-#user-membership:empty + * {
-  display: none; /* hide any adjacent whitespace or line breaks if needed */
-}
+    .settings-panel { display:none; }
+    .settings-panel.active { display:block; }
 
-/* Responsive design */
-@media (max-width: 600px) {
-  /* Card view tweaks */
-  #card-view {
-    margin: 10px;
-    padding: 15px;
-  }
+    /* small utilities */
+    .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    .muted { color:#bdbdbd; font-size:14px; }
+    .field { margin-bottom:10px; }
+    .field label { display:block; font-size:13px; margin-bottom:6px; color:#cfcfcf; }
+    .field input[type="text"], .field input[type="email"], .field input[type="file"] {
+      width:100%; padding:10px; box-sizing:border-box; border-radius:6px; border:1px solid #333; background:#111; color:var(--rr-fg);
+    }
 
-  /* Stack the auth buttons vertically */
-  .auth-buttons {
-    flex-direction: column;
-  }
+    /* reuse your existing buttons style but make them inline-friendly */
+    .btn { background:var(--rr-blue); color:white; padding:8px 12px; border-radius:6px; border:none; cursor:pointer; font-weight:bold; }
+    .btn.ghost { background:transparent; border:1px solid #333; color:var(--rr-fg); }
+    .btn.danger { background:#ff4d4d; }
 
-  /* Full‑width buttons on small screens */
-  button {
-    width: 100%;
-  }
-
-  /* Smaller inputs & buttons */
-  input[type="email"],
-  input[type="password"],
-  button {
-    font-size: 14px;
-    padding: 8px 12px;
-  }
-}
+    /* tune sizes for small screens */
+    @media (max-width:880px) {
+      .settings-shell { flex-direction:column; }
+      .settings-menu { width:100%; min-width:0; display:flex; flex-direction:row; gap:6px; overflow:auto; padding:8px; }
+      .menu-list { flex-direction:row; gap:6px; }
+      .menu-list button { white-space:nowrap; padding:8px 10px; font-size:13px; }
+      .settings-view { padding:12px; }
+    }
