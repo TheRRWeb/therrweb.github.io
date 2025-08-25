@@ -1,76 +1,205 @@
-/* ---------------- RR Settings — tweaks requested ---------------- */
+/* account.css — full file for /account/index.html */
 
-/* Make the card / view background white and use dark text */
+/* ---------------- theme variables ---------------- */
+:root{
+  --rr-green: #5cc93b;
+  --rr-blue:  #4193c9;
+  --rr-white: #ffffff;
+  --rr-black: #2a2a2a;
+  --rr-fg:    #dedede;
+  --card-border: 2px solid #5cc93b;
+  --card-shadow: 4px 4px rgba(92,201,59,1);
+}
+
+/* -------------- page basics (only for settings area) -------------- */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--rr-black);
+  background: #111; /* keep site background dark — card is white */
+}
+
+/* Card container */
 #card-view {
-  background: #ffffff !important;
-  color: #2a2a2a !important;
+  background: var(--rr-white);
+  color: var(--rr-black);
+  max-width: 1100px;
+  margin: 22px auto;
+  border-radius: 8px;
+  padding: 14px;
+  box-sizing: border-box;
+  border: var(--card-border);
+  box-shadow: var(--card-shadow);
 }
 
-/* Ensure panels / view use dark text on white background */
-.settings-view,
-.settings-panel {
-  background: #ffffff;
-  color: #2a2a2a;
+/* Headings inside card */
+#card-view h1 {
+  color: var(--rr-green);
+  margin: 6px 0 8px 0;
+  font-size: 28px;
+}
+#card-view h2 {
+  color: var(--rr-blue);
+  margin: 0 0 12px 0;
 }
 
-/* Remove the small hamburger icon (three stripes) */
+/* ---------------- layout: left menu + right view ---------------- */
+.settings-shell {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+/* Left menu (small) */
+.settings-menu {
+  width: 220px;
+  min-width: 160px;
+  background: #f7f7f7; /* slightly off-white so it reads on white card */
+  border-radius: 6px;
+  padding: 12px;
+  box-sizing: border-box;
+  border: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Remove any hamburger icon; menu header only shows title */
+.menu-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
 .menu-header .hamb {
-  display: none !important;
+  display: none; /* removed as requested */
 }
 
-/* Make the menu title larger — H2 size */
+/* Menu title styled like an h2 */
 .menu-title {
-  font-size: 1.5rem;     /* h2-sized */
+  font-size: 1.5rem; /* h2 sized */
   font-weight: 700;
-  color: #2a2a2a;
+  color: var(--rr-black);
   line-height: 1;
-  margin-left: 4px;
+  margin-left: 0;
 }
 
-/* Side-menu buttons: default appearance (no gradient) */
+/* Menu list */
+.menu-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow: auto;
+  max-height: calc(80vh - 120px);
+}
+
+/* Menu button styles */
 .settings-menu .menu-list button {
+  appearance: none;
+  -webkit-appearance: none;
+  text-align: left;
+  padding: 10px 10px;
   background: transparent;
-  color: #2a2a2a;
+  color: var(--rr-black);
   border: 1px solid transparent;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  transition: background-color .12s ease, color .12s ease, border-color .12s ease;
 }
 
-/* Active button: solid RR green (no gradient) */
-.settings-menu .menu-list button.active {
-  background: #5cc93b !important;
-  color: #111 !important;
-  border-color: #5cc93b !important;
-  box-shadow: none !important;
-  font-weight: 700;
-}
-
-/* Hover state: subtle light green tint for clarity */
+/* Hover state */
 .settings-menu .menu-list button:hover {
-  background: #eafbec;
-  color: #111;
+  background: #f0fbf0; /* subtle light green tint */
+  color: var(--rr-black);
   border-color: transparent;
 }
 
-/* Panel headings use dark color for visibility on white bg */
-.settings-panel h2,
-.settings-panel h3 {
-  color: #2a2a2a;
+/* Active button: solid green (no gradient) */
+.settings-menu .menu-list button.active {
+  background: var(--rr-green) !important;
+  color: #111 !important;
+  border-color: var(--rr-green) !important;
+  font-weight: 700;
+  box-shadow: none !important;
 }
 
-/* Tweak small controls so they read correctly on white */
-.field label,
-.muted {
-  color: #666;
+/* Make sure extremely long labels wrap nicely */
+.settings-menu .menu-list button { white-space: normal; text-wrap: wrap; }
+
+/* ---------------- right-side view ---------------- */
+.settings-view {
+  flex: 1;
+  min-height: 360px;
+  background: transparent;
+  border-radius: 6px;
+  padding: 14px;
+  box-sizing: border-box;
 }
 
-/* Make sure buttons styled as .btn remain visible on white */
-.btn {
-  box-shadow: none;
+/* Panels: only one active at a time */
+.settings-panel { display: none; color: var(--rr-black); }
+.settings-panel.active { display: block; }
+
+/* Small layout helpers */
+.row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:10px; }
+.muted { color:#666666; font-size:14px; }
+.field { margin-bottom:10px; }
+.field label { display:block; font-size:13px; margin-bottom:6px; color:#555; }
+.field input[type="text"], .field input[type="email"], .field input[type="file"] {
+  width:100%;
+  padding:10px;
+  box-sizing:border-box;
+  border-radius:6px;
+  border:1px solid #ddd;
+  background: #fff;
+  color: var(--rr-black);
 }
 
-/* Responsive: keep behavior stable */
-@media (max-width:880px) {
-  .menu-title {
-    font-size: 1.15rem;
-  }
+/* Buttons used in panels */
+.btn { background: var(--rr-blue); color: white; padding:8px 12px; border-radius:6px; border:none; cursor:pointer; font-weight:700; }
+.btn.ghost { background: transparent; border:1px solid #ddd; color: var(--rr-black); }
+.btn.danger { background: #ff4d4d; color: white; }
+
+/* Small tweaks for danger look */
+.btn.danger:hover { background: #cc0000; }
+
+/* R Touch checkbox styling */
+.r-touch-toggle { transform: translateY(2px); margin-right:8px; }
+
+/* Toolbar selector radios */
+.toolbar-selector label { display:block; margin-bottom:6px; color:#444; }
+
+/* Newsletter iframe container tweak so it fits nicely */
+iframe[data-test-id="beehiiv-embed"] { border: none; background: transparent; }
+
+/* Hide empty membership text if empty (keeps layout tidy) */
+#user-membership:empty { display:none; }
+
+/* ---------------- responsive rules ---------------- */
+@media (max-width: 880px) {
+  .settings-shell { flex-direction: column; gap:12px; }
+  .settings-menu { width:100%; min-width:0; display:flex; flex-direction:row; gap:6px; padding:8px; overflow:auto; }
+  .menu-list { flex-direction:row; gap:6px; }
+  .menu-list button { white-space:nowrap; padding:8px 10px; font-size:13px; }
+  .settings-view { padding:12px; }
 }
+
+/* ---------------- small visual polishing ---------------- */
+.settings-panel h2 { margin-top: 0; color: var(--rr-blue); }
+.settings-panel h3 { color: var(--rr-black); margin-bottom:8px; }
+
+/* Ensure focus outlines are visible for keyboard users */
+.settings-menu .menu-list button:focus { outline: 2px solid rgba(65,147,201,0.2); outline-offset: 2px; }
+
+/* Do not override global header/footer — they are controlled by style.css */
+/* End of account.css */
