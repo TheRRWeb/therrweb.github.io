@@ -144,34 +144,36 @@
               <h2>Super Secret Mode</h2>
               <p class="muted">Change the web title and icon — For Safari, favicon updates may take a while.</p>
 
-              <div style="margin-top:10px;">
-                <label style="display:block;margin-bottom:6px;"><input type="radio" name="siteTheme" value="none"> None</label>
-                <label style="display:block;margin-bottom:6px;"><input type="radio" name="siteTheme" value="google"> Google</label>
-                <label style="display:block;margin-bottom:6px;"><input type="radio" name="siteTheme" value="teams"> Teams</label>
-                <label style="display:block;margin-bottom:6px;"><input type="radio" name="siteTheme" value="custom"> Custom…</label>
+              <div id="disguise-mode">
+  <div id="theme-selector">
+    <label><input type="radio" name="siteTheme" value="none" id="theme-none"> None</label>
+    <label><input type="radio" name="siteTheme" value="google" id="theme-google"> Google</label>
+    <label><input type="radio" name="siteTheme" value="teams" id="theme-teams"> Teams</label>
+    <label><input type="radio" name="siteTheme" value="custom" id="theme-custom"> Custom…</label>
+  </div>
 
-                <div class="custom-options" style="display:none; margin-top:8px;">
-                  <input type="text" class="custom-title-input" placeholder="Custom Title" style="margin-bottom:8px; width:100%;">
-                  <input type="file" class="custom-icon-input" accept="image/*">
-                </div>
-              </div>
+  <div id="custom-options" style="display:none; margin-top:8px;">
+    <input type="text" id="custom-title-input" placeholder="Custom Title">
+    <input type="file" id="custom-icon-input" accept="image/*">
+  </div>
+</div>
             </div>
 
             <!-- R Touch -->
             <div id="panel-rtouch" class="settings-panel">
               <h2>R Touch</h2>
               <p class="muted">Override some keyboard games with RR added touch controls (only on games with RT labels)</p>
-              <label><input type="checkbox" class="r-touch-toggle"> R Touch</label>
+              <label><input type="checkbox" id="r-touch-toggle"> R Touch</label>
             </div>
 
             <!-- Toolbar Settings -->
             <div id="panel-toolbar" class="settings-panel">
               <h2>Toolbar Settings</h2>
               <p class="muted">Choose toolbar position</p>
-              <div class="toolbar-selector">
-                <label style="display:block;margin-bottom:6px;"><input type="radio" name="toolbar-pos" value="left"> Left</label>
-                <label style="display:block;margin-bottom:6px;"><input type="radio" name="toolbar-pos" value="right"> Right</label>
-              </div>
+              <div id="toolbar-selector">
+  <label><input type="radio" name="toolbar-pos" value="left" id="toolbar-left"> Left</label>
+  <label><input type="radio" name="toolbar-pos" value="right" id="toolbar-right"> Right</label>
+</div>
             </div>
 
             <!-- Themes -->
