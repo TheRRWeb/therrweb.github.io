@@ -525,91 +525,95 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-  const faviconLink         = document.querySelector("link[rel='icon']");
-  const shortcutFaviconLink = document.querySelector("link[rel='shortcut icon']");
-  const defaultTitle        = document.title;
-  const defaultIcon         = faviconLink?.href || "";
+  // --------- Theme / disguise / r-touch / toolbar JS (id-based) ----------
+const faviconLink         = document.querySelector("link[rel='icon']");
+const shortcutFaviconLink = document.querySelector("link[rel='shortcut icon']");
+const defaultTitle        = document.title;
+const defaultIcon         = faviconLink?.href || "";
 
-  const PRESETS = {
-    none:   { title: defaultTitle, icon: defaultIcon },
-    google: {
-      title: "Google",
-      icon:  "https://pensiontransferspecialist.co.uk/wp-content/uploads/2021/10/Google-Workspace-Logo.png"
-    },
-    teams: {
-      title: "Microsoft Teams",
-      icon:  "https://static2.sharepointonline.com/files/fabric/assets/brand-icons/product/svg/teams_48x1.svg"
+const PRESETS = {
+  none:   { title: defaultTitle, icon: defaultIcon },
+  google: {
+    title: "Google",
+    icon:  "https://pensiontransferspecialist.co.uk/wp-content/uploads/2021/10/Google-Workspace-Logo.png"
+  },
+  teams: {
+    title: "Microsoft Teams",
+    icon:  "https://static2.sharepointonline.com/files/fabric/assets/brand-icons/product/svg/teams_48x1.svg"
+  }
+};
+
+function applyTheme(theme) {
+  document.title = theme.title;
+  if (faviconLink)         faviconLink.href         = theme.icon;
+  if (shortcutFaviconLink) shortcutFaviconLink.href = theme.icon;
+}
+
+let savedTheme = {};
+try {
+  savedTheme = JSON.parse(localStorage.getItem("siteTheme")) || {};
+} catch {
+  savedTheme = {};
+}
+
+// Apply on load
+if (savedTheme.mode === "custom") {
+  applyTheme({ title: savedTheme.title, icon: savedTheme.icon });
+} else if (savedTheme.mode) {
+  applyTheme(PRESETS[savedTheme.mode] || PRESETS.none);
+} else {
+  applyTheme(PRESETS.none);
+}
+
+// Wire up the single disguise-mode block (now id-based)
+(function wireDisguiseMode() {
+  const block = document.getElementById("disguise-mode");
+  if (!block) return;
+
+  const radios     = block.querySelectorAll("input[name='siteTheme']");
+  const customOpts = document.getElementById("custom-options");
+  const titleIn    = document.getElementById("custom-title-input");
+  const iconIn     = document.getElementById("custom-icon-input");
+
+  // Initialize UI
+  if (savedTheme.mode) {
+    const sel = block.querySelector(`input[name="siteTheme"][value="${savedTheme.mode}"]`);
+    if (sel) sel.checked = true;
+    if (customOpts) customOpts.style.display = (savedTheme.mode === "custom") ? "block" : "none";
+    if (savedTheme.mode === "custom" && titleIn) titleIn.value = savedTheme.title || "";
+  }
+
+  // Radio change handler
+  radios.forEach(radio => radio.addEventListener("change", () => {
+    const mode = radio.value;
+    if (mode === "custom") {
+      if (customOpts) customOpts.style.display = "block";
+      savedTheme = { mode:"custom", title: defaultTitle, icon: defaultIcon };
+    } else {
+      if (customOpts) customOpts.style.display = "none";
+      applyTheme(PRESETS[mode] || PRESETS.none);
+      savedTheme = { mode };
     }
-  };
+    localStorage.setItem("siteTheme", JSON.stringify(savedTheme));
+  }));
 
-  function applyTheme(theme) {
-    document.title = theme.title;
-    if (faviconLink)         faviconLink.href         = theme.icon;
-    if (shortcutFaviconLink) shortcutFaviconLink.href = theme.icon;
-  }
-
-  let savedTheme = {};
-  try {
-    savedTheme = JSON.parse(localStorage.getItem("siteTheme")) || {};
-  } catch {
-    savedTheme = {};
-  }
-
-  // Apply on load
-  if (savedTheme.mode === "custom") {
-    applyTheme({ title: savedTheme.title, icon: savedTheme.icon });
-  } else if (savedTheme.mode) {
-    applyTheme(PRESETS[savedTheme.mode] || PRESETS.none);
-  } else {
-    applyTheme(PRESETS.none);
-  }
-
-  // Wire up each disguise‑mode block
-  document.querySelectorAll(".disguise-mode").forEach(block => {
-    const radios     = block.querySelectorAll("input[name='siteTheme']");
-    const customOpts = block.querySelector(".custom-options");
-    const titleIn    = block.querySelector(".custom-title-input");
-    const iconIn     = block.querySelector(".custom-icon-input");
-
-    // Initialize UI
-    if (savedTheme.mode) {
-      const sel = block.querySelector(
-        `input[name="siteTheme"][value="${savedTheme.mode}"]`
-      );
-      if (sel) sel.checked = true;
-      customOpts.style.display = (savedTheme.mode === "custom") ? "block" : "none";
-      if (savedTheme.mode === "custom") titleIn.value = savedTheme.title;
-    }
-
-    // Radio change handler
-    radios.forEach(radio => radio.addEventListener("change", () => {
-      const mode = radio.value;
-      if (mode === "custom") {
-        customOpts.style.display = "block";
-        savedTheme = { mode:"custom", title: defaultTitle, icon: defaultIcon };
-      } else {
-        customOpts.style.display = "none";
-        applyTheme(PRESETS[mode] || PRESETS.none);
-        savedTheme = { mode };
-      }
-      localStorage.setItem("siteTheme", JSON.stringify(savedTheme));
-    }));
-
-    // Custom title live‑update
+  // Custom title live-update
+  if (titleIn) {
     titleIn.addEventListener("input", () => {
-      if (block.querySelector('input[name="siteTheme"]:checked').value === "custom") {
+      const checkedMode = block.querySelector('input[name="siteTheme"]:checked')?.value;
+      if (checkedMode === "custom") {
         savedTheme.title = titleIn.value || defaultTitle;
         applyTheme({ title: savedTheme.title, icon: savedTheme.icon });
         localStorage.setItem("siteTheme", JSON.stringify(savedTheme));
       }
     });
+  }
 
-    // Custom icon file handler
+  // Custom icon file handler
+  if (iconIn) {
     iconIn.addEventListener("change", () => {
-      if (
-        block.querySelector('input[name="siteTheme"]:checked').value === "custom" &&
-        iconIn.files.length
-      ) {
+      const checkedMode = block.querySelector('input[name="siteTheme"]:checked')?.value;
+      if (checkedMode === "custom" && iconIn.files.length) {
         const reader = new FileReader();
         reader.onload = () => {
           savedTheme.icon = reader.result;
@@ -619,52 +623,59 @@ document.addEventListener("DOMContentLoaded", () => {
         reader.readAsDataURL(iconIn.files[0]);
       }
     });
+  }
+})(); // end wireDisguiseMode
+
+// — R Touch toggle (single toggle id)
+(function wireRTouch() {
+  const rtToggle = document.getElementById("r-touch-toggle");
+  if (!rtToggle) return;
+
+  // sync UI from storage
+  function syncToggle() {
+    const on = localStorage.getItem("r-touch") === "on";
+    rtToggle.checked = on;
+  }
+  syncToggle();
+
+  rtToggle.addEventListener("change", () => {
+    localStorage.setItem("r-touch", rtToggle.checked ? "on" : "off");
+    window.dispatchEvent(new Event("r-touch-changed"));
   });
-    // — R Touch toggles (multiple possible)
-  const rtToggles = document.querySelectorAll(".r-touch-toggle");
-  if (rtToggles.length) {
-    // sync UI from storage
-    function syncAllCheckboxes() {
-      const on = localStorage.getItem("r-touch") === "on";
-      rtToggles.forEach(cb => cb.checked = on);
-    }
-    // init state
-    syncAllCheckboxes();
 
-    // when any checkbox changes
-    rtToggles.forEach(cb => {
-      cb.addEventListener("change", () => {
-        localStorage.setItem("r-touch", cb.checked ? "on" : "off");
-        window.dispatchEvent(new Event("r-touch-changed"));
-      });
-    });
+  // reflect external changes
+  window.addEventListener("r-touch-changed", syncToggle);
+})(); // end wireRTouch
 
-    // reflect toolbar‑side toggles back here
-    window.addEventListener("r-touch-changed", syncAllCheckboxes);
+// — Toolbar-pos radios (single container id)
+(function wireToolbarPos() {
+  const toolbarContainer = document.getElementById("toolbar-selector");
+  if (!toolbarContainer) return;
+
+  const toolbarRadios = toolbarContainer.querySelectorAll("input[name='toolbar-pos']");
+  if (!toolbarRadios || toolbarRadios.length === 0) return;
+
+  function syncAllRadios() {
+    const saved = localStorage.getItem("toolbar-pos") || "right";
+    toolbarRadios.forEach(r => r.checked = (r.value === saved));
   }
+  // init state
+  syncAllRadios();
 
-  // — Toolbar‑pos radios (multiple possible blocks)
-  const toolbarRadios = document.querySelectorAll(".toolbar-selector input[name='toolbar-pos']");
-  if (toolbarRadios.length) {
-    function syncAllRadios() {
-      const saved = localStorage.getItem("toolbar-pos") || "right";
-      toolbarRadios.forEach(r => r.checked = (r.value === saved));
-    }
-    // init state
-    syncAllRadios();
-
-    // when any radio changes
-    toolbarRadios.forEach(radio => {
-      radio.addEventListener("change", () => {
-        if (!radio.checked) return;
-        localStorage.setItem("toolbar-pos", radio.value);
-        window.dispatchEvent(new Event("toolbar-pos-changed"));
-      });
+  // when any radio changes
+  toolbarRadios.forEach(radio => {
+    radio.addEventListener("change", () => {
+      if (!radio.checked) return;
+      localStorage.setItem("toolbar-pos", radio.value);
+      window.dispatchEvent(new Event("toolbar-pos-changed"));
     });
+  });
 
-    // you can also re‑sync on change if needed:
-    window.addEventListener("toolbar-pos-changed", syncAllRadios);
-  }
+  // re-sync listener
+  window.addEventListener("toolbar-pos-changed", syncAllRadios);
+})(); // end wireToolbarPos
+
+// End of updated ID-based wiring
 }); // end DOMContentLoaded
 
 function myFunction() {
