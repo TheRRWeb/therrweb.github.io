@@ -58,7 +58,7 @@ html, body {
 .settings-menu {
   width: 220px;
   min-width: 160px;
-  background: #f7f7f7; /* slightly off-white so it reads on white card */
+  background: #474747; /* slightly off-white so it reads on white card */
   border-radius: 6px;
   padding: 12px;
   box-sizing: border-box;
@@ -148,7 +148,7 @@ html, body {
 }
 
 /* Panels: only one active at a time */
-.settings-panel { display: none; color: var(--rr-black); }
+.settings-panel { display: none; color: var(--rr-fg); }
 .settings-panel.active { display: block; }
 
 /* Small layout helpers */
