@@ -15,21 +15,10 @@
   // ---------------- AD POOL (edit these HTML snippets) ----------------
   // Replace with your actual ad HTML snippets (image, links, markup).
   const headerAds = [
-    `<div style="width:100%;height:100%;position:relative;">
+    `<div style="display:none;width:100%;height:100%;position:relative;">
        <a href="https://example.com" target="_blank" rel="noopener" style="display:block;width:100%;height:100%;">
          <img src="/ads/header-ad1.jpg" alt="Header Ad" style="width:100%;height:100%;object-fit:cover;border-radius:4px;">
        </a>
-       <button class="ad-close" aria-label="Close ad" style="position:absolute;right:6px;top:6px;background:#ffffff88;border:none;padding:6px;border-radius:4px;cursor:pointer;">✕</button>
-     </div>`,
-
-    `<div style="width:100%;height:100%;position:relative;padding:8px;box-sizing:border-box;">
-       <div style="display:flex;align-items:center;gap:8px;">
-         <img src="/ads/header-ad2.jpg" alt="" style="height:64px;object-fit:cover;border-radius:6px;">
-         <div style="flex:1;">
-           <div style="font-weight:700;color:#111">Sponsor</div>
-           <div style="font-size:13px;color:#333">Special offer — limited time</div>
-         </div>
-       </div>
        <button class="ad-close" aria-label="Close ad" style="position:absolute;right:6px;top:6px;background:#ffffff88;border:none;padding:6px;border-radius:4px;cursor:pointer;">✕</button>
      </div>`
   ];
