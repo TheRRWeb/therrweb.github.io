@@ -1,4 +1,4 @@
-/* banner.js — full file (final version)
+/* banner.js — full file (defensive footerTop + side-slot fixes)
    - header top = 75px
    - header ad replacement 10s after close
    - header ad & info banner half size (controlled by headerMinHeight/headerMaxHeight)
@@ -6,7 +6,8 @@
    - side ads: width 60px, absolute (scroll with page), generate immediately (no scroll delay)
    - side ad closed -> placeholder, auto-replace after 15s
    - side slots generated top->down between header bottom and footer top
-   - include simple API: BannerManager.addHeaderAd/addSideAd/rebuildSideAds/refreshHeaderAd
+   - defensive computeFooterTop() to handle fixed/sticky footers or weird layouts
+   - API: BannerManager.addHeaderAd/addSideAd/rebuildSideAds/refreshHeaderAd
 */
 
 (function () {
@@ -122,15 +123,39 @@
     const r = el.getBoundingClientRect();
     return r.top + window.scrollY;
   }
+
   function computeHeaderBottom() {
     if (!headerEl) return 0;
     const rect = headerEl.getBoundingClientRect();
     return rect.bottom + window.scrollY;
   }
+
+  // DEFENSIVE computeFooterTop: handles fixed/sticky footer and weird layouts
   function computeFooterTop() {
-    if (!footerEl) return document.documentElement.scrollHeight;
-    const r = footerEl.getBoundingClientRect();
-    return r.top + window.scrollY;
+    try {
+      if (!footerEl) {
+        return document.documentElement.scrollHeight;
+      }
+      const style = getComputedStyle(footerEl);
+      if (style.position === 'fixed' || style.position === 'sticky') {
+        // fixed/sticky footer — fallback to doc height
+        return document.documentElement.scrollHeight;
+      }
+      // prefer offsetTop for static footers
+      if (typeof footerEl.offsetTop === 'number' && footerEl.offsetTop > 0) {
+        return footerEl.offsetTop;
+      }
+      // fallback to bounding rect + scrollY
+      const rect = footerEl.getBoundingClientRect();
+      const top = rect.top + window.scrollY;
+      if (!isFinite(top) || top <= 0) {
+        return document.documentElement.scrollHeight;
+      }
+      return top;
+    } catch (err) {
+      console.warn('computeFooterTop() error, falling back to doc height:', err);
+      return document.documentElement.scrollHeight;
+    }
   }
 
   // ---------------- populate side slots for a wrapper ----------------
@@ -139,9 +164,25 @@
     wrapper.innerHTML = ''; // rebuild
 
     const headerBottom = computeHeaderBottom();
-    const footerTop = computeFooterTop();
+    let footerTop = computeFooterTop();
+
+    // Defensive: if footerTop is not below headerBottom (weird layout), fallback to document height
+    if (footerTop <= headerBottom) {
+      console.warn('banner.js: footerTop <= headerBottom (footerTop:', footerTop, 'headerBottom:', headerBottom,
+                   ') — falling back to document height. This often means your footer is fixed/sticky or layout changed.');
+      const docHeight = document.documentElement.scrollHeight || document.body.scrollHeight || (headerBottom + minSlotHeight + 1000);
+      if (docHeight > headerBottom + 50) {
+        footerTop = docHeight;
+      } else {
+        footerTop = headerBottom + minSlotHeight + 20;
+      }
+    }
+
     const available = footerTop - headerBottom;
-    if (available < minSlotHeight) return;
+    if (available < minSlotHeight) {
+      // still not enough space — bail out
+      return;
+    }
 
     // number of slots that fit
     const per = slotHeight + slotMargin;
@@ -193,7 +234,6 @@
 
     // header ad close
     if (e.target.closest && e.target.closest('#header-ad .ad-close')) {
-      // clear header ad and schedule replacement
       if (headerAdEl) {
         headerAdEl.innerHTML = '';
         headerAdEl.style.display = 'none';
