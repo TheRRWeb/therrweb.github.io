@@ -120,6 +120,154 @@ a.homeimg {
   width: 55px;
 }
 
+/* ===== banner / ad styles ===== */
+
+/* general banner box */
+.banner {
+  box-sizing: border-box;
+  width: 100%;
+  background: #ffffff;
+  color: #222;
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+/* header area: keep banners visually stacked under navbar */
+#header-banners {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  position: fixed;           /* fixed so it stays under the navbar as requested */
+  left: 0;
+  z-index: 9999;
+  /* top will be set by JS to sit just under the navbar (so we don't hardcode) */
+}
+
+/* header ad */
+.header-ad {
+  justify-content: center;
+  min-height: 80px;
+  max-height: 220px;
+  padding: 8px;
+}
+
+/* info banner: horizontal layout, wraps to lines on small widths */
+.info-banner {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;  /* image then text goes left->right and wraps when narrow */
+  padding: 10px 14px;
+  background: #fffbe6;
+  border: 1px solid rgba(92,201,59,0.12);
+}
+
+/* info banner image: banner controls the image size (image scales inside) */
+.info-banner .info-img {
+  height: 56px;
+  width: auto;
+  object-fit: cover;
+  border-radius: 4px;
+  flex: 0 0 auto;
+}
+
+/* info content area */
+.info-banner .info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;  /* allow truncation/wrap */
+}
+
+/* close button (top-right of banner) */
+.banner-close {
+  position: absolute;
+  right: 8px;
+  top: 6px;
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  color: #666;
+  cursor: pointer;
+  padding: 6px;
+  line-height: 1;
+}
+
+/* style header ad close if you include it inside ad markup (ad HTML should include .ad-close) */
+.ad-close {
+  position: absolute;
+  right: 8px;
+  top: 6px;
+  background: rgba(255,255,255,0.9);
+  border: none;
+  padding: 6px;
+  cursor:pointer;
+  border-radius:4px;
+}
+
+/* side ad wrappers: these are containers — the JS will position them absolutely down the page */
+.side-ads-wrapper {
+  position: absolute;
+  top: 0;   /* JS will set accurate top based on header bottom */
+  width: 180px; /* default width for side ads, change if you need */
+  pointer-events: none; /* allows page content clicks pass through if ad slots transparent */
+  z-index: 900;
+}
+
+/* left and right wrappers will be positioned by JS (left:8px, right:8px) */
+
+/* side ad slot */
+.side-ad-slot {
+  position: absolute;   /* placed at a specific document Y by JS */
+  width: 180px;
+  background: #ffffff;
+  border-radius: 6px;
+  padding: 8px;
+  box-sizing: border-box;
+  border: 1px solid rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap:8px;
+  overflow: hidden;
+  pointer-events: auto; /* so its close button can be clicked */
+}
+
+/* side ad placeholder (empty cell after close) */
+.side-ad-placeholder {
+  background: transparent;
+  border: 1px dashed rgba(0,0,0,0.04);
+  opacity: 0.2;
+}
+
+/* ad internal image styling to keep aspect */
+.side-ad-slot img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+/* small spacing between stacked side ads (JS will set 5px top/bottom margin when computing slots) */
+
+/* responsive: smaller side width on narrow screens */
+@media (max-width: 900px) {
+  .side-ads-wrapper { display:none; } /* hide side ads on smaller screens to avoid overlay conflicts */
+  #header-banners { left: 0; right: 0; width: 100%; }
+  .info-banner .info-img { height:48px; }
+}
+
+/* ensure header-banners doesn't overlap header content: JS sets its top to header bottom + small gap */
+
 .footop-col {
   flex-basis: 12%;
   text-align: center;
