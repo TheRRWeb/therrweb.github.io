@@ -1,54 +1,52 @@
-/* banner.js
-   Manages:
-     - header info banner (close until refresh)
-     - header ad (random from headerAds[], X -> re-pick after 10s)
-     - left/right side ads (generate stacked slots between header bottom and footer top)
-   Edit headerAds[] and sideAds[] arrays to supply HTML strings for ads.
+/* banner.js (updated)
+   - header top = 75px
+   - side wrappers fixed overlay, width 60px
+   - robust event delegation for close buttons
+   - side slots stacked inside wrappers (not document absolute)
 */
+
 (function () {
   // CONFIG
-  const minSlotHeight = 405; // minimum gap (including bottom margin) required to create a new slot
-  const slotHeight = 400;    // visual ad height (px) for each side ad box (you can change)
-  const slotMargin = 10;     // vertical gap between slots (top+bottom total = 10 -> 5 top + 5 bottom)
-  const sideWidth = 180;     // width of side ad boxes (match CSS)
-  const headerAdReplaceDelay = 10000; // 10s in ms for header ad replacement after close
+  const minSlotHeight = 405; // minimum gap for a new slot (includes margins)
+  const slotHeight = 400;    // visual ad height (px) for each side ad box
+  const slotMargin = 10;     // vertical space between slots (5 top + 5 bottom)
+  const sideWidth = 60;      // requested width for side ads
+  const headerAdReplaceDelay = 10000; // 10s
 
   // AD SOURCES (edit these HTML snippets as needed)
   const headerAds = [
-    // Example ad snippet (link + image + close)
-    `<div class="header-ad-inner" style="width:100%;height:100%;position:relative;">
+    `<div style="width:100%;height:100%;position:relative;">
        <a href="https://example.com" target="_blank" rel="noopener" style="display:block;width:100%;height:100%;">
          <img src="/ads/header-ad1.jpg" alt="Header Ad" style="width:100%;height:100%;object-fit:cover;border-radius:4px;">
        </a>
        <button class="ad-close" aria-label="Close ad">✕</button>
      </div>`,
-    `<div class="header-ad-inner" style="width:100%;height:100%;position:relative;">
-       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-         <div style="flex:1">
-           <h3 style="margin:0;color:#111">Sponsor Name</h3>
-           <p style="margin:6px 0 0;color:#333">Get 50% off — limited time</p>
+    `<div style="width:100%;height:100%;position:relative;padding:8px;">
+       <div style="display:flex;align-items:center;gap:8px;">
+         <img src="/ads/header-ad2.jpg" alt="" style="height:64px;object-fit:cover;border-radius:6px;">
+         <div style="flex:1;">
+           <div style="font-weight:700;color:#111">Sponsor</div>
+           <div style="font-size:13px;color:#333">Special offer — limited time</div>
          </div>
-         <img src="/ads/header-ad2.jpg" alt="" style="height:80px;object-fit:cover;border-radius:6px;">
        </div>
        <button class="ad-close" aria-label="Close ad">✕</button>
      </div>`
   ];
 
   const sideAds = [
-    // Example side ad HTML (you'll replace with your customers)
-    `<div style="display:flex;flex-direction:column;gap:8px;">
+    `<div style="display:flex;flex-direction:column;gap:6px;align-items:center">
        <a href="https://example.com" target="_blank" rel="noopener"><img src="/ads/side1.jpg" alt="Side Ad"></a>
-       <div style="font-weight:600;color:#222">Game Sponsor</div>
-       <button class="side-close" style="background:#eee;border:none;padding:6px;border-radius:4px;cursor:pointer;">Close</button>
+       <div style="font-size:12px;text-align:center;">Sponsor</div>
+       <button class="side-close" aria-label="Close side ad" style="border:none;background:#eee;padding:4px;border-radius:4px;cursor:pointer">✕</button>
      </div>`,
-    `<div style="display:flex;flex-direction:column;gap:8px;">
+    `<div style="display:flex;flex-direction:column;gap:6px;align-items:center">
        <a href="https://example.org" target="_blank" rel="noopener"><img src="/ads/side2.jpg" alt="Side Ad"></a>
-       <div style="font-weight:600;color:#222">App Promo</div>
-       <button class="side-close" style="background:#eee;border:none;padding:6px;border-radius:4px;cursor:pointer;">Close</button>
+       <div style="font-size:12px;text-align:center;">App Promo</div>
+       <button class="side-close" aria-label="Close side ad" style="border:none;background:#eee;padding:4px;border-radius:4px;cursor:pointer">✕</button>
      </div>`
   ];
 
-  // utility
+  // helpers
   function randPick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
   // DOM refs
@@ -62,37 +60,36 @@
   const footerEl = document.querySelector('footer');
 
   if (!headerBanners) {
-    console.warn('banner.js: #header-banners is missing from DOM');
+    console.warn('banner.js: #header-banners missing');
     return;
   }
 
-  // set headerBanners top just under the header/nav
+  // ensure wrappers exist
+  if (!leftWrapper || !rightWrapper) {
+    console.warn('banner.js: side wrappers missing (#left-ads-wrapper / #right-ads-wrapper)');
+  }
+
+  // position header banners (fixed under header). Use 75px as requested.
   function positionHeaderBanners() {
-    const headerRect = headerEl ? headerEl.getBoundingClientRect() : { bottom: 0 };
-    // headerRect.bottom is viewport coordinate — convert to pixels from top of viewport:
-    // we will position headerBanners fixed with top = headerRect.bottom px
-    const topPx = Math.max(0, headerRect.bottom);
+    const topPx = 75;
     headerBanners.style.top = `${topPx}px`;
     headerBanners.style.left = '0';
     headerBanners.style.right = '0';
   }
 
-  // INFO banner close: hide until refresh
+  // INFO banner close: use delegation (reliable)
   (function wireInfoClose() {
     if (!infoBanner) return;
-    const closeBtn = infoBanner.querySelector('.banner-close');
-    if (!closeBtn) return;
-    closeBtn.addEventListener('click', () => {
-      infoBanner.style.display = 'none';
+    document.addEventListener('click', (e) => {
+      if (e.target && e.target.closest && e.target.closest('#info-banner .banner-close')) {
+        infoBanner.style.display = 'none';
+      }
     });
   })();
 
   // HEADER AD logic
   let headerAdTimeout = null;
-
-  function clearHeaderTimeout() {
-    if (headerAdTimeout) { clearTimeout(headerAdTimeout); headerAdTimeout = null; }
-  }
+  function clearHeaderTimeout() { if (headerAdTimeout) { clearTimeout(headerAdTimeout); headerAdTimeout = null; } }
 
   function renderHeaderAd(html) {
     if (!headerAdEl) return;
@@ -100,21 +97,21 @@
     headerAdEl.style.display = html ? 'flex' : 'none';
     headerAdHr.style.display = (html && infoBanner && infoBanner.style.display !== 'none') ? 'block' : 'none';
 
-    // wire close button inside header ad (class .ad-close)
-    const closeBtn = headerAdEl.querySelector('.ad-close');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => {
+    // delegate close clicks inside headerAdEl
+    headerAdEl.addEventListener('click', function onHeaderAdClick(e) {
+      const closeBtn = e.target.closest && e.target.closest('.ad-close');
+      if (closeBtn) {
         // hide current ad
         headerAdEl.innerHTML = '';
         headerAdEl.style.display = 'none';
         headerAdHr.style.display = (infoBanner && infoBanner.style.display !== 'none') ? 'block' : 'none';
-        // after delay, pick a new random header ad and render
+        // schedule replace
         clearHeaderTimeout();
         headerAdTimeout = setTimeout(() => {
           renderHeaderAd(randPick(headerAds));
         }, headerAdReplaceDelay);
-      });
-    }
+      }
+    }, { once:true });
   }
 
   function initHeaderAd() {
@@ -124,161 +121,132 @@
       headerAdHr.style.display = 'none';
       return;
     }
-    // show random ad on load
     renderHeaderAd(randPick(headerAds));
     positionHeaderBanners();
   }
 
-  // SIDE ADS logic
-  // each side slot is represented by an element with data-slot-index.
-  // We'll compute headerBottom and footerTop in document coords and create slots from headerBottom downward.
-  function docY(el) {
-    const r = el.getBoundingClientRect();
-    return r.top + window.scrollY;
+  // SIDE ADS: fixed wrappers; create stacked slots inside wrapper (flow layout)
+  function clearSideSlots() {
+    if (leftWrapper) leftWrapper.innerHTML = '';
+    if (rightWrapper) rightWrapper.innerHTML = '';
   }
 
-  function computeHeaderBottom() {
-    if (!headerEl) return 0;
-    return docY(headerEl) + headerEl.offsetHeight;
+  function computeAvailableHeight(wrapper) {
+    // wrapper clientHeight is the available vertical space for stacking (top..bottom)
+    return wrapper ? wrapper.clientHeight : 0;
   }
 
-  function computeFooterTop() {
-    if (!footerEl) {
-      // if no footer, approximate with document height
-      return document.documentElement.scrollHeight;
-    }
-    return docY(footerEl);
-  }
+  function populateSideForWrapper(wrapper, side) {
+    if (!wrapper) return;
 
-  // generate side ad slots for a given sideWrapper (left/right)
-  function populateSideSlots(sideWrapper, side) {
-    if (!sideWrapper) return;
+    // remove existing but keep placeholders where previously closed: we store closed indices in dataset
+    // For simplicity preserve closed by reading a data attribute list if present; otherwise rebuild
+    // We'll not persist closed across page reloads (but they wanted placeholder to remain until user clears; that can be implemented with storage)
+    wrapper.innerHTML = ''; // fresh
 
-    // clear existing slots (we'll recreate everything)
-    // Note: keep existing placeholders/closed slots? requirement: if closed leave empty cell.
-    // We'll reconstruct but preserve closed placeholders when possible by checking dataset.closed
-    const existing = Array.from(sideWrapper.querySelectorAll('.side-ad-slot'));
-    const preservedClosed = {}; // map top->closedFlag
-    existing.forEach(el => {
-      const closed = el.dataset.closed === '1';
-      if (closed) {
-        preservedClosed[el.dataset.top] = true;
-      }
-      el.remove();
-    });
+    const available = computeAvailableHeight(wrapper);
+    if (available < minSlotHeight) return;
 
-    const headerBottom = computeHeaderBottom();
-    const footerTop = computeFooterTop();
-    const availableHeight = footerTop - headerBottom;
+    // compute number of slots fitting: each uses slotHeight + slotMargin (top+bottom 5)
+    const per = slotHeight + (slotMargin);
+    const maxSlots = Math.floor((available + 5) / per); // +5 fudge
+    if (maxSlots <= 0) return;
 
-    if (availableHeight < minSlotHeight) {
-      // nothing to add
-      return;
-    }
-
-    // compute how many slots we can create
-    // Each slot consumes slotHeight + slotMargin spacing. We'll place them starting at headerBottom + 5px top margin.
-    let cursor = headerBottom + 5; // starting top position (document coordinate)
-    let slotIndex = 0;
-    while ((cursor + slotHeight + 5) <= footerTop) {
-      // create slot element
+    for (let i=0;i<maxSlots;i++) {
       const slot = document.createElement('div');
       slot.className = 'side-ad-slot';
-      slot.style.top = `${cursor}px`;
-      slot.style.width = `${sideWidth}px`;
-      slot.style.height = `${slotHeight}px`;
-      slot.style.left = side === 'left' ? '8px' : 'unset';
-      slot.style.right = side === 'right' ? '8px' : 'unset';
-      slot.style.pointerEvents = 'auto';
+      slot.style.height = slotHeight + 'px';
+      slot.style.width = sideWidth + 'px';
+      slot.dataset.index = String(i);
 
-      // preserve closed placeholder if existed (match by top position)
-      if (preservedClosed[String(cursor)]) {
+      // populate ad content from pool
+      const adHtml = randPick(sideAds);
+      slot.innerHTML = adHtml;
+
+      // wire close button with delegation on wrapper level
+      wrapper.appendChild(slot);
+    }
+  }
+
+  // wire side close using event delegation
+  function wireSideClose() {
+    document.addEventListener('click', (e) => {
+      const sc = e.target.closest && e.target.closest('.side-close');
+      if (sc) {
+        const slot = sc.closest && sc.closest('.side-ad-slot');
+        if (!slot) return;
+        // turn into placeholder (keep size)
+        slot.innerHTML = '';
         slot.classList.add('side-ad-placeholder');
         slot.dataset.closed = '1';
-        // leave inner empty intentionally
-      } else {
-        // populate with random ad HTML
-        const adHtml = randPick(sideAds);
-        slot.innerHTML = adHtml;
-
-        // look for .side-close button inside ad; if present, wire it
-        const closeBtn = slot.querySelector('.side-close');
-        if (closeBtn) {
-          closeBtn.addEventListener('click', (ev) => {
-            ev.preventDefault();
-            // replace contents with placeholder but keep the element and its height — do NOT auto-replace
-            slot.innerHTML = '';
-            slot.classList.add('side-ad-placeholder');
-            slot.dataset.closed = '1';
-          });
+        return;
+      }
+      // also allow clicks on header ad close via '.ad-close' (safety)
+      const ac = e.target.closest && e.target.closest('.ad-close');
+      if (ac) {
+        // find header ad slot parent and simulate close by clearing header ad
+        if (headerAdEl) {
+          headerAdEl.innerHTML = '';
+          headerAdEl.style.display = 'none';
+          headerAdHr.style.display = (infoBanner && infoBanner.style.display !== 'none') ? 'block' : 'none';
+          clearHeaderTimeout();
+          headerAdTimeout = setTimeout(() => renderHeaderAd(randPick(headerAds)), headerAdReplaceDelay);
         }
       }
-
-      // give the slot an identifier
-      slot.dataset.slotIndex = slotIndex;
-      slot.dataset.top = String(cursor);
-
-      // append to document body (so it sits at absolute document coordinate)
-      document.body.appendChild(slot);
-
-      slotIndex++;
-      cursor += slotHeight + slotMargin;
-    }
+    });
   }
 
   function populateAllSideAds() {
-    // remove any pre-existing side ad slots (we'll rebuild)
-    Array.from(document.querySelectorAll('.side-ad-slot')).forEach(el => el.remove());
     if (!leftWrapper || !rightWrapper) return;
 
-    // set wrappers absolute left/right and top (we will not put children inside wrappers, we put slots on body for absolute doc coords)
-    const headerBottom = computeHeaderBottom();
-    // position wrappers as guides; wrappers can also be used to set width or other styles
+    // ensure wrappers are sized and positioned
+    const topPx = 75; // as requested
+    leftWrapper.style.top = topPx + 'px';
+    leftWrapper.style.bottom = '10px';
+    leftWrapper.style.position = 'fixed';
     leftWrapper.style.left = '8px';
-    leftWrapper.style.top = `${headerBottom}px`;
-    leftWrapper.style.width = `${sideWidth}px`;
-    leftWrapper.style.position = 'absolute';
-    rightWrapper.style.right = '8px';
-    rightWrapper.style.top = `${headerBottom}px`;
-    rightWrapper.style.width = `${sideWidth}px`;
-    rightWrapper.style.position = 'absolute';
+    leftWrapper.style.width = sideWidth + 'px';
+    leftWrapper.style.overflow = 'auto';
+    leftWrapper.style.pointerEvents = 'auto';
 
-    // populate both sides
-    populateSideSlots(leftWrapper, 'left');
-    populateSideSlots(rightWrapper, 'right');
+    rightWrapper.style.top = topPx + 'px';
+    rightWrapper.style.bottom = '10px';
+    rightWrapper.style.position = 'fixed';
+    rightWrapper.style.right = '8px';
+    rightWrapper.style.width = sideWidth + 'px';
+    rightWrapper.style.overflow = 'auto';
+    rightWrapper.style.pointerEvents = 'auto';
+
+    // clear & populate
+    clearSideSlots();
+    populateSideForWrapper(leftWrapper, 'left');
+    populateSideForWrapper(rightWrapper, 'right');
   }
 
-  // initialize and wire up
+  // initialize all
   function init() {
     positionHeaderBanners();
     initHeaderAd();
     populateAllSideAds();
+    wireSideClose();
   }
 
-  // event listeners: reposition header banners and regenerate side slots on resize
+  // events
   let resizeTimer = null;
   window.addEventListener('resize', () => {
     positionHeaderBanners();
-    // throttle regen
     if (resizeTimer) clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-      populateAllSideAds();
-    }, 300);
+    resizeTimer = setTimeout(populateAllSideAds, 250);
   });
 
-  // also regenerate on DOMContentLoaded and on load (images might change layout)
-  window.addEventListener('load', () => {
-    setTimeout(init, 60);
-  });
-  document.addEventListener('DOMContentLoaded', () => setTimeout(init, 60));
+  window.addEventListener('load', () => setTimeout(init, 80));
+  document.addEventListener('DOMContentLoaded', () => setTimeout(init, 80));
 
-  // expose API to add header ad / side ad items at runtime
+  // expose manager
   window.BannerManager = {
-    addHeaderAd: function (html) { headerAds.push(html); },
-    addSideAd: function (html) { sideAds.push(html); },
-    refreshHeaderAd: function () { renderHeaderAd(randPick(headerAds)); },
-    rebuildSideAds: function () { populateAllSideAds(); },
-    clearHeaderAdTimeout: clearHeaderTimeout
+    addHeaderAd: html => { headerAds.push(html); renderHeaderAd(randPick(headerAds)); },
+    addSideAd: html => { sideAds.push(html); populateAllSideAds(); },
+    rebuildSideAds: populateAllSideAds
   };
 
 })();
