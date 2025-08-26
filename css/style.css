@@ -120,45 +120,45 @@ a.homeimg {
   width: 55px;
 }
 
-/* ---- banner CSS (updated) ---- */
+/* ===== header banner CSS (header-only) ===== */
 
-/* header banners container (fixed under the navbar) */
 #header-banners {
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 8px;
-  position: fixed;
+  gap: 0;              /* no gap between header ad and info */
+  position: fixed;     /* JS will also set top:75px */
   left: 0;
+  right: 0;
   z-index: 9999;
   pointer-events: auto;
-  /* top is set by JS to 75px */
-  top: 75px;
 }
 
-/* keep header ad/min heights */
+/* header ad box */
 .header-ad {
   justify-content: center;
-  min-height: 80px;
-  max-height: 220px;
-  padding: 8px;
+  min-height: 40px;   /* smaller size */
+  max-height: 110px;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
 }
 
-/* info banner */
+/* info banner: horizontal flow and wrap */
 .info-banner {
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-  padding: 10px 14px;
+  padding: 0 12px;
   background: #fffbe6;
   border: 1px solid rgba(92,201,59,0.12);
   box-sizing: border-box;
 }
 
-/* info image */
+/* info image sizing */
 .info-banner .info-img {
   height: 56px;
   width: auto;
@@ -167,7 +167,7 @@ a.homeimg {
   flex: 0 0 auto;
 }
 
-/* close button */
+/* close button for info banner */
 .banner-close {
   position: absolute;
   right: 8px;
@@ -178,14 +178,13 @@ a.homeimg {
   color: #666;
   cursor: pointer;
   padding: 6px;
-  line-height: 1;
   z-index: 10010;
 }
 
-/* header ad close button (inside ad HTML) */
+/* header ad close button (inside ad HTML must include .ad-close) */
 .ad-close {
   position: absolute;
-  right: 8px;
+  right: 6px;
   top: 6px;
   background: rgba(255,255,255,0.9);
   border: none;
@@ -194,59 +193,9 @@ a.homeimg {
   border-radius:4px;
 }
 
-/* SIDE ADS: fixed overlay wrappers */
-.side-ads-wrapper {
-  position: fixed;
-  top: 75px; /* starts below navbar/header (75px) */
-  bottom: 10px; /* stop above viewport bottom */
-  width: 60px;   /* requested width */
-  overflow: hidden;
-  pointer-events: none; /* wrapper doesn't capture clicks; slots will */
-  z-index: 9000;
-}
-
-/* left and right specific placement */
-#left-ads-wrapper { left: 8px; }
-#right-ads-wrapper { right: 8px; }
-
-/* side ad slot overlay */
-.side-ad-slot {
-  position: relative; /* inside wrapper we stack using vertical flow */
-  width: 60px;
-  height: 400px; /* slotHeight default, JS sets inline too */
-  margin: 5px 0; /* top/bottom 5px gap */
-  background: #ffffff;
-  border-radius: 6px;
-  padding: 6px;
-  box-sizing: border-box;
-  border: 1px solid rgba(0,0,0,0.06);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 8px;
-  overflow: hidden;
-  pointer-events: auto; /* allow clicking inside slot */
-}
-
-/* placeholder for closed slot */
-.side-ad-placeholder {
-  background: transparent;
-  border: 1px dashed rgba(0,0,0,0.04);
-  opacity: 0.15;
-}
-
-/* side ad images scale to width */
-.side-ad-slot img {
-  width: 100%;
-  height: auto;
-  object-fit: cover;
-  border-radius: 4px;
-}
-
-/* hide side ads on small screens */
+/* Responsive: adjust top if mobile header is shorter */
 @media (max-width: 900px) {
-  .side-ads-wrapper { display: none !important; }
-  #header-banners { top: 56px; } /* if your mobile header is smaller */
+  #header-banners { top: 56px !important; } /* if your mobile header is 56px */
 }
 
 .footop-col {
