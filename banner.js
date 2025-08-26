@@ -1,27 +1,34 @@
-/* banner.js (updated)
+/* banner.js — full file (final version)
    - header top = 75px
-   - side wrappers fixed overlay, width 60px
-   - robust event delegation for close buttons
-   - side slots stacked inside wrappers (not document absolute)
+   - header ad replacement 10s after close
+   - header ad & info banner half size (controlled by headerMinHeight/headerMaxHeight)
+   - header/info have no margins between them
+   - side ads: width 60px, absolute (scroll with page), generate immediately (no scroll delay)
+   - side ad closed -> placeholder, auto-replace after 15s
+   - side slots generated top->down between header bottom and footer top
+   - include simple API: BannerManager.addHeaderAd/addSideAd/rebuildSideAds/refreshHeaderAd
 */
 
 (function () {
-  // CONFIG
-  const minSlotHeight = 405; // minimum gap for a new slot (includes margins)
-  const slotHeight = 400;    // visual ad height (px) for each side ad box
-  const slotMargin = 10;     // vertical space between slots (5 top + 5 bottom)
-  const sideWidth = 60;      // requested width for side ads
-  const headerAdReplaceDelay = 10000; // 10s
+  // ---------------- CONFIG ----------------
+  const minSlotHeight = 405;         // minimum gap (including margins) to create slots
+  const slotHeight = 400;            // height of each side ad slot (px)
+  const slotMargin = 10;             // vertical spacing per slot (top+bottom combined -> treated as one value)
+  const sideWidth = 60;              // side ad width (px)
+  const headerAdReplaceDelay = 10000; // header ad replace delay after close (ms)
+  const sideAdReplaceDelay = 15000;  // side ad auto-replace delay after close (ms)
+  const headerMinHeight = 40;        // header/info min height (px, 'half' smaller size)
+  const headerMaxHeight = 110;       // header/info max height (px)
 
-  // AD SOURCES (edit these HTML snippets as needed)
+  // ---------------- AD SOURCES (edit these HTML snippets) ----------------
   const headerAds = [
     `<div style="width:100%;height:100%;position:relative;">
        <a href="https://example.com" target="_blank" rel="noopener" style="display:block;width:100%;height:100%;">
          <img src="/ads/header-ad1.jpg" alt="Header Ad" style="width:100%;height:100%;object-fit:cover;border-radius:4px;">
        </a>
-       <button class="ad-close" aria-label="Close ad">✕</button>
+       <button class="ad-close" aria-label="Close ad" style="position:absolute;right:6px;top:6px;background:#ffffff88;border:none;padding:6px;border-radius:4px;cursor:pointer;">✕</button>
      </div>`,
-    `<div style="width:100%;height:100%;position:relative;padding:8px;">
+    `<div style="width:100%;height:100%;position:relative;padding:8px;box-sizing:border-box;">
        <div style="display:flex;align-items:center;gap:8px;">
          <img src="/ads/header-ad2.jpg" alt="" style="height:64px;object-fit:cover;border-radius:6px;">
          <div style="flex:1;">
@@ -29,65 +36,54 @@
            <div style="font-size:13px;color:#333">Special offer — limited time</div>
          </div>
        </div>
-       <button class="ad-close" aria-label="Close ad">✕</button>
+       <button class="ad-close" aria-label="Close ad" style="position:absolute;right:6px;top:6px;background:#ffffff88;border:none;padding:6px;border-radius:4px;cursor:pointer;">✕</button>
      </div>`
   ];
 
   const sideAds = [
-    `<div style="display:flex;flex-direction:column;gap:6px;align-items:center">
-       <a href="https://example.com" target="_blank" rel="noopener"><img src="/ads/side1.jpg" alt="Side Ad"></a>
+    `<div style="display:flex;flex-direction:column;gap:6px;align-items:center;">
+       <a href="https://example.com" target="_blank" rel="noopener"><img src="/ads/side1.jpg" alt="Side Ad" style="width:100%;height:auto;border-radius:4px;"></a>
        <div style="font-size:12px;text-align:center;">Sponsor</div>
-       <button class="side-close" aria-label="Close side ad" style="border:none;background:#eee;padding:4px;border-radius:4px;cursor:pointer">✕</button>
+       <button class="side-close" aria-label="Close side ad" style="border:none;background:#eee;padding:4px;border-radius:4px;cursor:pointer;">✕</button>
      </div>`,
-    `<div style="display:flex;flex-direction:column;gap:6px;align-items:center">
-       <a href="https://example.org" target="_blank" rel="noopener"><img src="/ads/side2.jpg" alt="Side Ad"></a>
+    `<div style="display:flex;flex-direction:column;gap:6px;align-items:center;">
+       <a href="https://example.org" target="_blank" rel="noopener"><img src="/ads/side2.jpg" alt="Side Ad" style="width:100%;height:auto;border-radius:4px;"></a>
        <div style="font-size:12px;text-align:center;">App Promo</div>
-       <button class="side-close" aria-label="Close side ad" style="border:none;background:#eee;padding:4px;border-radius:4px;cursor:pointer">✕</button>
+       <button class="side-close" aria-label="Close side ad" style="border:none;background:#eee;padding:4px;border-radius:4px;cursor:pointer;">✕</button>
      </div>`
   ];
 
-  // helpers
+  // ---------------- utilities ----------------
   function randPick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+  function safeEl(id) { return document.getElementById(id); }
 
-  // DOM refs
-  const headerBanners = document.getElementById('header-banners');
-  const headerAdEl = document.getElementById('header-ad');
-  const headerAdHr = document.getElementById('header-ad-hr');
-  const infoBanner = document.getElementById('info-banner');
-  const leftWrapper = document.getElementById('left-ads-wrapper');
-  const rightWrapper = document.getElementById('right-ads-wrapper');
+  // ---------------- DOM refs ----------------
+  const headerBanners = safeEl('header-banners');
+  const headerAdEl = safeEl('header-ad');
+  const headerAdHr = safeEl('header-ad-hr');
+  const infoBanner = safeEl('info-banner');
+  const leftWrapper = safeEl('left-ads-wrapper');
+  const rightWrapper = safeEl('right-ads-wrapper');
   const headerEl = document.querySelector('header');
   const footerEl = document.querySelector('footer');
 
   if (!headerBanners) {
-    console.warn('banner.js: #header-banners missing');
+    console.warn('banner.js: missing #header-banners element — aborting banner init.');
     return;
   }
 
-  // ensure wrappers exist
-  if (!leftWrapper || !rightWrapper) {
-    console.warn('banner.js: side wrappers missing (#left-ads-wrapper / #right-ads-wrapper)');
-  }
-
-  // position header banners (fixed under header). Use 75px as requested.
+  // ---------------- position header banners ----------------
   function positionHeaderBanners() {
-    const topPx = 75;
-    headerBanners.style.top = `${topPx}px`;
+    // fixed top as requested (75px)
+    headerBanners.style.position = 'fixed';
+    headerBanners.style.top = '75px';
     headerBanners.style.left = '0';
     headerBanners.style.right = '0';
+    headerBanners.style.zIndex = '9999';
+    headerBanners.style.gap = '0'; // ensure no gap between header ad and info banner
   }
 
-  // INFO banner close: use delegation (reliable)
-  (function wireInfoClose() {
-    if (!infoBanner) return;
-    document.addEventListener('click', (e) => {
-      if (e.target && e.target.closest && e.target.closest('#info-banner .banner-close')) {
-        infoBanner.style.display = 'none';
-      }
-    });
-  })();
-
-  // HEADER AD logic
+  // ---------------- header ad logic ----------------
   let headerAdTimeout = null;
   function clearHeaderTimeout() { if (headerAdTimeout) { clearTimeout(headerAdTimeout); headerAdTimeout = null; } }
 
@@ -95,158 +91,185 @@
     if (!headerAdEl) return;
     headerAdEl.innerHTML = html || '';
     headerAdEl.style.display = html ? 'flex' : 'none';
-    headerAdHr.style.display = (html && infoBanner && infoBanner.style.display !== 'none') ? 'block' : 'none';
+    headerAdEl.style.minHeight = headerMinHeight + 'px';
+    headerAdEl.style.maxHeight = headerMaxHeight + 'px';
+    headerAdEl.style.margin = '0';
+    headerAdEl.style.padding = '0';
+    headerAdEl.style.boxSizing = 'border-box';
 
-    // delegate close clicks inside headerAdEl
-    headerAdEl.addEventListener('click', function onHeaderAdClick(e) {
-      const closeBtn = e.target.closest && e.target.closest('.ad-close');
-      if (closeBtn) {
-        // hide current ad
-        headerAdEl.innerHTML = '';
-        headerAdEl.style.display = 'none';
-        headerAdHr.style.display = (infoBanner && infoBanner.style.display !== 'none') ? 'block' : 'none';
-        // schedule replace
-        clearHeaderTimeout();
-        headerAdTimeout = setTimeout(() => {
-          renderHeaderAd(randPick(headerAds));
-        }, headerAdReplaceDelay);
-      }
-    }, { once:true });
-  }
-
-  function initHeaderAd() {
-    if (!headerAdEl) return;
-    if (!headerAds || headerAds.length === 0) {
-      headerAdEl.style.display = 'none';
-      headerAdHr.style.display = 'none';
-      return;
+    // info banner match sizing and no margins
+    if (infoBanner) {
+      infoBanner.style.minHeight = headerMinHeight + 'px';
+      infoBanner.style.maxHeight = headerMaxHeight + 'px';
+      infoBanner.style.margin = '0';
+      // keep a little horizontal padding for content readability
+      infoBanner.style.padding = '0 12px';
+      infoBanner.style.display = infoBanner.style.display === 'none' ? 'none' : 'flex';
+      infoBanner.style.alignItems = 'center';
+      infoBanner.style.gap = '8px';
     }
-    renderHeaderAd(randPick(headerAds));
-    positionHeaderBanners();
+
+    // hr divider visibility (no margins)
+    if (headerAdHr) {
+      headerAdHr.style.display = (html && infoBanner && infoBanner.style.display !== 'none') ? 'block' : 'none';
+      headerAdHr.style.margin = '0';
+      headerAdHr.style.borderTop = '1px solid rgba(0,0,0,0.06)';
+    }
   }
 
-  // SIDE ADS: fixed wrappers; create stacked slots inside wrapper (flow layout)
-  function clearSideSlots() {
-    if (leftWrapper) leftWrapper.innerHTML = '';
-    if (rightWrapper) rightWrapper.innerHTML = '';
+  // ---------------- side ad helpers ----------------
+  function docY(el) {
+    const r = el.getBoundingClientRect();
+    return r.top + window.scrollY;
+  }
+  function computeHeaderBottom() {
+    if (!headerEl) return 0;
+    const rect = headerEl.getBoundingClientRect();
+    return rect.bottom + window.scrollY;
+  }
+  function computeFooterTop() {
+    if (!footerEl) return document.documentElement.scrollHeight;
+    const r = footerEl.getBoundingClientRect();
+    return r.top + window.scrollY;
   }
 
-  function computeAvailableHeight(wrapper) {
-    // wrapper clientHeight is the available vertical space for stacking (top..bottom)
-    return wrapper ? wrapper.clientHeight : 0;
-  }
-
+  // ---------------- populate side slots for a wrapper ----------------
   function populateSideForWrapper(wrapper, side) {
     if (!wrapper) return;
+    wrapper.innerHTML = ''; // rebuild
 
-    // remove existing but keep placeholders where previously closed: we store closed indices in dataset
-    // For simplicity preserve closed by reading a data attribute list if present; otherwise rebuild
-    // We'll not persist closed across page reloads (but they wanted placeholder to remain until user clears; that can be implemented with storage)
-    wrapper.innerHTML = ''; // fresh
-
-    const available = computeAvailableHeight(wrapper);
+    const headerBottom = computeHeaderBottom();
+    const footerTop = computeFooterTop();
+    const available = footerTop - headerBottom;
     if (available < minSlotHeight) return;
 
-    // compute number of slots fitting: each uses slotHeight + slotMargin (top+bottom 5)
-    const per = slotHeight + (slotMargin);
-    const maxSlots = Math.floor((available + 5) / per); // +5 fudge
+    // number of slots that fit
+    const per = slotHeight + slotMargin;
+    const maxSlots = Math.floor((available + (slotMargin / 2)) / per);
     if (maxSlots <= 0) return;
 
-    for (let i=0;i<maxSlots;i++) {
+    // position wrapper absolutely in document flow so it scrolls with content
+    wrapper.style.position = 'absolute';
+    wrapper.style.top = headerBottom + 'px';
+    wrapper.style.width = sideWidth + 'px';
+    wrapper.style.height = Math.max(0, footerTop - headerBottom) + 'px';
+    wrapper.style.pointerEvents = 'auto';
+    wrapper.style.overflow = 'visible';
+
+    for (let i = 0; i < maxSlots; i++) {
       const slot = document.createElement('div');
       slot.className = 'side-ad-slot';
       slot.style.height = slotHeight + 'px';
       slot.style.width = sideWidth + 'px';
       slot.dataset.index = String(i);
+      slot.dataset.closed = '0';
 
-      // populate ad content from pool
-      const adHtml = randPick(sideAds);
-      slot.innerHTML = adHtml;
+      // fill with random ad
+      const html = randPick(sideAds);
+      slot.innerHTML = html;
 
-      // wire close button with delegation on wrapper level
       wrapper.appendChild(slot);
     }
   }
 
-  // wire side close using event delegation
-  function wireSideClose() {
-    document.addEventListener('click', (e) => {
-      const sc = e.target.closest && e.target.closest('.side-close');
-      if (sc) {
-        const slot = sc.closest && sc.closest('.side-ad-slot');
-        if (!slot) return;
-        // turn into placeholder (keep size)
-        slot.innerHTML = '';
-        slot.classList.add('side-ad-placeholder');
-        slot.dataset.closed = '1';
-        return;
-      }
-      // also allow clicks on header ad close via '.ad-close' (safety)
-      const ac = e.target.closest && e.target.closest('.ad-close');
-      if (ac) {
-        // find header ad slot parent and simulate close by clearing header ad
-        if (headerAdEl) {
-          headerAdEl.innerHTML = '';
-          headerAdEl.style.display = 'none';
-          headerAdHr.style.display = (infoBanner && infoBanner.style.display !== 'none') ? 'block' : 'none';
-          clearHeaderTimeout();
-          headerAdTimeout = setTimeout(() => renderHeaderAd(randPick(headerAds)), headerAdReplaceDelay);
-        }
-      }
-    });
-  }
-
+  // ---------------- populate both sides ----------------
   function populateAllSideAds() {
     if (!leftWrapper || !rightWrapper) return;
+    // clear existing
+    leftWrapper.innerHTML = '';
+    rightWrapper.innerHTML = '';
 
-    // ensure wrappers are sized and positioned
-    const topPx = 75; // as requested
-    leftWrapper.style.top = topPx + 'px';
-    leftWrapper.style.bottom = '10px';
-    leftWrapper.style.position = 'fixed';
-    leftWrapper.style.left = '8px';
-    leftWrapper.style.width = sideWidth + 'px';
-    leftWrapper.style.overflow = 'auto';
-    leftWrapper.style.pointerEvents = 'auto';
-
-    rightWrapper.style.top = topPx + 'px';
-    rightWrapper.style.bottom = '10px';
-    rightWrapper.style.position = 'fixed';
-    rightWrapper.style.right = '8px';
-    rightWrapper.style.width = sideWidth + 'px';
-    rightWrapper.style.overflow = 'auto';
-    rightWrapper.style.pointerEvents = 'auto';
-
-    // clear & populate
-    clearSideSlots();
     populateSideForWrapper(leftWrapper, 'left');
     populateSideForWrapper(rightWrapper, 'right');
   }
 
-  // initialize all
-  function init() {
+  // ---------------- delegated click handling (close buttons + header ad close) ----------------
+  document.addEventListener('click', (e) => {
+    // info banner close
+    if (e.target.closest && e.target.closest('#info-banner .banner-close')) {
+      if (infoBanner) infoBanner.style.display = 'none';
+      return;
+    }
+
+    // header ad close
+    if (e.target.closest && e.target.closest('#header-ad .ad-close')) {
+      // clear header ad and schedule replacement
+      if (headerAdEl) {
+        headerAdEl.innerHTML = '';
+        headerAdEl.style.display = 'none';
+        if (headerAdHr) headerAdHr.style.display = (infoBanner && infoBanner.style.display !== 'none') ? 'block' : 'none';
+        clearHeaderTimeout();
+        headerAdTimeout = setTimeout(() => {
+          renderHeaderAd(randPick(headerAds));
+        }, headerAdReplaceDelay);
+      }
+      return;
+    }
+
+    // side ad close (delegated)
+    const sc = e.target.closest && e.target.closest('.side-close');
+    if (sc) {
+      const slot = sc.closest && sc.closest('.side-ad-slot');
+      if (!slot) return;
+      // mark closed and replace inner with placeholder
+      slot.dataset.closed = '1';
+      slot.innerHTML = '';
+      slot.classList.add('side-ad-placeholder');
+
+      // schedule auto-replace after delay
+      setTimeout(() => {
+        if (slot.dataset.closed === '1') {
+          slot.dataset.closed = '0';
+          slot.classList.remove('side-ad-placeholder');
+          slot.innerHTML = randPick(sideAds);
+        }
+      }, sideAdReplaceDelay);
+
+      return;
+    }
+  });
+
+  // ---------------- init header ad + position ----------------
+  function initHeaderArea() {
     positionHeaderBanners();
-    initHeaderAd();
-    populateAllSideAds();
-    wireSideClose();
+    if (headerAds && headerAds.length > 0) {
+      renderHeaderAd(randPick(headerAds));
+    } else {
+      if (headerAdEl) headerAdEl.style.display = 'none';
+      if (headerAdHr) headerAdHr.style.display = 'none';
+    }
   }
 
-  // events
+  // ---------------- init everything ----------------
+  function init() {
+    try {
+      initHeaderArea();
+      populateAllSideAds();
+    } catch (err) {
+      console.error('banner.js init error:', err);
+    }
+  }
+
+  // ---------------- resize / load wiring ----------------
   let resizeTimer = null;
   window.addEventListener('resize', () => {
     positionHeaderBanners();
     if (resizeTimer) clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(populateAllSideAds, 250);
+    resizeTimer = setTimeout(() => {
+      populateAllSideAds();
+    }, 250);
   });
 
-  window.addEventListener('load', () => setTimeout(init, 80));
-  document.addEventListener('DOMContentLoaded', () => setTimeout(init, 80));
+  window.addEventListener('load', () => setTimeout(init, 60));
+  document.addEventListener('DOMContentLoaded', () => setTimeout(init, 60));
 
-  // expose manager
+  // ---------------- public API ----------------
   window.BannerManager = {
-    addHeaderAd: html => { headerAds.push(html); renderHeaderAd(randPick(headerAds)); },
-    addSideAd: html => { sideAds.push(html); populateAllSideAds(); },
-    rebuildSideAds: populateAllSideAds
+    addHeaderAd(html) { headerAds.push(html); if (headerAdEl && headerAdEl.innerHTML === '') renderHeaderAd(randPick(headerAds)); },
+    addSideAd(html) { sideAds.push(html); populateAllSideAds(); },
+    refreshHeaderAd() { if (headerAds.length) renderHeaderAd(randPick(headerAds)); },
+    rebuildSideAds() { populateAllSideAds(); },
+    clearHeaderTimeout
   };
 
 })();
