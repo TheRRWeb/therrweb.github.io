@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
@@ -7,31 +7,88 @@
 </head>
 <body>
 <script>
-/*
-  R-UI Storage Proxy
-  - Hard-coded token required for requests (simple auth)
-  - Supports: get, set, remove, clear, keys
-  - Replies with { ok: true/false, id, value, keys, error }
-*/
-
 (function(){
-  // === CONFIG: set your secret token here ===
-  const SECRET_TOKEN = 'RUI_9xPq2Lz7Vb1Hk4G'; // <- keep this secret
+  // CONFIG: secret token (keep secret)
+  const SECRET_TOKEN = 'RUI_9xPq2Lz7Vb1Hk4G';
 
-  function safePostMessage(targetWindow, origin, msg){
-    try { targetWindow.postMessage(msg, origin); }
-    catch (e) { /* ignore */ }
+  // List of subscribers: { win: WindowProxy, origin: string }
+  const subscribers = [];
+
+  function safePostTo(win, origin, msg) {
+    try { win.postMessage(msg, origin); } catch (e) { /* ignore */ }
   }
 
-  window.addEventListener('message', function(ev){
-    const src = ev.source;
+  function broadcast(msg) {
+    // iterate subscribers and post message
+    for (let i = subscribers.length - 1; i >= 0; i--) {
+      const s = subscribers[i];
+      try {
+        safePostTo(s.win, s.origin, msg);
+      } catch (e) {
+        // remove closed / broken subscribers
+        try { // test if still reachable
+          s.win.postMessage({ type: 'ping' }, s.origin);
+        } catch (_) {
+          subscribers.splice(i, 1);
+        }
+      }
+    }
+  }
+
+  // helper to read all localStorage keys->values
+  function getAllStorage() {
+    const out = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      try { out[key] = localStorage.getItem(key); } catch (e) { out[key] = null; }
+    }
+    return out;
+  }
+
+  // listen for storage events (fires when other windows/tabs on this origin modify localStorage)
+  window.addEventListener('storage', function(ev) {
+    // ev.key, ev.oldValue, ev.newValue
+    const msg = { type: 'proxy_storage_event', key: ev.key, oldValue: ev.oldValue, newValue: ev.newValue };
+    broadcast(msg);
+  });
+
+  // message handler
+  window.addEventListener('message', function(ev) {
     const origin = ev.origin || '*';
     const req = ev.data;
+    const src = ev.source;
+
     if (!req || typeof req !== 'object') return;
 
-    // Security: token must match
+    // Security: subscribe/set/get require token (except ping)
+    if (req.type === 'ping') {
+      // reply for diagnostics
+      safePostTo(src, origin, { ok: true, type: 'pong' });
+      return;
+    }
+
+    if (req.type === 'subscribe') {
+      if (req.token !== SECRET_TOKEN) {
+        safePostTo(src, origin, { ok: false, error: 'invalid token', id: req.id || null });
+        return;
+      }
+      // add subscriber (avoid duplicates)
+      const found = subscribers.find(s => s.win === src);
+      if (!found) subscribers.push({ win: src, origin: origin });
+      safePostTo(src, origin, { ok: true, id: req.id || null, type: 'subscribed' });
+      return;
+    }
+
+    if (req.type === 'unsubscribe') {
+      const idx = subscribers.findIndex(s => s.win === src);
+      if (idx !== -1) subscribers.splice(idx, 1);
+      safePostTo(src, origin, { ok: true, id: req.id || null, type: 'unsubscribed' });
+      return;
+    }
+
+    // All other operations require token match
     if (req.token !== SECRET_TOKEN) {
-      safePostMessage(src, origin, { ok: false, error: 'invalid token', id: req.id || null });
+      safePostTo(src, origin, { ok: false, error: 'invalid token', id: req.id || null });
       return;
     }
 
@@ -39,31 +96,48 @@
     try {
       if (req.type === 'get') {
         const v = localStorage.getItem(req.key);
-        safePostMessage(src, origin, { ok: true, id, value: v });
+        safePostTo(src, origin, { ok: true, id, value: v });
       } else if (req.type === 'set') {
         localStorage.setItem(req.key, String(req.value));
-        safePostMessage(src, origin, { ok: true, id });
+        safePostTo(src, origin, { ok: true, id });
+        // notify subscribers about change
+        broadcast({ type: 'proxy_storage_event', key: req.key, oldValue: null, newValue: String(req.value) });
       } else if (req.type === 'remove') {
         localStorage.removeItem(req.key);
-        safePostMessage(src, origin, { ok: true, id });
+        safePostTo(src, origin, { ok: true, id });
+        broadcast({ type: 'proxy_storage_event', key: req.key, oldValue: null, newValue: null });
       } else if (req.type === 'clear') {
         localStorage.clear();
-        safePostMessage(src, origin, { ok: true, id });
+        safePostTo(src, origin, { ok: true, id });
+        broadcast({ type: 'proxy_storage_event', key: null, oldValue: null, newValue: null, cleared: true });
       } else if (req.type === 'keys') {
-        safePostMessage(src, origin, { ok: true, id, keys: Object.keys(localStorage) });
+        safePostTo(src, origin, { ok: true, id, keys: Object.keys(localStorage) });
+      } else if (req.type === 'get_all') {
+        safePostTo(src, origin, { ok: true, id, all: getAllStorage() });
       } else {
-        safePostMessage(src, origin, { ok: false, id, error: 'unknown type' });
+        safePostTo(src, origin, { ok: false, id, error: 'unknown type' });
       }
     } catch (err) {
-      safePostMessage(src, origin, { ok: false, id, error: String(err) });
+      safePostTo(src, origin, { ok: false, id, error: String(err) });
     }
   }, false);
 
-  // Optional: simple debug UI if you open directly with ?debug=1
+  // simple debug UI when opened with ?debug=1
   if (location.search.indexOf('debug=1') !== -1) {
     document.body.style.fontFamily = 'sans-serif';
-    document.body.innerHTML = '<div style="padding:16px"><h3>R-UI Storage Proxy</h3><p>Token: ' + SECRET_TOKEN + '</p><p>Ready to accept postMessage requests from callers that include the token.</p></div>';
+    const pre = document.createElement('pre');
+    pre.style.padding = '12px';
+    pre.textContent = 'R-UI Storage Proxy\nToken: ' + SECRET_TOKEN + '\n\nLocalStorage snapshot:\n' + JSON.stringify(getAllStorage(), null, 2);
+    document.body.appendChild(pre);
+    const dbg = document.createElement('div');
+    dbg.style.padding = '12px';
+    dbg.innerHTML = '<p>Subscribers: <span id="subcnt">0</span></p>';
+    document.body.appendChild(dbg);
+    setInterval(() => {
+      try { document.getElementById('subcnt').textContent = String(subscribers.length); } catch(e){}
+    }, 500);
   }
+
 })();
 </script>
 </body>
