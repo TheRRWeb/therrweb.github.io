@@ -686,3 +686,137 @@ function myFunction() {
       x.className = "navbar";
     }
   }
+
+(function(){
+  // Only act if inside an iframe and there's a parent (the bookmarklet environment).
+  if (!window.parent || window.parent === window) return;
+
+  // For security you can replace '*' with the exact origin of the host page that will embed the iframe,
+  // but bookmarklets may run on many origins so '*' is used by default:
+  const parentOrigin = '*'; // or 'https://example.com' for stricter checks
+
+  // small debounce + lastSent map to avoid echo loops and spamming
+  const lastSent = new Map(); // key -> lastValueSent
+  const sendQueue = new Map(); // key -> timeoutId
+
+  function safePostToParent(msg) {
+    try {
+      window.parent.postMessage(msg, parentOrigin);
+    } catch (e) {
+      // swallow — parent may not be reachable
+    }
+  }
+
+  // Publish a local change to the parent (outer bookmarklet)
+  function publishLocalChange(key, value) {
+    try {
+      // normalize value to string (localStorage stores strings)
+      let v = value;
+      if (typeof v === 'object' && v !== null) {
+        try { v = JSON.stringify(v); } catch(e){ v = String(v); }
+      } else if (v !== null && v !== undefined) {
+        v = String(v);
+      } else {
+        v = null;
+      }
+
+      // avoid sending duplicates
+      const last = lastSent.get(key);
+      if (last === v) return;
+
+      // tiny debounce: if many writes to same key, coalesce to one
+      if (sendQueue.has(key)) {
+        clearTimeout(sendQueue.get(key));
+      }
+      const t = setTimeout(() => {
+        sendQueue.delete(key);
+        lastSent.set(key, v);
+        safePostToParent({ type: 'localStorageChange', key, value: v });
+      }, 60); // 60ms debounce
+      sendQueue.set(key, t);
+    } catch(e){}
+  }
+
+  // Bulk write helper - apply an object of key->value into localStorage
+  window.__r_ui_applyBulk = function(all) {
+    try {
+      if (!all || typeof all !== 'object') return;
+      for (const k in all) {
+        if (!Object.prototype.hasOwnProperty.call(all, k)) continue;
+        const v = all[k];
+        if (v == null) {
+          try { localStorage.removeItem(k); } catch(e){}
+        } else {
+          try { localStorage.setItem(k, v); } catch(e){}
+        }
+        // update lastSent map so we don't immediately re-publish identical values back out
+        try { lastSent.set(k, v == null ? null : String(v)); } catch(e){}
+      }
+      console.log('R-UI iframe applied bulk storage', all);
+    } catch(e) { console.error(e); }
+  };
+
+  // Listen for incoming messages from parent (outer bookmarklet)
+  window.addEventListener('message', function(ev) {
+    // Optionally restrict by origin:
+    // if (ev.origin !== 'https://therrweb.github.io') return;
+    const msg = ev.data;
+    if (!msg || typeof msg !== 'object') return;
+
+    if (msg.type === 'bulk_init' && msg.all) {
+      // apply everything
+      window.__r_ui_applyBulk(msg.all);
+    } else if (msg.type === 'storage_event') {
+      // single key changed on therrweb -> sync locally
+      try {
+        if (msg.cleared) {
+          localStorage.clear();
+          // update lastSent map to avoid echo
+          lastSent.clear();
+        } else {
+          if (msg.key == null) return;
+          if (msg.newValue == null) {
+            localStorage.removeItem(msg.key);
+            lastSent.set(msg.key, null);
+          } else {
+            localStorage.setItem(msg.key, msg.newValue);
+            lastSent.set(msg.key, String(msg.newValue));
+          }
+        }
+      } catch(e){}
+    } else if (msg.type === 'r_ui_init_state' && msg.value != null) {
+      // backward-compat single-key init
+      try { localStorage.setItem('r_ui_state', msg.value); lastSent.set('r_ui_state', String(msg.value)); } catch(e){}
+    }
+  }, false);
+
+  // Monkey-patch localStorage.setItem/removeItem to publish changes if not already patched
+  (function patchStorage() {
+    try {
+      // detect if we've already patched by checking a symbol
+      if (Storage.prototype.__r_ui_patched) return;
+      const _set = Storage.prototype.setItem;
+      const _remove = Storage.prototype.removeItem;
+
+      Storage.prototype.setItem = function(k, v) {
+        try {
+          _set.call(this, k, v);
+        } catch(e){}
+        // publish, but don't publish keys that belong to your own internal bookkeeping if you want
+        publishLocalChange(k, v);
+      };
+
+      Storage.prototype.removeItem = function(k) {
+        try { _remove.call(this, k); } catch(e){}
+        publishLocalChange(k, null);
+      };
+
+      // mark patched to prevent double-patch
+      try { Storage.prototype.__r_ui_patched = true; } catch(e){}
+    } catch(e) { console.warn('R-UI: storage patch failed', e); }
+  })();
+
+  // Also expose a function your app can call instead of relying on patched storage
+  window.__r_ui_publishChange = publishLocalChange;
+
+})();
